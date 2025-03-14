@@ -4,7 +4,13 @@ A modern web application built to help engineering managers streamline their dai
 
 ## 🚀 Features
 
-- Team Management Dashboard 
+- Team Management Dashboard
+  - Loading Team List from a JSON file, each member should:
+    - Full Name
+    - Phone Contact
+    - Email
+  - Adding new Team member 
+  - Remove a current Team member
 - Task (Schedule, and Effort) Tracking
   - SIT Support
   - Incident Support
@@ -12,7 +18,14 @@ A modern web application built to help engineering managers streamline their dai
   - Change Request and Management
   - Roster Planning (Primary / Secondary)
 - Managing Follow Up Item in a Task
+  - Sub Task List
+  - Dependency Items
+  - Block Items
+  - Note
 - Team Calendar & Rotation Management
+  - Daily schedule display
+  - Weekly / Monthly schedule
+  - Rotation Swap ( Week Swap, Day Swap)
 
 ## 🛠 Tech Stack
 
