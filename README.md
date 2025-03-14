@@ -6,11 +6,11 @@ A modern web application built to help engineering managers streamline their dai
 
 - Team Management Dashboard 
 - Task (Schedule, and Effort) Tracking
-+ SIT Support
-+ Incident Support
-+ Problem Management
-+ Change Request and Management
-+ Roster Planning (Primary / Secondary)
+  - SIT Support
+  - Incident Support
+  - Problem Management
+  - Change Request and Management
+  - Roster Planning (Primary / Secondary)
 - Managing Follow Up Item in a Task
 - Team Calendar & Rotation Management
 
