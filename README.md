@@ -26,6 +26,10 @@ A modern web application built to help engineering managers streamline their dai
   - Daily schedule display
   - Weekly / Monthly schedule
   - Rotation Swap ( Week Swap, Day Swap)
+- Report in graphic / dashboard
+  - How many sprint a member doing a host
+  - How many sprint a member doing roster
+  - How many points a member complete per sprint
 
 ## 🛠 Tech Stack
 
