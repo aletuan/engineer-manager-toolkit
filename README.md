@@ -46,11 +46,6 @@ A modern web application built to help engineering managers streamline their dai
       - [ ] Schedule management
       - [ ] Rotation handling
       - [ ] Availability tracking
-  - [ ] Database Design
-    - [ ] Team schema
-    - [ ] Task schema
-    - [ ] Calendar schema
-    - [ ] Activity logs
   - [ ] Authentication & Authorization
     - [ ] User authentication
     - [ ] Role-based access control
@@ -63,6 +58,39 @@ A modern web application built to help engineering managers streamline their dai
     - [ ] Email notifications
     - [ ] Calendar sync
     - [ ] External tools integration
+
+- [ ] Database
+  - [ ] Schema Design
+    - [ ] Team Members
+      - [ ] Personal information
+      - [ ] Contact details
+      - [ ] Role and permissions
+      - [ ] Team assignments
+    - [ ] Tasks
+      - [ ] Task details and metadata
+      - [ ] Status tracking
+      - [ ] Effort logging
+      - [ ] Dependencies
+    - [ ] Calendar Events
+      - [ ] Schedule entries
+      - [ ] Rotation records
+      - [ ] Availability status
+    - [ ] Reports
+      - [ ] Performance metrics
+      - [ ] Sprint statistics
+      - [ ] Team analytics
+  - [ ] Data Management
+    - [ ] Backup and Recovery
+    - [ ] Data Migration
+    - [ ] Version Control
+  - [ ] Performance Optimization
+    - [ ] Query Optimization
+    - [ ] Indexing Strategy
+    - [ ] Caching Implementation
+  - [ ] Security
+    - [ ] Data Encryption
+    - [ ] Access Control
+    - [ ] Audit Logging
 
 ## 🛠 Tech Stack
 
