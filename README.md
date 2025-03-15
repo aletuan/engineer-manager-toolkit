@@ -32,7 +32,7 @@ A modern web application built to help engineering managers streamline their dai
     - [ ] How many sprint a member doing roster
     - [ ] How many points a member complete per sprint
 
-- [ ] Backend
+- [ ] Backend service
   - [ ] API Development
     - [ ] Team Management APIs
       - [ ] CRUD operations for team members
@@ -59,38 +59,30 @@ A modern web application built to help engineering managers streamline their dai
     - [ ] Calendar sync
     - [ ] External tools integration
 
-- [ ] Database
-  - [ ] Schema Design
-    - [ ] Team Members
-      - [ ] Personal information
-      - [ ] Contact details
-      - [ ] Role and permissions
-      - [ ] Team assignments
-    - [ ] Tasks
-      - [ ] Task details and metadata
-      - [ ] Status tracking
-      - [ ] Effort logging
-      - [ ] Dependencies
-    - [ ] Calendar Events
-      - [ ] Schedule entries
-      - [ ] Rotation records
-      - [ ] Availability status
-    - [ ] Reports
-      - [ ] Performance metrics
-      - [ ] Sprint statistics
-      - [ ] Team analytics
-  - [ ] Data Management
-    - [ ] Backup and Recovery
-    - [ ] Data Migration
-    - [ ] Version Control
-  - [ ] Performance Optimization
-    - [ ] Query Optimization
-    - [ ] Indexing Strategy
-    - [ ] Caching Implementation
-  - [ ] Security
-    - [ ] Data Encryption
-    - [ ] Access Control
-    - [ ] Audit Logging
+- [x] Database
+  - [x] Schema Design
+    - [x] Team Members
+      - [x] Personal information
+      - [x] Contact details
+      - [x] Role and permissions
+      - [x] Team assignments
+    - [x] Tasks
+      - [x] Task details and metadata
+      - [x] Status tracking
+      - [x] Effort logging
+      - [x] Dependencies
+    - [x] Calendar Events
+      - [x] Schedule entries
+      - [x] Rotation records
+      - [x] Availability status
+    - [x] Reports
+      - [x] Performance metrics
+      - [x] Sprint statistics
+      - [x] Team analytics
+  - [x] Performance Optimization
+    - [x] Query Optimization
+    - [x] Indexing Strategy
+    - [x] Caching Implementation
 
 ## 🛠 Tech Stack
 
