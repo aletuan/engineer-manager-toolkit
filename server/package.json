@@ -4,8 +4,8 @@
   "description": "Backend server for Engineer Manager Toolkit",
   "main": "dist/app.js",
   "scripts": {
-    "start": "node dist/app.js",
-    "dev": "ts-node-dev --respawn --transpile-only src/app.ts",
+    "start": "node dist/server.js",
+    "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
     "build": "tsc",
     "test": "jest",
     "test:watch": "jest --watch",
@@ -20,6 +20,7 @@
   },
   "dependencies": {
     "@prisma/client": "^5.10.0",
+    "axios": "^1.8.3",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
@@ -47,4 +48,4 @@
     "ts-node-dev": "^2.0.0",
     "typescript": "^5.3.3"
   }
-} 
+}
