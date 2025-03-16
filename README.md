@@ -41,7 +41,7 @@ A modern web application built to help engineering managers streamline their dai
     - [x] Task Management APIs
       - [x] Task creation and updates
       - [x] Status tracking
-      - [ ] Effort logging
+      - [ ] Effort logging (acutal / estimate efforts)
     - [ ] Calendar APIs
       - [ ] Schedule management
       - [ ] Rotation handling
