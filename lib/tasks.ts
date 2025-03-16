@@ -17,6 +17,7 @@ export type Task = {
   priority: TaskPriority
   status: "Not Started" | "In Progress" | "Completed" | "Blocked"
   progress: number // 0-100%
+  squad: "Sonic" | "Troy" // Thêm trường squad để phân biệt task của từng squad
 }
 
 // Hàm helper để tạo ngày tương đối so với ngày hiện tại
@@ -42,6 +43,7 @@ export const tasks: Task[] = [
     priority: "High",
     status: "In Progress",
     progress: 60,
+    squad: "Sonic",
   },
   {
     id: "task-2",
@@ -57,6 +59,7 @@ export const tasks: Task[] = [
     priority: "Medium",
     status: "In Progress",
     progress: 30,
+    squad: "Sonic",
   },
   {
     id: "task-3",
@@ -72,6 +75,7 @@ export const tasks: Task[] = [
     priority: "High",
     status: "In Progress",
     progress: 40,
+    squad: "Sonic",
   },
   {
     id: "task-4",
@@ -87,6 +91,7 @@ export const tasks: Task[] = [
     priority: "Medium",
     status: "Not Started",
     progress: 0,
+    squad: "Troy",
   },
   {
     id: "task-5",
@@ -101,6 +106,7 @@ export const tasks: Task[] = [
     priority: "High",
     status: "In Progress",
     progress: 75,
+    squad: "Troy",
   },
   {
     id: "task-6",
@@ -115,6 +121,7 @@ export const tasks: Task[] = [
     priority: "Medium",
     status: "Not Started",
     progress: 0,
+    squad: "Sonic",
   },
   {
     id: "task-7",
@@ -129,6 +136,7 @@ export const tasks: Task[] = [
     priority: "Low",
     status: "Not Started",
     progress: 0,
+    squad: "Sonic",
   },
   {
     id: "task-8",
@@ -143,6 +151,7 @@ export const tasks: Task[] = [
     priority: "Medium",
     status: "In Progress",
     progress: 50,
+    squad: "Sonic",
   },
   {
     id: "task-9",
@@ -157,6 +166,7 @@ export const tasks: Task[] = [
     priority: "High",
     status: "Not Started",
     progress: 0,
+    squad: "Sonic",
   },
   {
     id: "task-10",
@@ -171,11 +181,42 @@ export const tasks: Task[] = [
     priority: "High",
     status: "In Progress",
     progress: 20,
+    squad: "Troy",
+  },
+  {
+    id: "task-11",
+    featureId: "F12355",
+    title: "Phát triển tính năng chat trực tiếp",
+    description: "Xây dựng hệ thống chat trực tiếp để hỗ trợ khách hàng ngay trên trang web và ứng dụng di động.",
+    startDate: getRelativeDate(0),
+    endDate: getRelativeDate(7),
+    points: 6,
+    assignees: ["Harry Nguyen", "Dany Nguyen"],
+    stakeholders: ["CE", "CM"],
+    priority: "Medium",
+    status: "Not Started",
+    progress: 0,
+    squad: "Troy",
+  },
+  {
+    id: "task-12",
+    featureId: "F12356",
+    title: "Tối ưu hóa quy trình thanh toán",
+    description: "Cải thiện trải nghiệm thanh toán để giảm tỷ lệ bỏ giỏ hàng và tăng tỷ lệ chuyển đổi.",
+    startDate: getRelativeDate(-1),
+    endDate: getRelativeDate(5),
+    points: 5,
+    assignees: ["Kiet Chung", "Luy Hoang"],
+    stakeholders: ["ECOM", "CE"],
+    priority: "High",
+    status: "In Progress",
+    progress: 35,
+    squad: "Troy",
   },
 ]
 
-// Hàm lấy top 5 task quan trọng nhất trong tuần
-export function getTopTasksForWeek(date: Date): Task[] {
+// Hàm lấy top 5 task quan trọng nhất trong tuần theo squad
+export function getTopTasksForWeek(date: Date, squad: "Sonic" | "Troy"): Task[] {
   const startOfWeek = new Date(date)
   startOfWeek.setDate(date.getDate() - date.getDay() + (date.getDay() === 0 ? -6 : 1)) // Lấy thứ 2 đầu tuần
   startOfWeek.setHours(0, 0, 0, 0)
@@ -184,12 +225,13 @@ export function getTopTasksForWeek(date: Date): Task[] {
   endOfWeek.setDate(startOfWeek.getDate() + 6) // Chủ nhật cuối tuần
   endOfWeek.setHours(23, 59, 59, 999)
 
-  // Lọc các task trong tuần
+  // Lọc các task trong tuần và theo squad
   const tasksInWeek = tasks.filter((task) => {
     return (
-      (task.startDate <= endOfWeek && task.endDate >= startOfWeek) || // Task diễn ra trong tuần
-      (task.startDate >= startOfWeek && task.startDate <= endOfWeek) || // Task bắt đầu trong tuần
-      (task.endDate >= startOfWeek && task.endDate <= endOfWeek) // Task kết thúc trong tuần
+      task.squad === squad &&
+      ((task.startDate <= endOfWeek && task.endDate >= startOfWeek) || // Task diễn ra trong tuần
+        (task.startDate >= startOfWeek && task.startDate <= endOfWeek) || // Task bắt đầu trong tuần
+        (task.endDate >= startOfWeek && task.endDate <= endOfWeek)) // Task kết thúc trong tuần
     )
   })
 
@@ -209,19 +251,20 @@ export function getTopTasksForWeek(date: Date): Task[] {
   return sortedTasks.slice(0, 5)
 }
 
-// Hàm lấy tất cả task trong tháng
-export function getTasksForMonth(date: Date): Task[] {
+// Hàm lấy tất cả task trong tháng theo squad
+export function getTasksForMonth(date: Date, squad: "Sonic" | "Troy"): Task[] {
   const year = date.getFullYear()
   const month = date.getMonth()
   const startOfMonth = new Date(year, month, 1)
   const endOfMonth = new Date(year, month + 1, 0, 23, 59, 59, 999)
 
-  // Lọc các task trong tháng
+  // Lọc các task trong tháng và theo squad
   return tasks.filter((task) => {
     return (
-      (task.startDate <= endOfMonth && task.endDate >= startOfMonth) || // Task diễn ra trong tháng
-      (task.startDate >= startOfMonth && task.startDate <= endOfMonth) || // Task bắt đầu trong tháng
-      (task.endDate >= startOfMonth && task.endDate <= endOfMonth) // Task kết thúc trong tháng
+      task.squad === squad &&
+      ((task.startDate <= endOfMonth && task.endDate >= startOfMonth) || // Task diễn ra trong tháng
+        (task.startDate >= startOfMonth && task.startDate <= endOfMonth) || // Task bắt đầu trong tháng
+        (task.endDate >= startOfMonth && task.endDate <= endOfMonth)) // Task kết thúc trong tháng
     )
   })
 }
