@@ -34,9 +34,9 @@ A modern web application built to help engineering managers streamline their dai
 
 - [ ] Backend service
   - [ ] API Development
-    - [ ] Team Management APIs
-      - [ ] CRUD operations for team members
-      - [ ] Team composition management
+    - [x] Team Management APIs
+      - [x] CRUD operations for team members
+      - [x] Team composition management
       - [ ] Role assignments
     - [ ] Task Management APIs
       - [ ] Task creation and updates
