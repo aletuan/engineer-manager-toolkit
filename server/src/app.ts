@@ -15,6 +15,10 @@ import { RoleRepository } from './modules/roles/repositories/role.repository';
 import { RoleService } from './modules/roles/services/role.service';
 import { RoleController } from './modules/roles/controllers/role.controller';
 import { createRoleRouter } from './modules/roles/routes/role.routes';
+import { TaskRepository } from './modules/tasks/repositories/task.repository';
+import { TaskService } from './modules/tasks/services/task.service';
+import { TaskController } from './modules/tasks/controllers/task.controller';
+import { createTaskRouter } from './modules/tasks/routes/task.routes';
 import { swaggerSpec } from './shared/swagger/swagger.config';
 
 const app = express();
@@ -23,14 +27,17 @@ const prisma = new PrismaClient();
 // Initialize repositories
 const squadRepository = new SquadRepository(prisma);
 const roleRepository = new RoleRepository(prisma);
+const taskRepository = new TaskRepository(prisma);
 
 // Initialize services
 const squadService = new SquadService(squadRepository);
 const roleService = new RoleService(roleRepository);
+const taskService = new TaskService(taskRepository);
 
 // Initialize controllers
 const squadController = new SquadController(squadService);
 const roleController = new RoleController(roleService);
+const taskController = new TaskController(taskService);
 
 // Middleware
 app.use(helmet({
@@ -42,21 +49,18 @@ app.use(express.urlencoded({ extended: true }));
 
 // Rate limiting
 const limiter = rateLimit({
-  windowMs: config.rateLimit.windowMs,
-  max: config.rateLimit.maxRequests,
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // Limit each IP to 100 requests per windowMs
 });
 app.use(limiter);
 
-// Swagger UI
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
-  explorer: true,
-  customCss: '.swagger-ui .topbar { display: none }',
-  customSiteTitle: 'Engineer Manager Toolkit API Documentation',
-}));
+// Swagger documentation
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // Routes
 app.use('/api/v1/squads', createSquadRouter(squadController));
 app.use('/api/v1/roles', createRoleRouter(roleController));
+app.use('/api/v1/tasks', createTaskRouter(taskController));
 
 // Error handling
 app.use(notFoundHandler);

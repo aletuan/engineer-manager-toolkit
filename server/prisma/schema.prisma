@@ -82,29 +82,27 @@ model Stakeholder {
 }
 
 model Task {
-  id              String            @id @default(uuid())
-  featureId       String
-  title           String
-  description     String?
-  startDate       DateTime
-  endDate         DateTime
-  points          Int
-  priority        TaskPriority
-  status          TaskStatus        @default(NOT_STARTED)
-  progress        Int               @default(0)
-  createdById     String
-  squadId         String
-  createdBy       User              @relation("CreatedBy", fields: [createdById], references: [id])
-  squad           Squad             @relation(fields: [squadId], references: [id])
-  assignees       TaskAssignee[]
-  stakeholders    TaskStakeholder[]
-  dependencies    TaskDependency[]  @relation("DependentTask")
-  dependents      TaskDependency[]  @relation("BlockingTask")
-  notes           TaskNote[]
-  createdAt       DateTime          @default(now())
-  updatedAt       DateTime          @updatedAt
+  id          String       @id @default(uuid())
+  title       String
+  description String
+  status      TaskStatus   @default(TODO)
+  priority    TaskPriority @default(MEDIUM)
+  dueDate     DateTime
+  assignedTo  User         @relation("AssignedTasks", fields: [assignedToId], references: [id])
+  assignedToId String
+  createdBy   User         @relation("CreatedTasks", fields: [createdById], references: [id])
+  createdById String
+  project     Project      @relation(fields: [projectId], references: [id])
+  projectId   String
+  tags        String[]
+  attachments Json
+  comments    TaskComment[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
 
-  @@map("tasks")
+  @@index([assignedToId])
+  @@index([createdById])
+  @@index([projectId])
 }
 
 // Supporting Entities
@@ -226,16 +224,15 @@ enum MemberStatus {
 }
 
 enum TaskPriority {
-  HIGH
-  MEDIUM
   LOW
+  MEDIUM
+  HIGH
 }
 
 enum TaskStatus {
-  NOT_STARTED
+  TODO
   IN_PROGRESS
-  COMPLETED
-  BLOCKED
+  DONE
 }
 
 enum AssigneeRole {
@@ -281,4 +278,17 @@ model RoleAssignment {
 
   @@unique([squadId, memberId, roleId])
   @@map("role_assignments")
+}
+
+model TaskComment {
+  id        String   @id @default(uuid())
+  content   String
+  task      Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  taskId    String
+  createdBy User     @relation(fields: [createdById], references: [id])
+  createdById String
+  createdAt DateTime @default(now())
+
+  @@index([taskId])
+  @@index([createdById])
 } 
