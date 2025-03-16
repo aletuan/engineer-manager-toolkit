@@ -5,7 +5,7 @@ This document outlines the database schema design for the Engineer Manager Toolk
 
 ## Core Entities
 
-### Users
+### User
 ```sql
 Users {
   id: uuid [pk]
@@ -16,142 +16,152 @@ Users {
 }
 ```
 
-### Squads
+### Squad
 ```sql
 Squads {
   id: uuid [pk]
   name: varchar
-  code: varchar [unique] -- e.g., "SONIC", "TROY"
-  description: text
+  code: varchar [unique]
+  description: text [null]
   created_at: timestamp
   updated_at: timestamp
 }
 ```
 
-### SquadMembers
+### SquadMember
 ```sql
 SquadMembers {
   id: uuid [pk]
   squad_id: uuid [ref: > Squads.id]
-  user_id: uuid [ref: > Users.id]
-  pid: varchar [unique] -- employee ID
+  user_id: uuid [ref: > Users.id, unique]
+  pid: varchar [unique]
   full_name: varchar
-  email: varchar
-  phone: varchar
-  position: varchar
-  avatar_url: varchar
-  status: enum [active, inactive]
+  email: varchar [unique]
+  phone: varchar [null]
+  position: varchar [null]
+  avatar_url: varchar [null]
+  status: enum [ACTIVE, INACTIVE, ON_LEAVE]
   created_at: timestamp
   updated_at: timestamp
 }
 ```
 
-### Roles
-```sql
-Roles {
-  id: uuid [pk]
-  name: varchar
-  description: text
-  permissions: text[] -- Array of permission strings
-  created_at: timestamp
-  updated_at: timestamp
-}
-```
-
-### RoleAssignments
-```sql
-RoleAssignments {
-  id: uuid [pk]
-  squad_id: uuid [ref: > Squads.id]
-  member_id: uuid [ref: > SquadMembers.id]
-  role_id: uuid [ref: > Roles.id]
-  assigned_at: timestamp
-  assigned_by: varchar -- Name or ID of the person who assigned the role
-  created_at: timestamp
-  updated_at: timestamp
-}
-```
-
-### Stakeholders
-```sql
-Stakeholders {
-  id: uuid [pk]
-  code: varchar [unique] -- e.g., "FRAUD", "BEB", "ECOM"
-  name: varchar
-  description: text
-  contact_name: varchar
-  contact_email: varchar
-  contact_phone: varchar
-  group_name: varchar -- e.g., "Business", "Technical", "Operations"
-  created_at: timestamp
-  updated_at: timestamp
-}
-```
-
-### Tasks
+### Task
 ```sql
 Tasks {
   id: uuid [pk]
-  feature_id: varchar
   title: varchar
   description: text
-  start_date: timestamp
-  end_date: timestamp
-  points: integer
-  priority: enum [high, medium, low]
-  status: enum [not_started, in_progress, completed, blocked]
-  progress: integer -- 0-100
-  created_by: uuid [ref: > Users.id]
-  squad_id: uuid [ref: > Squads.id]
+  status: enum [TODO, IN_PROGRESS, DONE]
+  priority: enum [LOW, MEDIUM, HIGH]
+  due_date: timestamp
+  feature_id: varchar
+  assigned_to_id: uuid [ref: > SquadMembers.id]
+  created_by_id: uuid [ref: > SquadMembers.id]
+  tags: varchar[]
+  attachments: jsonb
   created_at: timestamp
   updated_at: timestamp
 }
 ```
 
-### TaskStakeholders
+### TaskComment
+```sql
+TaskComments {
+  id: uuid [pk]
+  content: text
+  task_id: uuid [ref: > Tasks.id]
+  created_by_id: uuid [ref: > SquadMembers.id]
+  created_at: timestamp
+}
+```
+
+### TaskNote
+```sql
+TaskNotes {
+  id: uuid [pk]
+  content: text
+  task_id: uuid [ref: > Tasks.id]
+  author_id: uuid [ref: > SquadMembers.id]
+  created_at: timestamp
+  updated_at: timestamp
+}
+```
+
+### TaskAssignee
+```sql
+TaskAssignees {
+  id: uuid [pk]
+  task_id: uuid [ref: > Tasks.id]
+  member_id: uuid [ref: > SquadMembers.id]
+  role: enum [PRIMARY, SECONDARY, REVIEWER]
+  created_at: timestamp
+}
+```
+
+### TaskStakeholder
 ```sql
 TaskStakeholders {
+  id: uuid [pk]
   task_id: uuid [ref: > Tasks.id]
   stakeholder_id: uuid [ref: > Stakeholders.id]
   created_at: timestamp
 }
 ```
 
-## Supporting Entities
-
-### TaskAssignees
-```sql
-TaskAssignees {
-  task_id: uuid [ref: > Tasks.id]
-  member_id: uuid [ref: > SquadMembers.id]
-  role: enum [primary, secondary]
-  created_at: timestamp
-}
-```
-
-### TaskDependencies
+### TaskDependency
 ```sql
 TaskDependencies {
+  id: uuid [pk]
   task_id: uuid [ref: > Tasks.id]
   dependent_task_id: uuid [ref: > Tasks.id]
-  dependency_type: enum [blocks, blocked_by]
+  dependency_type: enum [BLOCKS, BLOCKED_BY, RELATES_TO]
   created_at: timestamp
 }
 ```
 
-### TaskNotes
+### Stakeholder
 ```sql
-TaskNotes {
+Stakeholders {
   id: uuid [pk]
-  task_id: uuid [ref: > Tasks.id]
-  author_id: uuid [ref: > Users.id]
-  content: text
+  code: varchar [unique]
+  name: varchar
+  description: text [null]
+  contact_name: varchar [null]
+  contact_email: varchar [null]
+  contact_phone: varchar [null]
+  group_name: varchar [null]
   created_at: timestamp
   updated_at: timestamp
 }
 ```
 
-### IncidentRotations
+### Role
+```sql
+Roles {
+  id: uuid [pk]
+  name: varchar [unique]
+  description: text [null]
+  permissions: varchar[]
+  created_at: timestamp
+  updated_at: timestamp
+}
+```
+
+### RoleAssignment
+```sql
+RoleAssignments {
+  id: uuid [pk]
+  squad_id: uuid [ref: > Squads.id]
+  member_id: uuid [ref: > SquadMembers.id]
+  role_id: uuid [ref: > Roles.id]
+  assigned_by: varchar
+  created_at: timestamp
+  updated_at: timestamp
+}
+```
+
+### IncidentRotation
 ```sql
 IncidentRotations {
   id: uuid [pk]
@@ -165,7 +175,7 @@ IncidentRotations {
 }
 ```
 
-### RotationSwaps
+### RotationSwap
 ```sql
 RotationSwaps {
   id: uuid [pk]
@@ -173,28 +183,13 @@ RotationSwaps {
   requester_id: uuid [ref: > SquadMembers.id]
   accepter_id: uuid [ref: > SquadMembers.id]
   swap_date: timestamp
-  status: enum [pending, approved, rejected]
+  status: varchar
   created_at: timestamp
   updated_at: timestamp
 }
 ```
 
-## Monitoring & Analytics
-
-### ActivityLogs
-```sql
-ActivityLogs {
-  id: uuid [pk]
-  user_id: uuid [ref: > Users.id]
-  entity_type: varchar -- e.g., "Task", "SquadMember"
-  entity_id: uuid
-  action: varchar -- e.g., "create", "update", "delete"
-  details: jsonb
-  created_at: timestamp
-}
-```
-
-### SprintReports
+### SprintReport
 ```sql
 SprintReports {
   id: uuid [pk]
@@ -204,37 +199,173 @@ SprintReports {
   end_date: timestamp
   total_points: integer
   completed_points: integer
-  member_metrics: jsonb -- Detailed metrics per member
-  stakeholder_metrics: jsonb -- Metrics per stakeholder
+  member_metrics: jsonb
+  stakeholder_metrics: jsonb
   created_at: timestamp
 }
 ```
 
-## Indexes and Constraints
+### ActivityLog
+```sql
+ActivityLogs {
+  id: uuid [pk]
+  user_id: uuid [ref: > Users.id]
+  entity_type: varchar
+  entity_id: varchar
+  action: varchar
+  details: jsonb
+  created_at: timestamp
+}
+```
 
-### Primary Keys
-- All tables use UUID as primary keys for better distribution and scalability
-- UUIDs also make it easier to merge data from different environments
+## Relationships
 
-### Foreign Keys
-- All relationships are enforced through foreign key constraints
-- Cascade delete is not used to prevent accidental data loss
-- Use soft deletes where appropriate
+### User
+- One-to-One with SquadMember
 
-### Unique Constraints
-- `Users.email`
-- `Squads.code`
-- `SquadMembers.pid`
-- `Stakeholders.code`
-- `Roles.name` -- Role names should be unique within the system
+### Squad
+- One-to-Many with SquadMember
+- One-to-Many with IncidentRotation
+- One-to-Many with SprintReport
+- One-to-Many with RoleAssignment
 
-### Indexes
-To be added:
-- Indexes on foreign key columns
-- Indexes on frequently queried columns
-- Composite indexes for common query patterns
-- Index on `RoleAssignments(squad_id, member_id)` for efficient role lookups
-- Index on `RoleAssignments(role_id)` for role-based queries
+### SquadMember
+- Many-to-One with Squad
+- Many-to-One with User
+- One-to-Many with Task (assignedTo)
+- One-to-Many with Task (createdBy)
+- One-to-Many with TaskComment
+- One-to-Many with TaskNote
+- One-to-Many with TaskAssignee
+- One-to-Many with IncidentRotation (primaryMember)
+- One-to-Many with IncidentRotation (secondaryMember)
+- One-to-Many with RotationSwap (requester)
+- One-to-Many with RotationSwap (accepter)
+- One-to-Many with RoleAssignment
+
+### Task
+- Many-to-One with SquadMember (assignedTo)
+- Many-to-One with SquadMember (createdBy)
+- One-to-Many with TaskComment
+- One-to-Many with TaskNote
+- One-to-Many with TaskAssignee
+- One-to-Many with TaskStakeholder
+- One-to-Many with TaskDependency (task)
+- One-to-Many with TaskDependency (dependentTask)
+
+### TaskComment
+- Many-to-One with Task
+- Many-to-One with SquadMember
+
+### TaskNote
+- Many-to-One with Task
+- Many-to-One with SquadMember
+
+### TaskAssignee
+- Many-to-One with Task
+- Many-to-One with SquadMember
+
+### TaskStakeholder
+- Many-to-One with Task
+- Many-to-One with Stakeholder
+
+### TaskDependency
+- Many-to-One with Task (task)
+- Many-to-One with Task (dependentTask)
+
+### Stakeholder
+- One-to-Many with TaskStakeholder
+
+### Role
+- One-to-Many with RoleAssignment
+
+### RoleAssignment
+- Many-to-One with Squad
+- Many-to-One with SquadMember
+- Many-to-One with Role
+
+### IncidentRotation
+- Many-to-One with Squad
+- Many-to-One with SquadMember (primaryMember)
+- Many-to-One with SquadMember (secondaryMember)
+- One-to-Many with RotationSwap
+
+### RotationSwap
+- Many-to-One with IncidentRotation
+- Many-to-One with SquadMember (requester)
+- Many-to-One with SquadMember (accepter)
+
+### SprintReport
+- Many-to-One with Squad
+
+### ActivityLog
+- Many-to-One with User
+
+## Indices
+
+### User
+- `email` (unique)
+
+### Squad
+- `code` (unique)
+
+### SquadMember
+- `squad_id`
+- `user_id` (unique)
+- `pid` (unique)
+- `email` (unique)
+
+### Task
+- `assigned_to_id`
+- `created_by_id`
+- `feature_id`
+
+### TaskComment
+- `task_id`
+- `created_by_id`
+
+### TaskNote
+- `task_id`
+- `author_id`
+
+### TaskAssignee
+- `task_id`
+- `member_id`
+
+### TaskStakeholder
+- `task_id`
+- `stakeholder_id`
+
+### TaskDependency
+- `task_id`
+- `dependent_task_id`
+
+### Stakeholder
+- `code` (unique)
+
+### Role
+- `name` (unique)
+
+### RoleAssignment
+- `squad_id`
+- `member_id`
+- `role_id`
+
+### IncidentRotation
+- `squad_id`
+- `primary_member_id`
+- `secondary_member_id`
+
+### RotationSwap
+- `rotation_id`
+- `requester_id`
+- `accepter_id`
+
+### SprintReport
+- `squad_id`
+
+### ActivityLog
+- `user_id`
 
 ## Future Considerations
 1. Partitioning strategy for large tables (e.g., ActivityLogs)
