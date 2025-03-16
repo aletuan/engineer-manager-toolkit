@@ -354,21 +354,70 @@ Database (Prisma)
 ## API Design
 
 ### RESTful Principles
-- Resource-based URLs
-- HTTP methods for operations
-- Proper status codes
-- Consistent response formats
+- Use HTTP methods appropriately (GET, POST, PUT, DELETE)
+- Use plural nouns for resources
+- Use nested resources for relationships
+- Use query parameters for filtering and pagination
+- Use proper HTTP status codes
+- Use consistent response formats
 
-### API Versioning
-- URL-based versioning
-- Backward compatibility
-- Deprecation strategy
+### API Documentation
+- Use Swagger/OpenAPI for API documentation
+- Include request/response examples
+- Document all endpoints and parameters
+- Include authentication requirements
+- Document error responses
 
-### Rate Limiting
-- Request rate limiting
-- IP-based limiting
-- User-based limiting
-- Custom rate limit headers
+### Example API Structure
+```
+GET    /api/v1/squads
+POST   /api/v1/squads
+GET    /api/v1/squads/:id
+PUT    /api/v1/squads/:id
+DELETE /api/v1/squads/:id
+
+GET    /api/v1/squads/:id/members
+POST   /api/v1/squads/:id/members
+DELETE /api/v1/squads/:id/members/:memberId
+
+GET    /api/v1/roles
+POST   /api/v1/roles
+GET    /api/v1/roles/:id
+PUT    /api/v1/roles/:id
+DELETE /api/v1/roles/:id
+
+POST   /api/v1/roles/assign
+DELETE /api/v1/roles/assign/:id
+GET    /api/v1/squads/:id/members/:memberId/roles
+```
+
+### API Documentation UI
+The API documentation is available through Swagger UI at `/api-docs`. Here's a screenshot of the current API documentation:
+
+![API Documentation](api-docs.png)
+
+### Response Format
+```typescript
+// Success Response
+{
+  "status": "success",
+  "data": {
+    // Response data
+  }
+}
+
+// Error Response
+{
+  "status": "error",
+  "message": "Error message",
+  "errors": [
+    {
+      "field": "fieldName",
+      "message": "Validation error message"
+    }
+  ]
+}
+```
 
 ## Testing Strategy
 
