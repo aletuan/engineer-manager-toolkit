@@ -60,31 +60,244 @@ server/
 ## Layer Architecture
 
 ### 1. Controller Layer
-- Handles HTTP requests and responses
-- Input validation and sanitization
-- Response formatting
-- Error handling
-- Authentication/Authorization checks
+- **Purpose**: Handle HTTP requests and responses
+- **Responsibilities**:
+  - Request validation
+  - Response formatting
+  - Error handling
+  - HTTP status codes
+- **Example Implementation**:
+  ```typescript
+  // src/modules/roles/controllers/role.controller.ts
+  export class RoleController {
+    constructor(private service: RoleService) {}
+
+    async createRole(req: Request, res: Response): Promise<void> {
+      const role = await this.service.createRole(req.body);
+      res.status(201).json(role);
+    }
+
+    async getAllRoles(req: Request, res: Response): Promise<void> {
+      const roles = await this.service.getAllRoles();
+      res.json(roles);
+    }
+  }
+  ```
+- **Relationships**:
+  - Receives requests from routes
+  - Delegates business logic to service layer
+  - Returns responses to client
 
 ### 2. Service Layer
-- Implements business logic
-- Orchestrates multiple repositories
-- Handles transactions
-- Data transformation
-- Business rule validation
+- **Purpose**: Implement business logic
+- **Responsibilities**:
+  - Business rules
+  - Data validation
+  - Error handling
+  - Transaction management
+- **Example Implementation**:
+  ```typescript
+  // src/modules/roles/services/role.service.ts
+  export class RoleService {
+    constructor(private repository: RoleRepository) {}
+
+    async createRole(data: CreateRoleDto): Promise<Role> {
+      return this.repository.create(data);
+    }
+
+    async getRoleById(id: string): Promise<Role> {
+      const role = await this.repository.findById(id);
+      if (!role) {
+        throw new AppError(404, 'Role not found');
+      }
+      return role;
+    }
+  }
+  ```
+- **Relationships**:
+  - Called by controllers
+  - Uses repositories for data access
+  - Implements business rules
 
 ### 3. Repository Layer
-- Abstracts database operations
-- Implements data access patterns
-- Handles database queries
-- Manages database connections
-- Provides type-safe database operations
+- **Purpose**: Handle data access
+- **Responsibilities**:
+  - Database operations
+  - Data mapping
+  - Query optimization
+- **Example Implementation**:
+  ```typescript
+  // src/modules/roles/repositories/role.repository.ts
+  export class RoleRepository {
+    constructor(private prisma: PrismaClient) {}
 
-### 4. Domain Layer
-- Contains business entities
-- Defines business rules
-- Implements domain logic
-- Independent of external concerns
+    async create(data: CreateRoleDto): Promise<Role> {
+      return this.prisma.role.create({
+        data: {
+          name: data.name,
+          description: data.description,
+          permissions: data.permissions,
+        },
+      });
+    }
+
+    async findAll(): Promise<Role[]> {
+      return this.prisma.role.findMany();
+    }
+  }
+  ```
+- **Relationships**:
+  - Called by services
+  - Interacts with database
+  - Handles data persistence
+
+### 4. Data Transfer Objects (DTOs)
+- **Purpose**: Define data structures for API requests/responses
+- **Responsibilities**:
+  - Request validation
+  - Response formatting
+  - Type safety
+- **Example Implementation**:
+  ```typescript
+  // src/modules/roles/types/role.types.ts
+  export interface CreateRoleDto {
+    name: string;
+    description: string;
+    permissions: string[];
+  }
+
+  export interface Role {
+    id: string;
+    name: string;
+    description: string;
+    permissions: string[];
+    createdAt: Date;
+    updatedAt: Date;
+  }
+  ```
+- **Relationships**:
+  - Used by controllers for request/response
+  - Used by services for data processing
+  - Used by repositories for database operations
+
+### 5. Validation Layer
+- **Purpose**: Validate request data
+- **Responsibilities**:
+  - Input validation
+  - Schema validation
+  - Custom validation rules
+- **Example Implementation**:
+  ```typescript
+  // src/modules/roles/validators/role.validator.ts
+  export const createRoleSchema = z.object({
+    name: z.string().min(1, 'Name is required').max(100),
+    description: z.string().min(1, 'Description is required').max(500),
+    permissions: z.array(z.string()).min(1, 'At least one permission is required'),
+  });
+  ```
+- **Relationships**:
+  - Used by controllers
+  - Used by middleware
+  - Ensures data integrity
+
+### 6. Middleware Layer
+- **Purpose**: Handle cross-cutting concerns
+- **Responsibilities**:
+  - Authentication
+  - Authorization
+  - Request validation
+  - Error handling
+- **Example Implementation**:
+  ```typescript
+  // src/shared/middleware/validateRequest.ts
+  export const validateRequest = (schema: AnyZodObject) => {
+    return async (req: Request, res: Response, next: NextFunction) => {
+      try {
+        await schema.parseAsync({
+          body: req.body,
+          query: req.query,
+          params: req.params,
+        });
+        next();
+      } catch (error) {
+        if (error instanceof ZodError) {
+          return res.status(400).json({
+            status: 'error',
+            message: 'Validation failed',
+            errors: error.errors.map((err) => ({
+              field: err.path.join('.'),
+              message: err.message,
+            })),
+          });
+        }
+        next(error);
+      }
+    };
+  };
+  ```
+- **Relationships**:
+  - Used in request pipeline
+  - Intercepts requests/responses
+  - Handles cross-cutting concerns
+
+### Layer Dependencies
+```
+Client Request
+     ↓
+Routes (role.routes.ts)
+     ↓
+Middleware (validateRequest.ts)
+     ↓
+Controller (role.controller.ts)
+     ↓
+Service (role.service.ts)
+     ↓
+Repository (role.repository.ts)
+     ↓
+Database (Prisma)
+```
+
+### Key Principles
+1. **Single Responsibility**: Each layer has a specific responsibility
+   - Controllers handle HTTP concerns
+   - Services handle business logic
+   - Repositories handle data access
+   - DTOs handle data structures
+   - Validators handle data validation
+   - Middleware handles cross-cutting concerns
+
+2. **Dependency Injection**: Dependencies are injected through constructors
+   ```typescript
+   // Example from role.controller.ts
+   export class RoleController {
+     constructor(private service: RoleService) {}
+   }
+   ```
+
+3. **Error Handling**: Consistent error handling across layers
+   ```typescript
+   // Example from role.service.ts
+   async getRoleById(id: string): Promise<Role> {
+     const role = await this.repository.findById(id);
+     if (!role) {
+       throw new AppError(404, 'Role not found');
+     }
+     return role;
+   }
+   ```
+
+4. **Type Safety**: Strong typing throughout the application
+   ```typescript
+   // Example from role.types.ts
+   export interface Role {
+     id: string;
+     name: string;
+     description: string;
+     permissions: string[];
+     createdAt: Date;
+     updatedAt: Date;
+   }
+   ```
 
 ## Design Patterns
 

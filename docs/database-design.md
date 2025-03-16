@@ -46,6 +46,32 @@ SquadMembers {
 }
 ```
 
+### Roles
+```sql
+Roles {
+  id: uuid [pk]
+  name: varchar
+  description: text
+  permissions: text[] -- Array of permission strings
+  created_at: timestamp
+  updated_at: timestamp
+}
+```
+
+### RoleAssignments
+```sql
+RoleAssignments {
+  id: uuid [pk]
+  squad_id: uuid [ref: > Squads.id]
+  member_id: uuid [ref: > SquadMembers.id]
+  role_id: uuid [ref: > Roles.id]
+  assigned_at: timestamp
+  assigned_by: varchar -- Name or ID of the person who assigned the role
+  created_at: timestamp
+  updated_at: timestamp
+}
+```
+
 ### Stakeholders
 ```sql
 Stakeholders {
@@ -200,12 +226,15 @@ SprintReports {
 - `Squads.code`
 - `SquadMembers.pid`
 - `Stakeholders.code`
+- `Roles.name` -- Role names should be unique within the system
 
 ### Indexes
 To be added:
 - Indexes on foreign key columns
 - Indexes on frequently queried columns
 - Composite indexes for common query patterns
+- Index on `RoleAssignments(squad_id, member_id)` for efficient role lookups
+- Index on `RoleAssignments(role_id)` for role-based queries
 
 ## Future Considerations
 1. Partitioning strategy for large tables (e.g., ActivityLogs)
