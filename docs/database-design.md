@@ -3,6 +3,76 @@
 ## Overview
 This document outlines the database schema design for the Engineer Manager Toolkit application. The design focuses on managing squads, tasks, stakeholders, and incident rotations effectively.
 
+The mermaid diagram focuses on the main entities and their key relationships:
+
+```mermaid
+erDiagram
+    Squad ||--o{ SquadMember : "has"
+    Squad ||--o{ IncidentRotation : "has"
+    Squad ||--o{ Task : "has"
+
+    SquadMember ||--o{ Task : "assigned to"
+    SquadMember ||--o{ Task : "creates"
+    SquadMember ||--o{ IncidentRotation : "primary member"
+    SquadMember ||--o{ IncidentRotation : "secondary member"
+    SquadMember ||--o{ RotationSwap : "requests"
+    SquadMember ||--o{ RotationSwap : "accepts"
+
+    Task ||--o{ TaskComment : "has"
+    Task ||--o{ TaskAssignee : "has"
+    Task ||--o{ TaskStakeholder : "has"
+
+    IncidentRotation ||--o{ RotationSwap : "has"
+
+    TaskAssignee }|--|| Task : "assigned to"
+    TaskAssignee }|--|| SquadMember : "assigned to"
+    TaskStakeholder }|--|| Task : "involved in"
+    TaskComment }|--|| Task : "belongs to"
+    TaskComment }|--|| SquadMember : "created by"
+    RotationSwap }|--|| IncidentRotation : "belongs to"
+    RotationSwap }|--|| SquadMember : "requested by"
+    RotationSwap }|--|| SquadMember : "accepted by"
+```
+
+Key Entities Explanation:
+
+**Squad (Team)**
+  - Main organizational unit
+  - Has multiple members (SquadMember)
+  - Has multiple rotations (IncidentRotation)
+  - Has multiple tasks (Task)
+
+**SquadMember (Team Member)**
+  - Belongs to a Squad
+  - Can be assigned multiple tasks
+  - Can create multiple tasks
+  - Can be primary or secondary member in rotation
+  - Can request or accept swaps
+
+**Task (Work Item)**
+  - Belongs to a Squad
+  - Assigned to a SquadMember
+  - Created by a SquadMember
+  - Can have multiple comments
+  - Can have multiple assignees
+  - Can have multiple stakeholders
+
+**IncidentRotation (On-Call Schedule)**
+  - Belongs to a Squad
+  - Has one primary member and one secondary member
+  - Can have multiple swap requests
+
+**RotationSwap (Shift Swap Request)**
+  - Belongs to an IncidentRotation
+  - Requested by one member
+  - Accepted by another member
+
+Key Relationships:
+- Squad is the central entity, connecting to all main entities
+- SquadMember is the actor performing activities (tasks, rotations, swaps)
+- Task is the basic work unit
+- IncidentRotation and RotationSwap manage on-call schedules and shift swaps
+
 ## Core Entities
 
 ### User
