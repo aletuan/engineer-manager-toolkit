@@ -42,10 +42,10 @@ A modern web application built to help engineering managers streamline their dai
       - [x] Task creation and updates
       - [x] Status tracking
       - [ ] Effort logging (acutal / estimate efforts)
-    - [ ] Calendar APIs
-      - [ ] Schedule management
-      - [ ] Rotation handling
-      - [ ] Availability tracking
+    - [x] Calendar APIs
+      - [x] Schedule management
+      - [x] Rotation handling
+      - [x] Availability tracking
   - [ ] Authentication & Authorization
     - [ ] User authentication
     - [ ] Role-based access control

@@ -19,6 +19,10 @@ import { TaskRepository } from './modules/tasks/repositories/task.repository';
 import { TaskService } from './modules/tasks/services/task.service';
 import { TaskController } from './modules/tasks/controllers/task.controller';
 import { createTaskRouter } from './modules/tasks/routes/task.routes';
+import { CalendarRepository } from './modules/calendar/repositories/calendar.repository';
+import { CalendarService } from './modules/calendar/services/calendar.service';
+import { CalendarController } from './modules/calendar/controllers/calendar.controller';
+import { calendarRoutes } from './modules/calendar';
 import { swaggerSpec } from './shared/swagger/swagger.config';
 
 const app = express();
@@ -28,16 +32,19 @@ const prisma = new PrismaClient();
 const squadRepository = new SquadRepository(prisma);
 const roleRepository = new RoleRepository(prisma);
 const taskRepository = new TaskRepository(prisma);
+const calendarRepository = new CalendarRepository(prisma);
 
 // Initialize services
 const squadService = new SquadService(squadRepository);
 const roleService = new RoleService(roleRepository);
 const taskService = new TaskService(taskRepository);
+const calendarService = new CalendarService(calendarRepository);
 
 // Initialize controllers
 const squadController = new SquadController(squadService);
 const roleController = new RoleController(roleService);
 const taskController = new TaskController(taskService);
+const calendarController = new CalendarController(calendarService);
 
 // Middleware
 app.use(helmet({
@@ -61,6 +68,7 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use('/api/v1/squads', createSquadRouter(squadController));
 app.use('/api/v1/roles', createRoleRouter(roleController));
 app.use('/api/v1/tasks', createTaskRouter(taskController));
+app.use('/api/v1/calendar', calendarRoutes);
 
 // Error handling
 app.use(notFoundHandler);
