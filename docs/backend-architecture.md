@@ -394,7 +394,7 @@ GET    /api/v1/squads/:id/members/:memberId/roles
 ### API Documentation UI
 The API documentation is available through Swagger UI at `/api-docs`. Here's a screenshot of the current API documentation:
 
-![API Documentation](api-docs.png)
+![API Documentation](images/api-docs.png)
 
 ### Response Format
 ```typescript
