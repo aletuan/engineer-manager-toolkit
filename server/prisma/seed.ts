@@ -4,7 +4,9 @@ import { hash } from 'bcryptjs';
 const prisma = new PrismaClient();
 
 async function main() {
-  // Clean up existing data
+  // Clean up existing data in correct order
+  await prisma.sprintReport.deleteMany();
+  await prisma.activityLog.deleteMany();
   await prisma.rotationSwap.deleteMany();
   await prisma.incidentRotation.deleteMany();
   await prisma.roleAssignment.deleteMany();
@@ -20,78 +22,220 @@ async function main() {
   await prisma.squad.deleteMany();
   await prisma.user.deleteMany();
 
-  // Create users
-  const user1 = await prisma.user.create({
-    data: {
-      email: 'admin@example.com',
-      passwordHash: await hash('admin123', 10),
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    },
-  });
-
-  const user2 = await prisma.user.create({
-    data: {
-      email: 'user@example.com',
-      passwordHash: await hash('user123', 10),
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    },
-  });
-
   // Create squads
-  const squad1 = await prisma.squad.create({
+  const troySquad = await prisma.squad.create({
     data: {
-      name: 'Frontend Team',
-      code: 'FE',
-      description: 'Frontend development team',
-      createdAt: new Date(),
-      updatedAt: new Date(),
+      name: "Troy",
+      code: "Troy",
+      description: "Development Team",
     },
   });
 
-  const squad2 = await prisma.squad.create({
+  const sonicSquad = await prisma.squad.create({
     data: {
-      name: 'Backend Team',
-      code: 'BE',
-      description: 'Backend development team',
-      createdAt: new Date(),
-      updatedAt: new Date(),
+      name: "Sonic",
+      code: "Sonic",
+      description: "Production Support Team",
     },
   });
 
-  // Create squad members
-  const member1 = await prisma.squadMember.create({
-    data: {
-      squadId: squad1.id,
-      userId: user1.id,
-      pid: 'EMP001',
-      fullName: 'John Doe',
-      email: 'john@example.com',
-      phone: '1234567890',
-      position: 'Senior Frontend Developer',
-      avatarUrl: 'https://placekitten.com/200/200',
-      status: MemberStatus.ACTIVE,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    },
-  });
+  // Create users and squad members for Troy
+  const troyMembers = await Promise.all([
+    prisma.user.create({
+      data: {
+        email: "daniel.nguyen@example.com",
+        passwordHash: "hashed_password",
+        squadMember: {
+          create: {
+            squadId: troySquad.id,
+            pid: "EMP001",
+            fullName: "Daniel Nguyen",
+            email: "daniel.nguyen@example.com",
+            position: "Senior Developer",
+            status: "ACTIVE",
+          },
+        },
+      },
+      include: {
+        squadMember: true,
+      },
+    }),
+    prisma.user.create({
+      data: {
+        email: "harry.nguyen@example.com",
+        passwordHash: "hashed_password",
+        squadMember: {
+          create: {
+            squadId: troySquad.id,
+            pid: "EMP002",
+            fullName: "Harry Nguyen",
+            email: "harry.nguyen@example.com",
+            position: "Senior Developer",
+            status: "ACTIVE",
+          },
+        },
+      },
+      include: {
+        squadMember: true,
+      },
+    }),
+    prisma.user.create({
+      data: {
+        email: "kiet.chung@example.com",
+        passwordHash: "hashed_password",
+        squadMember: {
+          create: {
+            squadId: troySquad.id,
+            pid: "EMP003",
+            fullName: "Kiet Chung",
+            email: "kiet.chung@example.com",
+            position: "Senior Developer",
+            status: "ACTIVE",
+          },
+        },
+      },
+      include: {
+        squadMember: true,
+      },
+    }),
+    prisma.user.create({
+      data: {
+        email: "luy.hoang@example.com",
+        passwordHash: "hashed_password",
+        squadMember: {
+          create: {
+            squadId: troySquad.id,
+            pid: "EMP004",
+            fullName: "Luy Hoang",
+            email: "luy.hoang@example.com",
+            position: "Senior Developer",
+            status: "ACTIVE",
+          },
+        },
+      },
+      include: {
+        squadMember: true,
+      },
+    }),
+    prisma.user.create({
+      data: {
+        email: "andy.le@example.com",
+        passwordHash: "hashed_password",
+        squadMember: {
+          create: {
+            squadId: troySquad.id,
+            pid: "EMP005",
+            fullName: "Andy Le",
+            email: "andy.le@example.com",
+            position: "Senior Developer",
+            status: "ACTIVE",
+          },
+        },
+      },
+      include: {
+        squadMember: true,
+      },
+    }),
+  ]);
 
-  const member2 = await prisma.squadMember.create({
-    data: {
-      squadId: squad2.id,
-      userId: user2.id,
-      pid: 'EMP002',
-      fullName: 'Jane Smith',
-      email: 'jane@example.com',
-      phone: '0987654321',
-      position: 'Senior Backend Developer',
-      avatarUrl: 'https://placekitten.com/201/201',
-      status: MemberStatus.ACTIVE,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    },
-  });
+  // Create users and squad members for Sonic
+  const sonicMembers = await Promise.all([
+    prisma.user.create({
+      data: {
+        email: "chicharito.vu@example.com",
+        passwordHash: "hashed_password",
+        squadMember: {
+          create: {
+            squadId: sonicSquad.id,
+            pid: "EMP006",
+            fullName: "Chicharito Vu",
+            email: "chicharito.vu@example.com",
+            position: "Senior Developer",
+            status: "ACTIVE",
+          },
+        },
+      },
+      include: {
+        squadMember: true,
+      },
+    }),
+    prisma.user.create({
+      data: {
+        email: "anh.vu@example.com",
+        passwordHash: "hashed_password",
+        squadMember: {
+          create: {
+            squadId: sonicSquad.id,
+            pid: "EMP007",
+            fullName: "Anh Vu",
+            email: "anh.vu@example.com",
+            position: "Senior Developer",
+            status: "ACTIVE",
+          },
+        },
+      },
+      include: {
+        squadMember: true,
+      },
+    }),
+    prisma.user.create({
+      data: {
+        email: "hoa.nguyen@example.com",
+        passwordHash: "hashed_password",
+        squadMember: {
+          create: {
+            squadId: sonicSquad.id,
+            pid: "EMP008",
+            fullName: "Hoa Nguyen",
+            email: "hoa.nguyen@example.com",
+            position: "Senior Developer",
+            status: "ACTIVE",
+          },
+        },
+      },
+      include: {
+        squadMember: true,
+      },
+    }),
+    prisma.user.create({
+      data: {
+        email: "phuc.nguyen@example.com",
+        passwordHash: "hashed_password",
+        squadMember: {
+          create: {
+            squadId: sonicSquad.id,
+            pid: "EMP009",
+            fullName: "Phuc Nguyen",
+            email: "phuc.nguyen@example.com",
+            position: "Senior Developer",
+            status: "ACTIVE",
+          },
+        },
+      },
+      include: {
+        squadMember: true,
+      },
+    }),
+    prisma.user.create({
+      data: {
+        email: "tony.dai@example.com",
+        passwordHash: "hashed_password",
+        squadMember: {
+          create: {
+            squadId: sonicSquad.id,
+            pid: "EMP010",
+            fullName: "Tony Dai",
+            email: "tony.dai@example.com",
+            position: "Senior Developer",
+            status: "ACTIVE",
+          },
+        },
+      },
+      include: {
+        squadMember: true,
+      },
+    }),
+  ]);
 
   // Create stakeholders
   const stakeholder1 = await prisma.stakeholder.create({
@@ -111,35 +255,31 @@ async function main() {
   // Create tasks
   const task1 = await prisma.task.create({
     data: {
-      title: 'Implement User Authentication',
-      description: 'Implement user authentication using JWT',
-      status: TaskStatus.TODO,
-      priority: TaskPriority.HIGH,
+      title: 'Implement user authentication',
+      description: 'Set up JWT authentication with refresh tokens',
+      status: 'TODO',
+      priority: 'HIGH',
       dueDate: new Date('2024-12-31'),
       featureId: 'AUTH-001',
-      assignedToId: member1.id,
-      createdById: member2.id,
+      assignedToId: troyMembers[0].squadMember!.id,
+      createdById: sonicMembers[0].squadMember!.id,
       tags: ['authentication', 'security'],
       attachments: {},
-      createdAt: new Date(),
-      updatedAt: new Date(),
     },
   });
 
   const task2 = await prisma.task.create({
     data: {
-      title: 'Design Database Schema',
-      description: 'Design and implement database schema',
-      status: TaskStatus.IN_PROGRESS,
-      priority: TaskPriority.MEDIUM,
+      title: 'Design database schema',
+      description: 'Create ERD and implement database migrations',
+      status: 'IN_PROGRESS',
+      priority: 'MEDIUM',
       dueDate: new Date('2024-12-31'),
       featureId: 'DB-001',
-      assignedToId: member2.id,
-      createdById: member1.id,
+      assignedToId: sonicMembers[0].squadMember!.id,
+      createdById: troyMembers[0].squadMember!.id,
       tags: ['database', 'design'],
       attachments: {},
-      createdAt: new Date(),
-      updatedAt: new Date(),
     },
   });
 
@@ -147,7 +287,7 @@ async function main() {
   await prisma.taskAssignee.create({
     data: {
       taskId: task1.id,
-      memberId: member1.id,
+      memberId: troyMembers[0].squadMember!.id,
       role: AssigneeRole.PRIMARY,
       createdAt: new Date(),
     },
@@ -175,11 +315,10 @@ async function main() {
   // Create task notes
   await prisma.taskNote.create({
     data: {
-      taskId: task1.id,
-      authorId: member1.id,
       content: 'Initial implementation plan',
+      taskId: task1.id,
+      authorId: troyMembers[0].squadMember!.id,
       createdAt: new Date(),
-      updatedAt: new Date(),
     },
   });
 
@@ -188,7 +327,7 @@ async function main() {
     data: {
       content: 'Please review the implementation plan',
       taskId: task1.id,
-      createdById: member2.id,
+      createdById: sonicMembers[0].squadMember!.id,
       createdAt: new Date(),
     },
   });
@@ -207,21 +346,20 @@ async function main() {
   // Create role assignments
   await prisma.roleAssignment.create({
     data: {
-      squadId: squad1.id,
-      memberId: member1.id,
+      squadId: troySquad.id,
+      memberId: troyMembers[0].squadMember!.id,
       roleId: role1.id,
       assignedBy: 'system',
       createdAt: new Date(),
-      updatedAt: new Date(),
     },
   });
 
   // Create incident rotations
   const rotation1 = await prisma.incidentRotation.create({
     data: {
-      squadId: squad1.id,
-      primaryMemberId: member1.id,
-      secondaryMemberId: member2.id,
+      squadId: troySquad.id,
+      primaryMemberId: troyMembers[0].squadMember!.id,
+      secondaryMemberId: troyMembers[1].squadMember!.id,
       startDate: new Date(),
       endDate: new Date('2024-12-31'),
       sprintNumber: 1,
@@ -233,24 +371,23 @@ async function main() {
   await prisma.rotationSwap.create({
     data: {
       rotationId: rotation1.id,
-      requesterId: member1.id,
-      accepterId: member2.id,
+      requesterId: troyMembers[0].squadMember!.id,
+      accepterId: troyMembers[1].squadMember!.id,
       swapDate: new Date('2024-12-25'),
       status: 'PENDING',
       createdAt: new Date(),
-      updatedAt: new Date(),
     },
   });
 
   // Create sprint reports
   await prisma.sprintReport.create({
     data: {
-      squadId: squad1.id,
+      squadId: troySquad.id,
       sprintNumber: 1,
       startDate: new Date(),
       endDate: new Date('2024-12-31'),
-      totalPoints: 100,
-      completedPoints: 50,
+      totalPoints: 20,
+      completedPoints: 15,
       memberMetrics: {},
       stakeholderMetrics: {},
       createdAt: new Date(),
@@ -260,7 +397,7 @@ async function main() {
   // Create activity logs
   await prisma.activityLog.create({
     data: {
-      userId: user1.id,
+      userId: troyMembers[0].id,
       entityType: 'task',
       entityId: task1.id,
       action: 'create',
