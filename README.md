@@ -113,7 +113,50 @@ A modern web application built to help engineering managers streamline their dai
 - **CI/CD:** GitHub Actions
 - **Monitoring:** [Sentry](https://sentry.io/)
 
-## 📦 Installation
+## 📦 Project Structure
+
+```
+engineer-manager-toolkit/
+├── client/                 # Frontend application
+│   ├── src/
+│   │   ├── app/           # Next.js App Router pages
+│   │   │   ├── ui/       # Shadcn UI components
+│   │   │   └── features/ # Feature-specific components
+│   │   ├── lib/          # Utility functions
+│   │   ├── hooks/        # Custom React hooks
+│   │   ├── services/     # API services
+│   │   ├── types/        # TypeScript types
+│   │   ├── constants/    # Constants
+│   │   └── styles/       # Global styles
+│   ├── public/           # Static assets
+│   └── Configuration files
+│
+├── server/                # Backend application
+│   ├── src/
+│   │   ├── modules/      # Feature modules
+│   │   │   ├── squads/  # Squad management
+│   │   │   ├── tasks/   # Task management
+│   │   │   ├── auth/    # Authentication
+│   │   │   └── users/   # User management
+│   │   ├── shared/      # Shared resources
+│   │   │   ├── config/  # Configuration
+│   │   │   ├── constants/ # Constants
+│   │   │   ├── errors/  # Error handling
+│   │   │   ├── middlewares/ # Middlewares
+│   │   │   ├── types/   # Shared types
+│   │   │   └── utils/   # Utility functions
+│   │   ├── app.ts       # Main application
+│   │   └── server.ts    # Server entry point
+│   ├── prisma/          # Database
+│   │   ├── schema.prisma # Database schema
+│   │   └── migrations/  # Database migrations
+│   └── Configuration files
+│
+├── docs/                 # Project documentation
+└── README.md
+```
+
+## 🚀 Getting Started
 
 1. Clone the repository:
 ```bash
@@ -126,37 +169,80 @@ cd engineer-manager-toolkit
 pnpm install
 ```
 
-3. Start the development server:
+3. Set up environment variables:
+```bash
+# Copy example env files
+cp client/.env.example client/.env
+cp server/.env.example server/.env
+```
+
+4. Set up the database:
+```bash
+# Generate Prisma client
+pnpm db:generate
+
+# Run migrations
+pnpm db:migrate
+```
+
+5. Start the development server:
 ```bash
 pnpm dev
 ```
 
-4. Open [http://localhost:3000](http://localhost:3000) in your browser.
+6. Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-## 🏗 Project Structure
+## 📝 Available Scripts
 
-```
-src/
-├── app/                # Next.js App Router pages
-├── components/         # Reusable UI components
-│   ├── ui/            # Shadcn UI components
-│   └── features/      # Feature-specific components
-├── lib/               # Utility functions and shared logic
-├── hooks/             # Custom React hooks
-├── styles/            # Global styles and Tailwind config
-└── public/            # Static assets
-```
+### Development
+- `pnpm dev` - Start development servers for both client and backend
+- `pnpm build` - Build both client and backend
+- `pnpm start` - Start production servers
+- `pnpm lint` - Run linting for both client and backend
+- `pnpm type-check` - Run TypeScript type checking
 
-## 🔧 Development
+### Database
+- `pnpm db:generate` - Generate Prisma client
+- `pnpm db:migrate` - Run database migrations
+- `pnpm db:studio` - Open Prisma Studio for database management
 
-- **Development server:** `pnpm dev`
-- **Type checking:** `pnpm type-check`
-- **Linting:** `pnpm lint`
-- **Building:** `pnpm build`
+### Testing
+- `pnpm test` - Run tests for both client and backend
+- `pnpm test:watch` - Run tests in watch mode
+- `pnpm test:coverage` - Generate test coverage reports
+
+### Code Quality
+- `pnpm format` - Format code using Prettier
+- `pnpm clean` - Clean build artifacts and dependencies
+- `pnpm prepare` - Set up Git hooks
+
+## 🔧 Development Guidelines
+
+### Code Style
+- Use TypeScript for all code
+- Follow ESLint and Prettier configurations
+- Write meaningful commit messages
+- Keep components small and focused
+
+### Git Workflow
+- Create feature branches from main
+- Use conventional commits
+- Run tests before committing
+- Keep commits atomic and focused
+
+### Testing
+- Write unit tests for utilities
+- Write integration tests for API endpoints
+- Write E2E tests for critical user flows
+- Maintain good test coverage
 
 ## 🤝 Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'feat: add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
 ## 📝 License
 
