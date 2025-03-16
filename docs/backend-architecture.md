@@ -31,30 +31,47 @@ The application follows Clean Architecture principles:
 ```
 server/
 ├── src/
-│   ├── modules/           # Feature modules
-│   │   ├── squads/       # Squad management module
-│   │   │   ├── controllers/  # HTTP request handlers
-│   │   │   ├── services/     # Business logic
-│   │   │   ├── repositories/ # Data access layer
-│   │   │   ├── types/        # TypeScript types/interfaces
-│   │   │   ├── validators/   # Input validation
-│   │   │   └── routes.ts     # API routes
-│   │   ├── tasks/        # Task management module
-│   │   ├── auth/         # Authentication module
-│   │   └── users/        # User management module
-│   ├── shared/           # Shared resources
-│   │   ├── config/       # Configuration
-│   │   ├── constants/    # Constants
-│   │   ├── errors/       # Error handling
-│   │   ├── middlewares/  # Middlewares
-│   │   ├── types/        # Shared types
-│   │   └── utils/        # Utility functions
-│   ├── prisma/           # Database
-│   │   └── schema.prisma
-│   └── app.ts            # Main application
-├── tests/                # Test files
-├── package.json
-└── tsconfig.json
+│   ├── modules/                 # Feature modules
+│   │   ├── calendar/           # Calendar module
+│   │   │   ├── controllers/    # Request handlers
+│   │   │   ├── repositories/   # Data access layer
+│   │   │   ├── routes/        # Route definitions
+│   │   │   ├── services/      # Business logic
+│   │   │   └── types/         # TypeScript types/interfaces
+│   │   ├── tasks/             # Task management module
+│   │   │   ├── controllers/
+│   │   │   ├── repositories/
+│   │   │   ├── routes/
+│   │   │   ├── services/
+│   │   │   └── types/
+│   │   ├── roles/             # Role management module
+│   │   │   ├── controllers/
+│   │   │   ├── repositories/
+│   │   │   ├── routes/
+│   │   │   ├── services/
+│   │   │   └── types/
+│   │   └── squads/            # Squad management module
+│   │       ├── controllers/
+│   │       ├── repositories/
+│   │       ├── routes/
+│   │       ├── services/
+│   │       └── types/
+│   ├── shared/                # Shared resources
+│   │   ├── config/           # Configuration files
+│   │   ├── errors/           # Error handling
+│   │   ├── middleware/       # Express middleware
+│   │   └── swagger/          # API documentation
+│   ├── utils/                # Utility functions
+│   ├── app.ts               # Express app setup
+│   └── server.ts            # Server entry point
+├── prisma/                  # Database schema and migrations
+├── tests/                   # Test files
+├── .env                     # Environment variables
+├── .env.example            # Example environment variables
+├── .gitignore              # Git ignore rules
+├── package.json            # Dependencies and scripts
+├── tsconfig.json           # TypeScript configuration
+└── README.md               # Project documentation
 ```
 
 ## Layer Architecture
