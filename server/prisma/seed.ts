@@ -3,6 +3,39 @@ const { hash } = require('bcryptjs')
 
 const prisma = new PrismaClient()
 
+async function seedRoles() {
+  const roles = [
+    {
+      name: 'SQUAD_LEAD',
+      description: 'Squad Lead responsible for team management and delivery',
+      permissions: ['MANAGE_TEAM', 'MANAGE_TASKS', 'VIEW_REPORTS', 'MANAGE_ROLES']
+    },
+    {
+      name: 'TECH_LEAD',
+      description: 'Technical Lead responsible for technical decisions and architecture',
+      permissions: ['MANAGE_TECHNICAL', 'REVIEW_CODE', 'VIEW_REPORTS']
+    },
+    {
+      name: 'ENGINEER',
+      description: 'Software Engineer responsible for development tasks',
+      permissions: ['VIEW_TASKS', 'UPDATE_TASKS', 'VIEW_REPORTS']
+    },
+    {
+      name: 'QA_ENGINEER',
+      description: 'Quality Assurance Engineer responsible for testing',
+      permissions: ['VIEW_TASKS', 'UPDATE_TASKS', 'VIEW_REPORTS']
+    }
+  ];
+
+  for (const role of roles) {
+    await prisma.role.upsert({
+      where: { name: role.name },
+      update: role,
+      create: role
+    });
+  }
+}
+
 async function main() {
   console.log('Start seeding...')
 
@@ -242,6 +275,8 @@ async function main() {
       },
     })
   }
+
+  await seedRoles();
 
   console.log('Seeding finished.')
 }

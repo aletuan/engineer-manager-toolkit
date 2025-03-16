@@ -1,38 +1,47 @@
 import { Request, Response, NextFunction } from 'express';
+import { ZodError } from 'zod';
 
 export class AppError extends Error {
   constructor(
     public statusCode: number,
     public message: string,
-    public code: string,
-    public details?: any
+    public isOperational = true
   ) {
     super(message);
-    this.name = 'AppError';
+    Object.setPrototypeOf(this, AppError.prototype);
   }
 }
 
 export const errorHandler = (
-  err: Error,
+  err: Error | AppError | ZodError,
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
   if (err instanceof AppError) {
     return res.status(err.statusCode).json({
-      status: err.statusCode,
+      status: 'error',
       message: err.message,
-      code: err.code,
-      details: err.details,
+      ...(process.env.NODE_ENV === 'development' && { stack: err.stack }),
     });
   }
 
-  // Log unexpected errors
-  console.error('Unexpected error:', err);
+  if (err instanceof ZodError) {
+    return res.status(400).json({
+      status: 'error',
+      message: 'Validation failed',
+      errors: err.errors.map((error) => ({
+        field: error.path.join('.'),
+        message: error.message,
+      })),
+    });
+  }
+
+  console.error('Error:', err);
 
   return res.status(500).json({
-    status: 500,
-    message: 'Internal Server Error',
-    code: 'INTERNAL_SERVER_ERROR',
+    status: 'error',
+    message: 'Internal server error',
+    ...(process.env.NODE_ENV === 'development' && { stack: err.stack }),
   });
 }; 

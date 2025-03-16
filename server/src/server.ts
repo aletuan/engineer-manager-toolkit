@@ -3,9 +3,9 @@ import { config } from './shared/config';
 
 const startServer = () => {
   try {
-    app.listen(config.server.port, () => {
+    app.listen(config.port, () => {
       console.log(
-        `Server is running on port ${config.server.port} in ${config.server.nodeEnv} mode`
+        `Server is running on port ${config.port} in ${config.nodeEnv} mode`
       );
     });
   } catch (error) {

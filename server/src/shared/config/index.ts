@@ -3,20 +3,21 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 export const config = {
-  server: {
-    port: process.env.PORT || 3001,
-    nodeEnv: process.env.NODE_ENV || 'development',
-  },
+  port: process.env.PORT || 3001,
+  nodeEnv: process.env.NODE_ENV || 'development',
   database: {
-    url: process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/engineer_manager_toolkit',
+    url: process.env.DATABASE_URL,
   },
   jwt: {
-    secret: process.env.JWT_SECRET || 'your-super-secret-jwt-key',
-    expiresIn: process.env.JWT_EXPIRES_IN || '24h',
-    refreshExpiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '7d',
+    secret: process.env.JWT_SECRET || 'your-secret-key',
+    expiresIn: process.env.JWT_EXPIRES_IN || '1d',
   },
   rateLimit: {
-    windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS || '900000', 10),
-    maxRequests: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS || '100', 10),
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    maxRequests: 100, // Limit each IP to 100 requests per windowMs
+  },
+  cors: {
+    origin: process.env.CORS_ORIGIN || 'http://localhost:3000',
+    credentials: true,
   },
 } as const; 

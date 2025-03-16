@@ -33,6 +33,7 @@ model Squad {
   tasks           Task[]
   incidentRotations IncidentRotation[]
   sprintReports   SprintReport[]
+  roleAssignments RoleAssignment[]
   createdAt       DateTime          @default(now())
   updatedAt       DateTime          @updatedAt
 
@@ -57,6 +58,7 @@ model SquadMember {
   secondaryRotations IncidentRotation[] @relation("SecondaryMember")
   requestedSwaps   RotationSwap[]    @relation("Requester")
   acceptedSwaps    RotationSwap[]    @relation("Accepter")
+  roleAssignments  RoleAssignment[]
   createdAt        DateTime          @default(now())
   updatedAt        DateTime          @updatedAt
 
@@ -250,4 +252,33 @@ enum SwapStatus {
   PENDING
   APPROVED
   REJECTED
+}
+
+model Role {
+  id          String           @id @default(uuid())
+  name        String           @unique
+  description String
+  permissions String[]
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  assignments RoleAssignment[]
+
+  @@map("roles")
+}
+
+model RoleAssignment {
+  id        String       @id @default(uuid())
+  squad     Squad        @relation(fields: [squadId], references: [id])
+  squadId   String
+  member    SquadMember  @relation(fields: [memberId], references: [id])
+  memberId  String
+  role      Role         @relation(fields: [roleId], references: [id])
+  roleId    String
+  assignedAt DateTime    @default(now())
+  assignedBy String
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  @@unique([squadId, memberId, roleId])
+  @@map("role_assignments")
 } 

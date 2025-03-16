@@ -11,6 +11,10 @@ import { SquadRepository } from './modules/squads/repositories/squad.repository'
 import { SquadService } from './modules/squads/services/squad.service';
 import { SquadController } from './modules/squads/controllers/squad.controller';
 import { createSquadRouter } from './modules/squads/routes/squad.routes';
+import { RoleRepository } from './modules/roles/repositories/role.repository';
+import { RoleService } from './modules/roles/services/role.service';
+import { RoleController } from './modules/roles/controllers/role.controller';
+import { createRoleRouter } from './modules/roles/routes/role.routes';
 import { swaggerSpec } from './shared/swagger/swagger.config';
 
 const app = express();
@@ -18,12 +22,15 @@ const prisma = new PrismaClient();
 
 // Initialize repositories
 const squadRepository = new SquadRepository(prisma);
+const roleRepository = new RoleRepository(prisma);
 
 // Initialize services
 const squadService = new SquadService(squadRepository);
+const roleService = new RoleService(roleRepository);
 
 // Initialize controllers
 const squadController = new SquadController(squadService);
+const roleController = new RoleController(roleService);
 
 // Middleware
 app.use(helmet({
@@ -49,6 +56,7 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
 
 // Routes
 app.use('/api/v1/squads', createSquadRouter(squadController));
+app.use('/api/v1/roles', createRoleRouter(roleController));
 
 // Error handling
 app.use(notFoundHandler);

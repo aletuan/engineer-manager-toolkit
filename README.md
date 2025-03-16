@@ -37,7 +37,7 @@ A modern web application built to help engineering managers streamline their dai
     - [x] Team Management APIs
       - [x] CRUD operations for team members
       - [x] Team composition management
-      - [ ] Role assignments
+      - [x] Role assignments
     - [ ] Task Management APIs
       - [ ] Task creation and updates
       - [ ] Status tracking
@@ -257,3 +257,25 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ---
 
 Built with ❤️ for Engineering Managers 
+
+### Role Assignments
+- [x] Role Management
+  - [x] Create role with permissions
+  - [x] Update role details
+  - [x] Delete role
+  - [x] List all roles
+  - [x] Get role by ID
+- [x] Role Assignment
+  - [x] Assign role to squad member
+  - [x] Remove role from member
+  - [x] List member's roles
+  - [x] Role assignment history
+- [x] Role Validation
+  - [x] Role name validation
+  - [x] Permission validation
+  - [x] Role assignment validation
+- [x] Role API Documentation
+  - [x] Swagger UI integration
+  - [x] API endpoint documentation
+  - [x] Request/response schemas
+  - [x] Example requests 
