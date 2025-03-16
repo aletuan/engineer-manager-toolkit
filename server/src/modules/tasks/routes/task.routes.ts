@@ -44,9 +44,8 @@ import {
  *         createdBy:
  *           type: string
  *           format: uuid
- *         projectId:
+ *         featureId:
  *           type: string
- *           format: uuid
  *         tags:
  *           type: array
  *           items:
@@ -88,7 +87,7 @@ import {
  *         - description
  *         - dueDate
  *         - assignedTo
- *         - projectId
+ *         - featureId
  *       properties:
  *         title:
  *           type: string
@@ -106,9 +105,8 @@ import {
  *         assignedTo:
  *           type: string
  *           format: uuid
- *         projectId:
+ *         featureId:
  *           type: string
- *           format: uuid
  *         tags:
  *           type: array
  *           items:
@@ -143,9 +141,8 @@ import {
  *         assignedTo:
  *           type: string
  *           format: uuid
- *         projectId:
+ *         featureId:
  *           type: string
- *           format: uuid
  *         tags:
  *           type: array
  *           items:
@@ -213,7 +210,7 @@ export function createTaskRouter(controller: TaskController): Router {
    *     tags: [Tasks]
    *     parameters:
    *       - in: query
-   *         name: projectId
+   *         name: featureId
    *         schema:
    *           type: string
    *           format: uuid
@@ -417,20 +414,19 @@ export function createTaskRouter(controller: TaskController): Router {
 
   /**
    * @swagger
-   * /api/v1/tasks/project/{projectId}:
+   * /api/v1/tasks/feature/{featureId}:
    *   get:
-   *     summary: Get all tasks for a project
+   *     summary: Get all tasks for a feature
    *     tags: [Tasks]
    *     parameters:
    *       - in: path
-   *         name: projectId
+   *         name: featureId
    *         required: true
    *         schema:
    *           type: string
-   *           format: uuid
    *     responses:
    *       200:
-   *         description: List of tasks for the project
+   *         description: List of tasks for the feature
    *         content:
    *           application/json:
    *             schema:
@@ -438,7 +434,7 @@ export function createTaskRouter(controller: TaskController): Router {
    *               items:
    *                 $ref: '#/components/schemas/Task'
    */
-  router.get('/project/:projectId', controller.getTasksByProject.bind(controller));
+  router.get('/feature/:featureId', controller.getTasksByFeature.bind(controller));
 
   /**
    * @swagger

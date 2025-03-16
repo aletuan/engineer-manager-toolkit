@@ -3,6 +3,17 @@ import { TaskRepository } from '../repositories/task.repository';
 import { CreateTaskDto, UpdateTaskDto, AddCommentDto, UpdateTaskStatusDto } from '../types/task.types';
 import { AppError } from '../../../shared/errors/errorHandler';
 
+interface GetTasksParams {
+  featureId?: string;
+  assignedTo?: string;
+  status?: string;
+  priority?: string;
+  page?: number;
+  limit?: number;
+  sortBy?: string;
+  sortOrder?: 'asc' | 'desc';
+}
+
 export class TaskService {
   constructor(private repository: TaskRepository) {}
 
@@ -10,16 +21,7 @@ export class TaskService {
     return this.repository.create(data);
   }
 
-  async getTasks(params: {
-    projectId?: string;
-    assignedTo?: string;
-    status?: string;
-    priority?: string;
-    page?: number;
-    limit?: number;
-    sortBy?: string;
-    sortOrder?: 'asc' | 'desc';
-  }): Promise<{ tasks: Task[]; total: number }> {
+  async getTasks(params: GetTasksParams): Promise<{ tasks: Task[]; total: number }> {
     return this.repository.findAll(params);
   }
 
@@ -64,8 +66,8 @@ export class TaskService {
     return this.repository.updateStatus(id, data.status);
   }
 
-  async getTasksByProject(projectId: string): Promise<Task[]> {
-    return this.repository.findByProject(projectId);
+  async getTasksByFeature(featureId: string): Promise<Task[]> {
+    return this.repository.findByFeature(featureId);
   }
 
   async getTasksByUser(userId: string): Promise<Task[]> {

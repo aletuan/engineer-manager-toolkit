@@ -1,6 +1,17 @@
 import { PrismaClient, Task, TaskComment, TaskStatus, TaskPriority } from '@prisma/client';
 import { CreateTaskDto, UpdateTaskDto, AddCommentDto } from '../types/task.types';
 
+interface FindAllParams {
+  featureId?: string;
+  assignedTo?: string;
+  status?: TaskStatus;
+  priority?: TaskPriority;
+  page?: number;
+  limit?: number;
+  sortBy?: string;
+  sortOrder?: 'asc' | 'desc';
+}
+
 export class TaskRepository {
   constructor(private prisma: PrismaClient) {}
 
@@ -12,64 +23,35 @@ export class TaskRepository {
         status: data.status as TaskStatus,
         priority: data.priority as TaskPriority,
         dueDate: new Date(data.dueDate),
+        featureId: data.featureId,
         assignedToId: data.assignedTo,
         createdById: data.createdBy,
-        projectId: data.projectId,
-        tags: data.tags || [],
-        attachments: data.attachments || {},
+        tags: data.tags,
+        attachments: data.attachments,
       },
       include: {
-        assignedTo: true,
-        createdBy: true,
-        project: true,
-        comments: {
-          include: {
-            createdBy: true,
+        assignedTo: {
+          select: {
+            id: true,
+            email: true,
+          },
+        },
+        createdBy: {
+          select: {
+            id: true,
+            email: true,
           },
         },
       },
     });
   }
 
-  async findById(id: string): Promise<Task | null> {
-    return this.prisma.task.findUnique({
-      where: { id },
-      include: {
-        assignedTo: true,
-        createdBy: true,
-        project: true,
-        comments: {
-          include: {
-            createdBy: true,
-          },
-        },
-      },
-    });
-  }
-
-  async findAll(params: {
-    projectId?: string;
-    assignedTo?: string;
-    status?: TaskStatus;
-    priority?: TaskPriority;
-    page?: number;
-    limit?: number;
-    sortBy?: string;
-    sortOrder?: 'asc' | 'desc';
-  }): Promise<{ tasks: Task[]; total: number }> {
-    const {
-      projectId,
-      assignedTo,
-      status,
-      priority,
-      page = 1,
-      limit = 10,
-      sortBy = 'createdAt',
-      sortOrder = 'desc',
-    } = params;
+  async findAll(params: FindAllParams): Promise<{ tasks: Task[]; total: number }> {
+    const { featureId, assignedTo, status, priority, page = 1, limit = 10, sortBy = 'createdAt', sortOrder = 'desc' } = params;
+    const skip = (page - 1) * limit;
 
     const where = {
-      ...(projectId && { projectId }),
+      ...(featureId && { featureId }),
       ...(assignedTo && { assignedToId: assignedTo }),
       ...(status && { status }),
       ...(priority && { priority }),
@@ -78,26 +60,50 @@ export class TaskRepository {
     const [tasks, total] = await Promise.all([
       this.prisma.task.findMany({
         where,
-        include: {
-          assignedTo: true,
-          createdBy: true,
-          project: true,
-          comments: {
-            include: {
-              createdBy: true,
-            },
-          },
-        },
-        skip: (page - 1) * limit,
+        skip,
         take: limit,
         orderBy: {
           [sortBy]: sortOrder,
+        },
+        include: {
+          assignedTo: {
+            select: {
+              id: true,
+              email: true,
+            },
+          },
+          createdBy: {
+            select: {
+              id: true,
+              email: true,
+            },
+          },
         },
       }),
       this.prisma.task.count({ where }),
     ]);
 
     return { tasks, total };
+  }
+
+  async findById(id: string): Promise<Task | null> {
+    return this.prisma.task.findUnique({
+      where: { id },
+      include: {
+        assignedTo: {
+          select: {
+            id: true,
+            email: true,
+          },
+        },
+        createdBy: {
+          select: {
+            id: true,
+            email: true,
+          },
+        },
+      },
+    });
   }
 
   async update(id: string, data: UpdateTaskDto): Promise<Task> {
@@ -109,26 +115,30 @@ export class TaskRepository {
         ...(data.status && { status: data.status as TaskStatus }),
         ...(data.priority && { priority: data.priority as TaskPriority }),
         ...(data.dueDate && { dueDate: new Date(data.dueDate) }),
+        ...(data.featureId && { featureId: data.featureId }),
         ...(data.assignedTo && { assignedToId: data.assignedTo }),
-        ...(data.projectId && { projectId: data.projectId }),
         ...(data.tags && { tags: data.tags }),
         ...(data.attachments && { attachments: data.attachments }),
       },
       include: {
-        assignedTo: true,
-        createdBy: true,
-        project: true,
-        comments: {
-          include: {
-            createdBy: true,
+        assignedTo: {
+          select: {
+            id: true,
+            email: true,
+          },
+        },
+        createdBy: {
+          select: {
+            id: true,
+            email: true,
           },
         },
       },
     });
   }
 
-  async delete(id: string): Promise<Task> {
-    return this.prisma.task.delete({
+  async delete(id: string): Promise<void> {
+    await this.prisma.task.delete({
       where: { id },
     });
   }
@@ -153,7 +163,6 @@ export class TaskRepository {
       include: {
         assignedTo: true,
         createdBy: true,
-        project: true,
         comments: {
           include: {
             createdBy: true,
@@ -163,16 +172,20 @@ export class TaskRepository {
     });
   }
 
-  async findByProject(projectId: string): Promise<Task[]> {
+  async findByFeature(featureId: string): Promise<Task[]> {
     return this.prisma.task.findMany({
-      where: { projectId },
+      where: { featureId },
       include: {
-        assignedTo: true,
-        createdBy: true,
-        project: true,
-        comments: {
-          include: {
-            createdBy: true,
+        assignedTo: {
+          select: {
+            id: true,
+            email: true,
+          },
+        },
+        createdBy: {
+          select: {
+            id: true,
+            email: true,
           },
         },
       },
@@ -185,7 +198,6 @@ export class TaskRepository {
       include: {
         assignedTo: true,
         createdBy: true,
-        project: true,
         comments: {
           include: {
             createdBy: true,

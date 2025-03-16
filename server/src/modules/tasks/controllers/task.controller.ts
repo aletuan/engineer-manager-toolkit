@@ -15,9 +15,9 @@ export class TaskController {
   }
 
   async getTasks(req: Request, res: Response): Promise<void> {
-    const { projectId, assignedTo, status, priority, page, limit, sortBy, sortOrder } = req.query;
+    const { featureId, assignedTo, status, priority, page, limit, sortBy, sortOrder } = req.query;
     const tasks = await this.service.getTasks({
-      projectId: projectId as string,
+      featureId: featureId as string,
       assignedTo: assignedTo as string,
       status: status as string,
       priority: priority as string,
@@ -65,9 +65,9 @@ export class TaskController {
     res.json(task);
   }
 
-  async getTasksByProject(req: Request, res: Response): Promise<void> {
-    const { projectId } = req.params;
-    const tasks = await this.service.getTasksByProject(projectId);
+  async getTasksByFeature(req: Request, res: Response): Promise<void> {
+    const { featureId } = req.params;
+    const tasks = await this.service.getTasksByFeature(featureId);
     res.json(tasks);
   }
 

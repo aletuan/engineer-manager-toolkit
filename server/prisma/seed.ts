@@ -1,291 +1,280 @@
-const { PrismaClient } = require('@prisma/client')
-const { hash } = require('bcryptjs')
+import { PrismaClient, MemberStatus, TaskStatus, TaskPriority, AssigneeRole, DependencyType } from '@prisma/client';
+import { hash } from 'bcryptjs';
 
-const prisma = new PrismaClient()
-
-async function seedRoles() {
-  const roles = [
-    {
-      name: 'SQUAD_LEAD',
-      description: 'Squad Lead responsible for team management and delivery',
-      permissions: ['MANAGE_TEAM', 'MANAGE_TASKS', 'VIEW_REPORTS', 'MANAGE_ROLES']
-    },
-    {
-      name: 'TECH_LEAD',
-      description: 'Technical Lead responsible for technical decisions and architecture',
-      permissions: ['MANAGE_TECHNICAL', 'REVIEW_CODE', 'VIEW_REPORTS']
-    },
-    {
-      name: 'ENGINEER',
-      description: 'Software Engineer responsible for development tasks',
-      permissions: ['VIEW_TASKS', 'UPDATE_TASKS', 'VIEW_REPORTS']
-    },
-    {
-      name: 'QA_ENGINEER',
-      description: 'Quality Assurance Engineer responsible for testing',
-      permissions: ['VIEW_TASKS', 'UPDATE_TASKS', 'VIEW_REPORTS']
-    }
-  ];
-
-  for (const role of roles) {
-    await prisma.role.upsert({
-      where: { name: role.name },
-      update: role,
-      create: role
-    });
-  }
-}
+const prisma = new PrismaClient();
 
 async function main() {
-  console.log('Start seeding...')
+  // Clean up existing data
+  await prisma.rotationSwap.deleteMany();
+  await prisma.incidentRotation.deleteMany();
+  await prisma.roleAssignment.deleteMany();
+  await prisma.role.deleteMany();
+  await prisma.taskDependency.deleteMany();
+  await prisma.taskStakeholder.deleteMany();
+  await prisma.taskAssignee.deleteMany();
+  await prisma.taskNote.deleteMany();
+  await prisma.taskComment.deleteMany();
+  await prisma.task.deleteMany();
+  await prisma.stakeholder.deleteMany();
+  await prisma.squadMember.deleteMany();
+  await prisma.squad.deleteMany();
+  await prisma.user.deleteMany();
 
-  // Create Squads
-  const sonicSquad = await prisma.squad.create({
+  // Create users
+  const user1 = await prisma.user.create({
     data: {
-      name: 'Squad Sonic',
-      code: 'SONIC',
-      description: 'Frontend and Backend Development Team',
+      email: 'admin@example.com',
+      passwordHash: await hash('admin123', 10),
+      createdAt: new Date(),
+      updatedAt: new Date(),
     },
-  })
+  });
 
-  const troySquad = await prisma.squad.create({
+  const user2 = await prisma.user.create({
     data: {
-      name: 'Squad Troy',
-      code: 'TROY',
-      description: 'Data and Analytics Team',
+      email: 'user@example.com',
+      passwordHash: await hash('user123', 10),
+      createdAt: new Date(),
+      updatedAt: new Date(),
     },
-  })
+  });
 
-  // Create Users and Squad Members
-  const sonicMembers = [
-    {
-      name: 'Andy Le',
-      pid: 'S001',
-      email: 'andy.le@company.com',
-      phone: '0901 234 567',
-      position: 'Frontend Developer',
+  // Create squads
+  const squad1 = await prisma.squad.create({
+    data: {
+      name: 'Frontend Team',
+      code: 'FE',
+      description: 'Frontend development team',
+      createdAt: new Date(),
+      updatedAt: new Date(),
     },
-    {
-      name: 'Daniel Nguyen',
-      pid: 'S002',
-      email: 'daniel.nguyen@company.com',
-      phone: '0902 345 678',
-      position: 'Backend Developer',
-    },
-    {
-      name: 'Chicharito Vu',
-      pid: 'S003',
-      email: 'chicharito.vu@company.com',
-      phone: '0903 456 789',
-      position: 'DevOps Engineer',
-    },
-    {
-      name: 'Phuc Nguyen',
-      pid: 'S004',
-      email: 'phuc.nguyen@company.com',
-      phone: '0904 567 890',
-      position: 'QA Engineer',
-    },
-    {
-      name: 'Viet Anh',
-      pid: 'S005',
-      email: 'viet.anh@company.com',
-      phone: '0905 678 901',
-      position: 'Product Manager',
-    },
-    {
-      name: 'Hoa Nguyen',
-      pid: 'S006',
-      email: 'hoa.nguyen@company.com',
-      phone: '0906 789 012',
-      position: 'UI/UX Designer',
-    },
-    {
-      name: 'Tony Dai',
-      pid: 'S007',
-      email: 'tony.dai@company.com',
-      phone: '0907 890 123',
-      position: 'Full Stack Developer',
-    },
-  ]
+  });
 
-  const troyMembers = [
-    {
-      name: 'Harry Nguyen',
-      pid: 'T001',
-      email: 'harry.nguyen@company.com',
-      phone: '0908 901 234',
-      position: 'Team Lead',
+  const squad2 = await prisma.squad.create({
+    data: {
+      name: 'Backend Team',
+      code: 'BE',
+      description: 'Backend development team',
+      createdAt: new Date(),
+      updatedAt: new Date(),
     },
-    {
-      name: 'Dany Nguyen',
-      pid: 'T002',
-      email: 'dany.nguyen@company.com',
-      phone: '0909 012 345',
-      position: 'Backend Developer',
-    },
-    {
-      name: 'Kiet Chung',
-      pid: 'T003',
-      email: 'kiet.chung@company.com',
-      phone: '0910 123 456',
-      position: 'Frontend Developer',
-    },
-    {
-      name: 'Luy Hoang',
-      pid: 'T004',
-      email: 'luy.hoang@company.com',
-      phone: '0911 234 567',
-      position: 'Data Analyst',
-    },
-  ]
+  });
 
-  // Create Stakeholders
-  const stakeholders = [
-    {
-      code: 'FRAUD',
-      name: 'Fraud Prevention Team',
-      description: 'Team responsible for fraud detection and prevention',
-      contactName: 'John Smith',
-      contactEmail: 'john.smith@company.com',
-      contactPhone: '0912 345 678',
-      groupName: 'Security',
+  // Create squad members
+  const member1 = await prisma.squadMember.create({
+    data: {
+      squadId: squad1.id,
+      userId: user1.id,
+      pid: 'EMP001',
+      fullName: 'John Doe',
+      email: 'john@example.com',
+      phone: '1234567890',
+      position: 'Senior Frontend Developer',
+      avatarUrl: 'https://placekitten.com/200/200',
+      status: MemberStatus.ACTIVE,
+      createdAt: new Date(),
+      updatedAt: new Date(),
     },
-    {
-      code: 'BEB',
-      name: 'Backend for Backend Team',
-      description: 'Core backend infrastructure team',
-      contactName: 'Jane Doe',
-      contactEmail: 'jane.doe@company.com',
-      contactPhone: '0913 456 789',
-      groupName: 'Engineering',
+  });
+
+  const member2 = await prisma.squadMember.create({
+    data: {
+      squadId: squad2.id,
+      userId: user2.id,
+      pid: 'EMP002',
+      fullName: 'Jane Smith',
+      email: 'jane@example.com',
+      phone: '0987654321',
+      position: 'Senior Backend Developer',
+      avatarUrl: 'https://placekitten.com/201/201',
+      status: MemberStatus.ACTIVE,
+      createdAt: new Date(),
+      updatedAt: new Date(),
     },
-    {
-      code: 'ECOM',
-      name: 'E-Commerce Team',
-      description: 'Team handling e-commerce operations',
-      contactName: 'Mike Johnson',
-      contactEmail: 'mike.johnson@company.com',
-      contactPhone: '0914 567 890',
-      groupName: 'Business',
+  });
+
+  // Create stakeholders
+  const stakeholder1 = await prisma.stakeholder.create({
+    data: {
+      code: 'STK001',
+      name: 'Product Owner',
+      description: 'Product owner for the project',
+      contactName: 'Alice Johnson',
+      contactEmail: 'alice@example.com',
+      contactPhone: '1234567890',
+      groupName: 'Product Management',
+      createdAt: new Date(),
+      updatedAt: new Date(),
     },
-    {
-      code: 'CM',
-      name: 'Content Management Team',
-      description: 'Team managing content and SEO',
-      contactName: 'Sarah Wilson',
-      contactEmail: 'sarah.wilson@company.com',
-      contactPhone: '0915 678 901',
-      groupName: 'Content',
+  });
+
+  // Create tasks
+  const task1 = await prisma.task.create({
+    data: {
+      title: 'Implement User Authentication',
+      description: 'Implement user authentication using JWT',
+      status: TaskStatus.TODO,
+      priority: TaskPriority.HIGH,
+      dueDate: new Date('2024-12-31'),
+      featureId: 'AUTH-001',
+      assignedToId: member1.id,
+      createdById: member2.id,
+      tags: ['authentication', 'security'],
+      attachments: {},
+      createdAt: new Date(),
+      updatedAt: new Date(),
     },
-    {
-      code: 'CE',
-      name: 'Customer Experience Team',
-      description: 'Team focused on customer experience',
-      contactName: 'David Brown',
-      contactEmail: 'david.brown@company.com',
-      contactPhone: '0916 789 012',
-      groupName: 'Customer Support',
+  });
+
+  const task2 = await prisma.task.create({
+    data: {
+      title: 'Design Database Schema',
+      description: 'Design and implement database schema',
+      status: TaskStatus.IN_PROGRESS,
+      priority: TaskPriority.MEDIUM,
+      dueDate: new Date('2024-12-31'),
+      featureId: 'DB-001',
+      assignedToId: member2.id,
+      createdById: member1.id,
+      tags: ['database', 'design'],
+      attachments: {},
+      createdAt: new Date(),
+      updatedAt: new Date(),
     },
-  ]
+  });
 
-  for (const stakeholder of stakeholders) {
-    await prisma.stakeholder.create({
-      data: stakeholder,
-    })
-  }
-
-  // Helper function to create user and squad member
-  async function createUserAndMember(memberData: any, squadId: string) {
-    const hashedPassword = await hash('password123', 12)
-    const user = await prisma.user.create({
-      data: {
-        email: memberData.email,
-        passwordHash: hashedPassword,
-      },
-    })
-
-    await prisma.squadMember.create({
-      data: {
-        squadId,
-        userId: user.id,
-        pid: memberData.pid,
-        fullName: memberData.name,
-        email: memberData.email,
-        phone: memberData.phone,
-        position: memberData.position,
-      },
-    })
-
-    return user
-  }
-
-  // Create Sonic members
-  for (const member of sonicMembers) {
-    await createUserAndMember(member, sonicSquad.id)
-  }
-
-  // Create Troy members
-  for (const member of troyMembers) {
-    await createUserAndMember(member, troySquad.id)
-  }
-
-  // Create Tasks
-  const tasks = [
-    {
-      featureId: 'F12345',
-      title: 'Tích hợp hệ thống thanh toán mới',
-      description: 'Tích hợp API thanh toán mới từ đối tác và cập nhật giao diện người dùng để hỗ trợ các phương thức thanh toán mới.',
-      startDate: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
-      endDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
-      points: 5,
-      priority: 'HIGH',
-      status: 'IN_PROGRESS',
-      progress: 60,
-      squadId: sonicSquad.id,
+  // Create task assignees
+  await prisma.taskAssignee.create({
+    data: {
+      taskId: task1.id,
+      memberId: member1.id,
+      role: AssigneeRole.PRIMARY,
+      createdAt: new Date(),
     },
-    {
-      featureId: 'F12346',
-      title: 'Cải thiện hiệu suất trang chủ',
-      description: 'Tối ưu hóa thời gian tải trang chủ bằng cách cải thiện các truy vấn cơ sở dữ liệu và triển khai bộ nhớ đệm.',
+  });
+
+  // Create task stakeholders
+  await prisma.taskStakeholder.create({
+    data: {
+      taskId: task1.id,
+      stakeholderId: stakeholder1.id,
+      createdAt: new Date(),
+    },
+  });
+
+  // Create task dependencies
+  await prisma.taskDependency.create({
+    data: {
+      taskId: task1.id,
+      dependentTaskId: task2.id,
+      dependencyType: DependencyType.BLOCKS,
+      createdAt: new Date(),
+    },
+  });
+
+  // Create task notes
+  await prisma.taskNote.create({
+    data: {
+      taskId: task1.id,
+      authorId: member1.id,
+      content: 'Initial implementation plan',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+  });
+
+  // Create task comments
+  await prisma.taskComment.create({
+    data: {
+      content: 'Please review the implementation plan',
+      taskId: task1.id,
+      createdById: member2.id,
+      createdAt: new Date(),
+    },
+  });
+
+  // Create roles
+  const role1 = await prisma.role.create({
+    data: {
+      name: 'Developer',
+      description: 'Software developer role',
+      permissions: ['read', 'write', 'execute'],
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+  });
+
+  // Create role assignments
+  await prisma.roleAssignment.create({
+    data: {
+      squadId: squad1.id,
+      memberId: member1.id,
+      roleId: role1.id,
+      assignedBy: 'system',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+  });
+
+  // Create incident rotations
+  const rotation1 = await prisma.incidentRotation.create({
+    data: {
+      squadId: squad1.id,
+      primaryMemberId: member1.id,
+      secondaryMemberId: member2.id,
       startDate: new Date(),
-      endDate: new Date(Date.now() + 4 * 24 * 60 * 60 * 1000),
-      points: 3,
-      priority: 'MEDIUM',
-      status: 'IN_PROGRESS',
-      progress: 30,
-      squadId: sonicSquad.id,
+      endDate: new Date('2024-12-31'),
+      sprintNumber: 1,
+      createdAt: new Date(),
     },
-    // Add more tasks here...
-  ]
+  });
 
-  for (const task of tasks) {
-    const createdTask = await prisma.task.create({
-      data: {
-        ...task,
-        createdById: (await prisma.user.findFirst())!.id,
-      },
-    })
+  // Create rotation swaps
+  await prisma.rotationSwap.create({
+    data: {
+      rotationId: rotation1.id,
+      requesterId: member1.id,
+      accepterId: member2.id,
+      swapDate: new Date('2024-12-25'),
+      status: 'PENDING',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+  });
 
-    // Add stakeholders to tasks
-    await prisma.taskStakeholder.create({
-      data: {
-        taskId: createdTask.id,
-        stakeholderId: (await prisma.stakeholder.findFirst())!.id,
-      },
-    })
-  }
+  // Create sprint reports
+  await prisma.sprintReport.create({
+    data: {
+      squadId: squad1.id,
+      sprintNumber: 1,
+      startDate: new Date(),
+      endDate: new Date('2024-12-31'),
+      totalPoints: 100,
+      completedPoints: 50,
+      memberMetrics: {},
+      stakeholderMetrics: {},
+      createdAt: new Date(),
+    },
+  });
 
-  await seedRoles();
-
-  console.log('Seeding finished.')
+  // Create activity logs
+  await prisma.activityLog.create({
+    data: {
+      userId: user1.id,
+      entityType: 'task',
+      entityId: task1.id,
+      action: 'create',
+      details: {},
+      createdAt: new Date(),
+    },
+  });
 }
 
 main()
   .catch((e) => {
-    console.error(e)
-    process.exit(1)
+    console.error(e);
+    process.exit(1);
   })
   .finally(async () => {
-    await prisma.$disconnect()
-  }) 
+    await prisma.$disconnect();
+  }); 
