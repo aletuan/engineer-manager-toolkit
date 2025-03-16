@@ -14,6 +14,7 @@ import {
   CheckCircle,
   XCircle,
   PauseCircle,
+  Search,
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -23,18 +24,42 @@ import { Progress } from "@/components/ui/progress"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { Input } from "@/components/ui/input"
 import { cn } from "@/lib/utils"
 import { type Task, getTopTasksForWeek, getTaskAssignees } from "@/lib/tasks"
 
 export default function FocusPage() {
   const [currentDate, setCurrentDate] = useState<Date>(new Date())
   const [activeSquad, setActiveSquad] = useState<"Sonic" | "Troy">("Sonic")
-  const [tasks, setTasks] = useState<Task[]>([])
+  const [allTasks, setAllTasks] = useState<Task[]>([])
+  const [filteredTasks, setFilteredTasks] = useState<Task[]>([])
+  const [searchQuery, setSearchQuery] = useState("")
 
   // Cập nhật danh sách task khi thay đổi ngày hoặc squad
   useEffect(() => {
-    setTasks(getTopTasksForWeek(currentDate, activeSquad))
+    const tasks = getTopTasksForWeek(currentDate, activeSquad)
+    setAllTasks(tasks)
+    setFilteredTasks(tasks)
   }, [currentDate, activeSquad])
+
+  // Lọc task khi thay đổi từ khóa tìm kiếm
+  useEffect(() => {
+    if (!searchQuery.trim()) {
+      setFilteredTasks(allTasks)
+      return
+    }
+
+    const query = searchQuery.toLowerCase()
+    const filtered = allTasks.filter(
+      (task) =>
+        task.title.toLowerCase().includes(query) ||
+        task.description.toLowerCase().includes(query) ||
+        task.featureId.toLowerCase().includes(query) ||
+        task.assignees.some((assignee) => assignee.toLowerCase().includes(query)) ||
+        task.stakeholders.some((stakeholder) => stakeholder.toLowerCase().includes(query)),
+    )
+    setFilteredTasks(filtered)
+  }, [searchQuery, allTasks])
 
   // Xử lý chuyển đổi thời gian
   const handlePrevious = () => {
@@ -182,11 +207,11 @@ export default function FocusPage() {
             </div>
           </div>
 
-          {/* Squad selector */}
-          <div className="mt-6 mb-4">
+          {/* Squad selector và Navigation */}
+          <div className="mt-6 mb-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
             <Tabs
               defaultValue="Sonic"
-              className="w-full"
+              className="w-full md:w-auto"
               onValueChange={(value) => setActiveSquad(value as "Sonic" | "Troy")}
             >
               <TabsList className="grid w-full max-w-md grid-cols-2">
@@ -194,10 +219,7 @@ export default function FocusPage() {
                 <TabsTrigger value="Troy">Squad Troy</TabsTrigger>
               </TabsList>
             </Tabs>
-          </div>
 
-          {/* Date navigation */}
-          <div className="flex items-center justify-between mt-4">
             <div className="flex items-center space-x-2">
               <Button variant="outline" size="icon" onClick={handlePrevious}>
                 <ChevronLeft className="h-4 w-4" />
@@ -210,12 +232,23 @@ export default function FocusPage() {
               </Button>
             </div>
           </div>
+
+          {/* Search */}
+          <div className="mt-4 relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+            <Input
+              placeholder="Tìm kiếm theo tiêu đề, mô tả, FeatureID, assignee hoặc stakeholder..."
+              className="pl-10"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
         </div>
 
         {/* Main content - Top Tasks */}
         <div className="space-y-6">
-          {tasks.length > 0 ? (
-            tasks.map((task) => (
+          {filteredTasks.length > 0 ? (
+            filteredTasks.map((task) => (
               <Card key={task.id} className="overflow-hidden">
                 <CardHeader className="pb-3">
                   <div className="flex justify-between items-start">
@@ -229,7 +262,11 @@ export default function FocusPage() {
                         </Badge>
                         {getStatusBadge(task.status)}
                       </div>
-                      <CardTitle className="text-xl">{task.title}</CardTitle>
+                      <Link href={`/tasks/${task.id}`}>
+                        <CardTitle className="text-xl hover:text-primary hover:underline transition-colors cursor-pointer">
+                          {task.title}
+                        </CardTitle>
+                      </Link>
                     </div>
                     <div className="flex items-center gap-1">
                       <span className="text-sm font-medium">{task.points} points</span>
@@ -260,13 +297,17 @@ export default function FocusPage() {
 
                     <div className="flex flex-wrap gap-1 mt-3 sm:mt-0">
                       {task.stakeholders.map((stakeholder) => (
-                        <Badge
-                          key={stakeholder}
-                          variant="outline"
-                          className={cn("text-xs", getStakeholderColor(stakeholder))}
-                        >
-                          {stakeholder}
-                        </Badge>
+                        <Link href={`/stakeholders/${stakeholder}`} key={stakeholder}>
+                          <Badge
+                            variant="outline"
+                            className={cn(
+                              "text-xs cursor-pointer hover:ring-1 hover:ring-primary/30",
+                              getStakeholderColor(stakeholder),
+                            )}
+                          >
+                            {stakeholder}
+                          </Badge>
+                        </Link>
                       ))}
                     </div>
                   </div>
@@ -305,8 +346,8 @@ export default function FocusPage() {
           ) : (
             <div className="bg-white rounded-xl shadow-md p-8 text-center">
               <AlertCircle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium mb-2">Không có task nào trong khoảng thời gian này</h3>
-              <p className="text-gray-500">Thử chọn một khoảng thời gian khác hoặc thêm task mới.</p>
+              <h3 className="text-lg font-medium mb-2">Không có task nào phù hợp với tìm kiếm</h3>
+              <p className="text-gray-500">Thử thay đổi từ khóa tìm kiếm hoặc chọn một khoảng thời gian khác.</p>
             </div>
           )}
         </div>

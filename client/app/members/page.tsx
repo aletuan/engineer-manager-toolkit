@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { getTeamMembers } from "@/lib/team-data"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -12,6 +12,20 @@ import { CalendarIcon, Search, Users } from "lucide-react"
 export default function MembersPage() {
   const [activeTeam, setActiveTeam] = useState<"Sonic" | "Troy">("Sonic")
   const [searchQuery, setSearchQuery] = useState("")
+  const [searchParams, setSearchParams] = useState<URLSearchParams | null>(null)
+
+  // Đọc query parameter khi component mount
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search)
+      setSearchParams(params)
+
+      const squadParam = params.get("squad")
+      if (squadParam === "Sonic" || squadParam === "Troy") {
+        setActiveTeam(squadParam)
+      }
+    }
+  }, [])
 
   // Lọc thành viên theo team và từ khóa tìm kiếm
   const filteredMembers = getTeamMembers(activeTeam).filter(
@@ -50,7 +64,8 @@ export default function MembersPage() {
           {/* Team selector */}
           <div className="mt-6 mb-4">
             <Tabs
-              defaultValue="Sonic"
+              defaultValue={activeTeam}
+              value={activeTeam}
               className="w-full"
               onValueChange={(value) => setActiveTeam(value as "Sonic" | "Troy")}
             >

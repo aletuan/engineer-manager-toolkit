@@ -4,6 +4,21 @@ export type StakeholderType = "Fraud" | "BEB" | "ECOM" | "CM" | "CE" | "Other"
 
 export type TaskPriority = "High" | "Medium" | "Low"
 
+export type TaskStatus = "Not Started" | "In Progress" | "Completed" | "Blocked"
+
+export type TaskNote = {
+  id: string
+  content: string
+  author: string
+  createdAt: Date
+  updatedAt?: Date
+}
+
+export type TaskDependency = {
+  taskId: string
+  type: "blocks" | "blocked-by" | "related-to"
+}
+
 export type Task = {
   id: string
   featureId: string
@@ -15,9 +30,11 @@ export type Task = {
   assignees: string[] // Danh sách tên các thành viên
   stakeholders: StakeholderType[]
   priority: TaskPriority
-  status: "Not Started" | "In Progress" | "Completed" | "Blocked"
+  status: TaskStatus
   progress: number // 0-100%
   squad: "Sonic" | "Troy" // Thêm trường squad để phân biệt task của từng squad
+  notes?: TaskNote[] // Ghi chú cho task
+  dependencies?: TaskDependency[] // Các task phụ thuộc
 }
 
 // Hàm helper để tạo ngày tương đối so với ngày hiện tại
@@ -44,6 +61,26 @@ export const tasks: Task[] = [
     status: "In Progress",
     progress: 60,
     squad: "Sonic",
+    notes: [
+      {
+        id: "note-1-1",
+        content: "Đã hoàn thành việc tích hợp API thanh toán. Cần tiếp tục cập nhật giao diện người dùng.",
+        author: "Daniel Nguyen",
+        createdAt: getRelativeDate(-1),
+      },
+      {
+        id: "note-1-2",
+        content: "Gặp vấn đề với việc xử lý lỗi từ API. Cần thảo luận với team backend.",
+        author: "Phuc Nguyen",
+        createdAt: getRelativeDate(0),
+      },
+    ],
+    dependencies: [
+      {
+        taskId: "task-5",
+        type: "related-to",
+      },
+    ],
   },
   {
     id: "task-2",
@@ -60,6 +97,20 @@ export const tasks: Task[] = [
     status: "In Progress",
     progress: 30,
     squad: "Sonic",
+    notes: [
+      {
+        id: "note-2-1",
+        content: "Đã xác định các truy vấn chậm. Cần tối ưu hóa index và cấu trúc truy vấn.",
+        author: "Andy Le",
+        createdAt: getRelativeDate(-1),
+      },
+    ],
+    dependencies: [
+      {
+        taskId: "task-8",
+        type: "related-to",
+      },
+    ],
   },
   {
     id: "task-3",
@@ -76,6 +127,26 @@ export const tasks: Task[] = [
     status: "In Progress",
     progress: 40,
     squad: "Sonic",
+    notes: [
+      {
+        id: "note-3-1",
+        content: "Đã hoàn thành việc phân tích dữ liệu và xác định các mẫu gian lận phổ biến.",
+        author: "Chicharito Vu",
+        createdAt: getRelativeDate(-1),
+      },
+      {
+        id: "note-3-2",
+        content: "Đang phát triển thuật toán machine learning để phát hiện gian lận tự động.",
+        author: "Hoa Nguyen",
+        createdAt: getRelativeDate(0),
+      },
+    ],
+    dependencies: [
+      {
+        taskId: "task-1",
+        type: "blocked-by",
+      },
+    ],
   },
   {
     id: "task-4",
@@ -92,6 +163,8 @@ export const tasks: Task[] = [
     status: "Not Started",
     progress: 0,
     squad: "Troy",
+    notes: [],
+    dependencies: [],
   },
   {
     id: "task-5",
@@ -107,6 +180,27 @@ export const tasks: Task[] = [
     status: "In Progress",
     progress: 75,
     squad: "Troy",
+    notes: [
+      {
+        id: "note-5-1",
+        content: "Đã hoàn thành việc tích hợp API. Đang tiến hành kiểm thử.",
+        author: "Dany Nguyen",
+        createdAt: getRelativeDate(-2),
+      },
+      {
+        id: "note-5-2",
+        content: "Phát hiện một số vấn đề với xử lý lỗi. Đang làm việc để khắc phục.",
+        author: "Luy Hoang",
+        createdAt: getRelativeDate(-1),
+        updatedAt: getRelativeDate(0),
+      },
+    ],
+    dependencies: [
+      {
+        taskId: "task-1",
+        type: "related-to",
+      },
+    ],
   },
   {
     id: "task-6",
@@ -122,6 +216,8 @@ export const tasks: Task[] = [
     status: "Not Started",
     progress: 0,
     squad: "Sonic",
+    notes: [],
+    dependencies: [],
   },
   {
     id: "task-7",
@@ -137,6 +233,8 @@ export const tasks: Task[] = [
     status: "Not Started",
     progress: 0,
     squad: "Sonic",
+    notes: [],
+    dependencies: [],
   },
   {
     id: "task-8",
@@ -152,6 +250,20 @@ export const tasks: Task[] = [
     status: "In Progress",
     progress: 50,
     squad: "Sonic",
+    notes: [
+      {
+        id: "note-8-1",
+        content: "Đã hoàn thành việc phân tích từ khóa và tối ưu hóa meta tags.",
+        author: "Phuc Nguyen",
+        createdAt: getRelativeDate(-1),
+      },
+    ],
+    dependencies: [
+      {
+        taskId: "task-2",
+        type: "related-to",
+      },
+    ],
   },
   {
     id: "task-9",
@@ -167,6 +279,8 @@ export const tasks: Task[] = [
     status: "Not Started",
     progress: 0,
     squad: "Sonic",
+    notes: [],
+    dependencies: [],
   },
   {
     id: "task-10",
@@ -182,6 +296,21 @@ export const tasks: Task[] = [
     status: "In Progress",
     progress: 20,
     squad: "Troy",
+    notes: [
+      {
+        id: "note-10-1",
+        content: "Đã hoàn thành việc thiết lập cơ sở hạ tầng cho hệ thống phân tích dữ liệu.",
+        author: "Kiet Chung",
+        createdAt: getRelativeDate(-3),
+      },
+      {
+        id: "note-10-2",
+        content: "Đang phát triển các dashboard và báo cáo tự động.",
+        author: "Luy Hoang",
+        createdAt: getRelativeDate(-1),
+      },
+    ],
+    dependencies: [],
   },
   {
     id: "task-11",
@@ -197,6 +326,8 @@ export const tasks: Task[] = [
     status: "Not Started",
     progress: 0,
     squad: "Troy",
+    notes: [],
+    dependencies: [],
   },
   {
     id: "task-12",
@@ -212,6 +343,20 @@ export const tasks: Task[] = [
     status: "In Progress",
     progress: 35,
     squad: "Troy",
+    notes: [
+      {
+        id: "note-12-1",
+        content: "Đã hoàn thành việc phân tích các điểm nghẽn trong quy trình thanh toán hiện tại.",
+        author: "Kiet Chung",
+        createdAt: getRelativeDate(-1),
+      },
+    ],
+    dependencies: [
+      {
+        taskId: "task-5",
+        type: "blocked-by",
+      },
+    ],
   },
 ]
 
@@ -277,5 +422,42 @@ export function getTaskById(taskId: string): Task | undefined {
 // Hàm lấy thông tin chi tiết của các thành viên được gán cho một task
 export function getTaskAssignees(task: Task): TeamMember[] {
   return teamMembers.filter((member) => task.assignees.includes(member.name))
+}
+
+// Hàm lấy thông tin chi tiết của các task phụ thuộc
+export function getTaskDependencies(task: Task): { task: Task; type: string }[] {
+  if (!task.dependencies || task.dependencies.length === 0) {
+    return []
+  }
+
+  return task.dependencies
+    .map((dep) => {
+      const dependentTask = getTaskById(dep.taskId)
+      return {
+        task: dependentTask!,
+        type: dep.type,
+      }
+    })
+    .filter((dep) => dep.task !== undefined)
+}
+
+// Hàm lấy các task liên quan đến một task cụ thể (các task mà task hiện tại phụ thuộc vào)
+export function getRelatedTasks(taskId: string): { task: Task; type: string }[] {
+  const relatedTasks: { task: Task; type: string }[] = []
+
+  tasks.forEach((task) => {
+    if (task.dependencies) {
+      const dependency = task.dependencies.find((dep) => dep.taskId === taskId)
+      if (dependency) {
+        relatedTasks.push({
+          task,
+          type:
+            dependency.type === "blocks" ? "blocked-by" : dependency.type === "blocked-by" ? "blocks" : "related-to",
+        })
+      }
+    }
+  })
+
+  return relatedTasks
 }
 
