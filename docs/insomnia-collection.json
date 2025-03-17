@@ -1,0 +1,550 @@
+{
+  "_type": "export",
+  "__export_format": 4,
+  "__export_date": "2024-03-19T10:50:00.000Z",
+  "__export_source": "insomnia.desktop.app:v8.5.1",
+  "resources": [
+    {
+      "_id": "req_root",
+      "parentId": "wrk_workspace",
+      "modified": 1710849000000,
+      "created": 1710849000000,
+      "name": "Engineer Manager Toolkit API",
+      "description": "API collection for Engineer Manager Toolkit",
+      "scope": "collection",
+      "type": "request_group",
+      "_type": "request_group"
+    },
+    {
+      "_id": "req_graphql",
+      "parentId": "req_root",
+      "modified": 1710849000000,
+      "created": 1710849000000,
+      "name": "GraphQL API",
+      "description": "GraphQL API endpoints",
+      "scope": "collection",
+      "type": "request_group",
+      "_type": "request_group"
+    },
+    {
+      "_id": "req_graphql_squads",
+      "parentId": "req_graphql",
+      "modified": 1710849000000,
+      "created": 1710849000000,
+      "name": "Get Squads",
+      "description": "Get all squads with their members",
+      "url": "{{ _.graphqlUrl }}/graphql",
+      "method": "POST",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"query\": \"{ squads { id name code description members { id fullName email position pid status } } }\"\n}"
+      },
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json",
+          "type": "text"
+        }
+      ],
+      "type": "request",
+      "_type": "request"
+    },
+    {
+      "_id": "env_dev",
+      "parentId": "req_root",
+      "modified": 1710849000000,
+      "created": 1710849000000,
+      "name": "Development",
+      "data": {
+        "baseUrl": "http://localhost:3001/api/v1",
+        "graphqlUrl": "http://localhost:3002"
+      },
+      "dataPropertyOrder": {
+        "&": ["baseUrl", "graphqlUrl"]
+      },
+      "color": null,
+      "isPrivate": false,
+      "isProperty": false,
+      "type": "environment",
+      "_type": "environment",
+      "metaSortKey": -1
+    },
+    {
+      "_id": "req_tasks",
+      "parentId": "req_root",
+      "modified": 1710849000000,
+      "created": 1710849000000,
+      "name": "Tasks",
+      "description": "Task management endpoints",
+      "scope": "collection",
+      "type": "request_group",
+      "_type": "request_group"
+    },
+    {
+      "_id": "req_tasks_create",
+      "parentId": "req_tasks",
+      "modified": 1710849000000,
+      "created": 1710849000000,
+      "name": "Create Task",
+      "url": "{{ _.baseUrl }}/tasks",
+      "description": "Create a new task",
+      "method": "POST",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"title\": \"Task title\",\n  \"description\": \"Task description\",\n  \"status\": \"TODO\",\n  \"priority\": \"MEDIUM\",\n  \"dueDate\": \"2024-03-20T00:00:00.000Z\",\n  \"assignedTo\": \"user-id\",\n  \"featureId\": \"feature-id\",\n  \"tags\": [\"tag1\", \"tag2\"]\n}"
+      },
+      "type": "request",
+      "_type": "request"
+    },
+    {
+      "_id": "req_tasks_list",
+      "parentId": "req_tasks",
+      "modified": 1710849000000,
+      "created": 1710849000000,
+      "name": "List Tasks",
+      "url": "{{ _.baseUrl }}/tasks",
+      "description": "Get all tasks with filtering and pagination",
+      "method": "GET",
+      "type": "request",
+      "_type": "request"
+    },
+    {
+      "_id": "req_tasks_get",
+      "parentId": "req_tasks",
+      "modified": 1710849000000,
+      "created": 1710849000000,
+      "name": "Get Task",
+      "url": "{{ _.baseUrl }}/tasks/{{ _.taskId }}",
+      "description": "Get a task by ID",
+      "method": "GET",
+      "type": "request",
+      "_type": "request"
+    },
+    {
+      "_id": "req_tasks_update",
+      "parentId": "req_tasks",
+      "modified": 1710849000000,
+      "created": 1710849000000,
+      "name": "Update Task",
+      "url": "{{ _.baseUrl }}/tasks/{{ _.taskId }}",
+      "description": "Update a task",
+      "method": "PUT",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"title\": \"Updated title\",\n  \"description\": \"Updated description\",\n  \"status\": \"IN_PROGRESS\",\n  \"priority\": \"HIGH\",\n  \"dueDate\": \"2024-03-21T00:00:00.000Z\",\n  \"assignedTo\": \"user-id\",\n  \"featureId\": \"feature-id\",\n  \"tags\": [\"tag1\", \"tag2\"]\n}"
+      },
+      "type": "request",
+      "_type": "request"
+    },
+    {
+      "_id": "req_tasks_delete",
+      "parentId": "req_tasks",
+      "modified": 1710849000000,
+      "created": 1710849000000,
+      "name": "Delete Task",
+      "url": "{{ _.baseUrl }}/tasks/{{ _.taskId }}",
+      "description": "Delete a task",
+      "method": "DELETE",
+      "type": "request",
+      "_type": "request"
+    },
+    {
+      "_id": "req_tasks_status",
+      "parentId": "req_tasks",
+      "modified": 1710849000000,
+      "created": 1710849000000,
+      "name": "Update Task Status",
+      "url": "{{ _.baseUrl }}/tasks/{{ _.taskId }}/status",
+      "description": "Update task status",
+      "method": "PATCH",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"status\": \"DONE\"\n}"
+      },
+      "type": "request",
+      "_type": "request"
+    },
+    {
+      "_id": "req_tasks_comments",
+      "parentId": "req_tasks",
+      "modified": 1710849000000,
+      "created": 1710849000000,
+      "name": "Add Comment",
+      "url": "{{ _.baseUrl }}/tasks/{{ _.taskId }}/comments",
+      "description": "Add a comment to a task",
+      "method": "POST",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"content\": \"Comment content\"\n}"
+      },
+      "type": "request",
+      "_type": "request"
+    },
+    {
+      "_id": "req_tasks_feature",
+      "parentId": "req_tasks",
+      "modified": 1710849000000,
+      "created": 1710849000000,
+      "name": "Get Tasks by Feature",
+      "url": "{{ _.baseUrl }}/tasks/feature/{{ _.featureId }}",
+      "description": "Get all tasks for a feature",
+      "method": "GET",
+      "type": "request",
+      "_type": "request"
+    },
+    {
+      "_id": "req_tasks_user",
+      "parentId": "req_tasks",
+      "modified": 1710849000000,
+      "created": 1710849000000,
+      "name": "Get Tasks by User",
+      "url": "{{ _.baseUrl }}/tasks/user/{{ _.userId }}",
+      "description": "Get all tasks assigned to a user",
+      "method": "GET",
+      "type": "request",
+      "_type": "request"
+    },
+    {
+      "_id": "req_roles",
+      "parentId": "req_root",
+      "modified": 1710849000000,
+      "created": 1710849000000,
+      "name": "Roles",
+      "description": "Role management endpoints",
+      "scope": "collection",
+      "type": "request_group",
+      "_type": "request_group"
+    },
+    {
+      "_id": "req_roles_create",
+      "parentId": "req_roles",
+      "modified": 1710849000000,
+      "created": 1710849000000,
+      "name": "Create Role",
+      "url": "{{ _.baseUrl }}/roles",
+      "description": "Create a new role",
+      "method": "POST",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"name\": \"Role name\",\n  \"description\": \"Role description\",\n  \"permissions\": [\"permission1\", \"permission2\"]\n}"
+      },
+      "type": "request",
+      "_type": "request"
+    },
+    {
+      "_id": "req_roles_list",
+      "parentId": "req_roles",
+      "modified": 1710849000000,
+      "created": 1710849000000,
+      "name": "List Roles",
+      "url": "{{ _.baseUrl }}/roles",
+      "description": "Get all roles",
+      "method": "GET",
+      "type": "request",
+      "_type": "request"
+    },
+    {
+      "_id": "req_roles_get",
+      "parentId": "req_roles",
+      "modified": 1710849000000,
+      "created": 1710849000000,
+      "name": "Get Role",
+      "url": "{{ _.baseUrl }}/roles/{{ _.roleId }}",
+      "description": "Get a role by ID",
+      "method": "GET",
+      "type": "request",
+      "_type": "request"
+    },
+    {
+      "_id": "req_roles_update",
+      "parentId": "req_roles",
+      "modified": 1710849000000,
+      "created": 1710849000000,
+      "name": "Update Role",
+      "url": "{{ _.baseUrl }}/roles/{{ _.roleId }}",
+      "description": "Update a role",
+      "method": "PUT",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"name\": \"Updated name\",\n  \"description\": \"Updated description\",\n  \"permissions\": [\"permission1\", \"permission2\"]\n}"
+      },
+      "type": "request",
+      "_type": "request"
+    },
+    {
+      "_id": "req_roles_delete",
+      "parentId": "req_roles",
+      "modified": 1710849000000,
+      "created": 1710849000000,
+      "name": "Delete Role",
+      "url": "{{ _.baseUrl }}/roles/{{ _.roleId }}",
+      "description": "Delete a role",
+      "method": "DELETE",
+      "type": "request",
+      "_type": "request"
+    },
+    {
+      "_id": "req_roles_assign",
+      "parentId": "req_roles",
+      "modified": 1710849000000,
+      "created": 1710849000000,
+      "name": "Assign Role",
+      "url": "{{ _.baseUrl }}/roles/assign",
+      "description": "Assign a role to a squad member",
+      "method": "POST",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"squadId\": \"squad-id\",\n  \"memberId\": \"member-id\",\n  \"roleId\": \"role-id\"\n}"
+      },
+      "type": "request",
+      "_type": "request"
+    },
+    {
+      "_id": "req_roles_remove",
+      "parentId": "req_roles",
+      "modified": 1710849000000,
+      "created": 1710849000000,
+      "name": "Remove Role Assignment",
+      "url": "{{ _.baseUrl }}/roles/assignments/{{ _.assignmentId }}",
+      "description": "Remove a role assignment",
+      "method": "DELETE",
+      "type": "request",
+      "_type": "request"
+    },
+    {
+      "_id": "req_roles_member",
+      "parentId": "req_roles",
+      "modified": 1710849000000,
+      "created": 1710849000000,
+      "name": "Get Member Roles",
+      "url": "{{ _.baseUrl }}/squads/{{ _.squadId }}/members/{{ _.memberId }}/roles",
+      "description": "Get all roles assigned to a squad member",
+      "method": "GET",
+      "type": "request",
+      "_type": "request"
+    },
+    {
+      "_id": "req_squads",
+      "parentId": "req_root",
+      "modified": 1710849000000,
+      "created": 1710849000000,
+      "name": "Squads",
+      "description": "Squad management endpoints",
+      "scope": "collection",
+      "type": "request_group",
+      "_type": "request_group"
+    },
+    {
+      "_id": "req_squads_list",
+      "parentId": "req_squads",
+      "modified": 1710849000000,
+      "created": 1710849000000,
+      "name": "List Squads",
+      "url": "{{ _.baseUrl }}/squads",
+      "description": "Get all squads",
+      "method": "GET",
+      "type": "request",
+      "_type": "request"
+    },
+    {
+      "_id": "req_squads_get",
+      "parentId": "req_squads",
+      "modified": 1710849000000,
+      "created": 1710849000000,
+      "name": "Get Squad",
+      "url": "{{ _.baseUrl }}/squads/{{ _.squadId }}",
+      "description": "Get a squad by ID",
+      "method": "GET",
+      "type": "request",
+      "_type": "request"
+    },
+    {
+      "_id": "req_squads_update",
+      "parentId": "req_squads",
+      "modified": 1710849000000,
+      "created": 1710849000000,
+      "name": "Update Squad",
+      "url": "{{ _.baseUrl }}/squads/{{ _.squadId }}",
+      "description": "Update a squad",
+      "method": "PUT",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"name\": \"Updated squad name\",\n  \"code\": \"UPDATED\",\n  \"description\": \"Updated description\"\n}"
+      },
+      "type": "request",
+      "_type": "request"
+    },
+    {
+      "_id": "req_squads_delete",
+      "parentId": "req_squads",
+      "modified": 1710849000000,
+      "created": 1710849000000,
+      "name": "Delete Squad",
+      "url": "{{ _.baseUrl }}/squads/{{ _.squadId }}",
+      "description": "Delete a squad",
+      "method": "DELETE",
+      "type": "request",
+      "_type": "request"
+    },
+    {
+      "_id": "req_squads_members_add",
+      "parentId": "req_squads",
+      "modified": 1710849000000,
+      "created": 1710849000000,
+      "name": "Add Member",
+      "url": "{{ _.baseUrl }}/squads/{{ _.squadId }}/members",
+      "description": "Add a member to a squad",
+      "method": "POST",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"userId\": \"user-id\",\n  \"position\": \"Senior Developer\",\n  \"status\": \"ACTIVE\"\n}"
+      },
+      "type": "request",
+      "_type": "request"
+    },
+    {
+      "_id": "req_squads_members_list",
+      "parentId": "req_squads",
+      "modified": 1710849000000,
+      "created": 1710849000000,
+      "name": "List Members",
+      "url": "{{ _.baseUrl }}/squads/{{ _.squadId }}/members",
+      "description": "Get all members of a squad",
+      "method": "GET",
+      "type": "request",
+      "_type": "request"
+    },
+    {
+      "_id": "req_squads_members_update",
+      "parentId": "req_squads",
+      "modified": 1710849000000,
+      "created": 1710849000000,
+      "name": "Update Member",
+      "url": "{{ _.baseUrl }}/squads/members/{{ _.memberId }}",
+      "description": "Update a squad member",
+      "method": "PUT",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"position\": \"Updated position\",\n  \"status\": \"INACTIVE\"\n}"
+      },
+      "type": "request",
+      "_type": "request"
+    },
+    {
+      "_id": "req_squads_members_remove",
+      "parentId": "req_squads",
+      "modified": 1710849000000,
+      "created": 1710849000000,
+      "name": "Remove Member",
+      "url": "{{ _.baseUrl }}/squads/members/{{ _.memberId }}",
+      "description": "Remove a member from a squad",
+      "method": "DELETE",
+      "type": "request",
+      "_type": "request"
+    },
+    {
+      "_id": "req_calendar",
+      "parentId": "req_root",
+      "modified": 1710849000000,
+      "created": 1710849000000,
+      "name": "Calendar",
+      "description": "Calendar management endpoints",
+      "scope": "collection",
+      "type": "request_group",
+      "_type": "request_group"
+    },
+    {
+      "_id": "req_calendar_rotations_list",
+      "parentId": "req_calendar",
+      "modified": 1710849000000,
+      "created": 1710849000000,
+      "name": "List Rotations",
+      "url": "{{ _.baseUrl }}/calendar/rotations",
+      "description": "Get all rotations",
+      "method": "GET",
+      "type": "request",
+      "_type": "request"
+    },
+    {
+      "_id": "req_calendar_rotations_get",
+      "parentId": "req_calendar",
+      "modified": 1710849000000,
+      "created": 1710849000000,
+      "name": "Get Rotation",
+      "url": "{{ _.baseUrl }}/calendar/rotations/{{ _.rotationId }}",
+      "description": "Get a rotation by ID",
+      "method": "GET",
+      "type": "request",
+      "_type": "request"
+    },
+    {
+      "_id": "req_calendar_rotations_create",
+      "parentId": "req_calendar",
+      "modified": 1710849000000,
+      "created": 1710849000000,
+      "name": "Create Rotation",
+      "url": "{{ _.baseUrl }}/calendar/rotations",
+      "description": "Create a new rotation",
+      "method": "POST",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"name\": \"Rotation name\",\n  \"description\": \"Rotation description\",\n  \"members\": [\"member1\", \"member2\"]\n}"
+      },
+      "type": "request",
+      "_type": "request"
+    },
+    {
+      "_id": "req_calendar_rotations_update",
+      "parentId": "req_calendar",
+      "modified": 1710849000000,
+      "created": 1710849000000,
+      "name": "Update Rotation",
+      "url": "{{ _.baseUrl }}/calendar/rotations/{{ _.rotationId }}",
+      "description": "Update a rotation",
+      "method": "PUT",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"name\": \"Updated name\",\n  \"description\": \"Updated description\",\n  \"members\": [\"member1\", \"member2\"]\n}"
+      },
+      "type": "request",
+      "_type": "request"
+    },
+    {
+      "_id": "req_calendar_rotations_delete",
+      "parentId": "req_calendar",
+      "modified": 1710849000000,
+      "created": 1710849000000,
+      "name": "Delete Rotation",
+      "url": "{{ _.baseUrl }}/calendar/rotations/{{ _.rotationId }}",
+      "description": "Delete a rotation",
+      "method": "DELETE",
+      "type": "request",
+      "_type": "request"
+    },
+    {
+      "_id": "req_calendar_swaps_delete",
+      "parentId": "req_calendar",
+      "modified": 1710849000000,
+      "created": 1710849000000,
+      "name": "Delete Swap",
+      "url": "{{ _.baseUrl }}/calendar/swaps/{{ _.swapId }}",
+      "description": "Delete a swap request",
+      "method": "DELETE",
+      "type": "request",
+      "_type": "request"
+    },
+    {
+      "_id": "wrk_workspace",
+      "parentId": null,
+      "modified": 1710849000000,
+      "created": 1710849000000,
+      "name": "Engineer Manager Toolkit",
+      "description": "API collection for Engineer Manager Toolkit",
+      "scope": "collection",
+      "type": "workspace",
+      "_type": "workspace",
+      "metaSortKey": -1,
+      "activeEnvironmentId": "env_dev"
+    }
+  ]
+} 
