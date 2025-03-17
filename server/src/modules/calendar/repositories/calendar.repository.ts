@@ -6,16 +6,29 @@ export class CalendarRepository {
 
   // Rotation Methods
   async findRotations(query: GetRotationsQuery) {
+    const where: any = {};
+    
+    if (query.squadId) {
+      where.squadId = query.squadId;
+    }
+    
+    if (query.memberId) {
+      where.OR = [
+        { primaryMemberId: query.memberId },
+        { secondaryMemberId: query.memberId },
+      ];
+    }
+    
+    if (query.startDate) {
+      where.startDate = { gte: new Date(query.startDate) };
+    }
+    
+    if (query.endDate) {
+      where.endDate = { lte: new Date(query.endDate) };
+    }
+    
     return this.prisma.incidentRotation.findMany({
-      where: {
-        squadId: query.squadId,
-        OR: [
-          { primaryMemberId: query.memberId },
-          { secondaryMemberId: query.memberId },
-        ],
-        startDate: query.startDate ? { gte: new Date(query.startDate) } : undefined,
-        endDate: query.endDate ? { lte: new Date(query.endDate) } : undefined,
-      },
+      where,
       include: {
         squad: true,
         primaryMember: true,
