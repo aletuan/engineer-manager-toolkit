@@ -454,11 +454,11 @@
       "_type": "request_group"
     },
     {
-      "_id": "req_calendar_rotations_list",
+      "_id": "req_calendar_rotations",
       "parentId": "req_calendar",
       "modified": 1710849000000,
       "created": 1710849000000,
-      "name": "List Rotations",
+      "name": "Get Rotations",
       "url": "{{ _.baseUrl }}/calendar/rotations",
       "description": "Get all rotations",
       "method": "GET",
@@ -466,11 +466,11 @@
       "_type": "request"
     },
     {
-      "_id": "req_calendar_rotations_get",
+      "_id": "req_calendar_rotation_by_id",
       "parentId": "req_calendar",
       "modified": 1710849000000,
       "created": 1710849000000,
-      "name": "Get Rotation",
+      "name": "Get Rotation by ID",
       "url": "{{ _.baseUrl }}/calendar/rotations/{{ _.rotationId }}",
       "description": "Get a rotation by ID",
       "method": "GET",
@@ -478,7 +478,7 @@
       "_type": "request"
     },
     {
-      "_id": "req_calendar_rotations_create",
+      "_id": "req_calendar_create_rotation",
       "parentId": "req_calendar",
       "modified": 1710849000000,
       "created": 1710849000000,
@@ -488,13 +488,13 @@
       "method": "POST",
       "body": {
         "mimeType": "application/json",
-        "text": "{\n  \"name\": \"Rotation name\",\n  \"description\": \"Rotation description\",\n  \"members\": [\"member1\", \"member2\"]\n}"
+        "text": "{\n  \"squadId\": \"squad-id\",\n  \"primaryMemberId\": \"member-id-1\",\n  \"secondaryMemberId\": \"member-id-2\",\n  \"startDate\": \"2024-03-20T00:00:00.000Z\",\n  \"endDate\": \"2024-04-03T00:00:00.000Z\",\n  \"sprintNumber\": 1\n}"
       },
       "type": "request",
       "_type": "request"
     },
     {
-      "_id": "req_calendar_rotations_update",
+      "_id": "req_calendar_update_rotation",
       "parentId": "req_calendar",
       "modified": 1710849000000,
       "created": 1710849000000,
@@ -504,13 +504,13 @@
       "method": "PUT",
       "body": {
         "mimeType": "application/json",
-        "text": "{\n  \"name\": \"Updated name\",\n  \"description\": \"Updated description\",\n  \"members\": [\"member1\", \"member2\"]\n}"
+        "text": "{\n  \"primaryMemberId\": \"member-id-1\",\n  \"secondaryMemberId\": \"member-id-2\",\n  \"startDate\": \"2024-03-20T00:00:00.000Z\",\n  \"endDate\": \"2024-04-03T00:00:00.000Z\"\n}"
       },
       "type": "request",
       "_type": "request"
     },
     {
-      "_id": "req_calendar_rotations_delete",
+      "_id": "req_calendar_delete_rotation",
       "parentId": "req_calendar",
       "modified": 1710849000000,
       "created": 1710849000000,
@@ -522,7 +522,63 @@
       "_type": "request"
     },
     {
-      "_id": "req_calendar_swaps_delete",
+      "_id": "req_calendar_swaps",
+      "parentId": "req_calendar",
+      "modified": 1710849000000,
+      "created": 1710849000000,
+      "name": "Get Swaps",
+      "url": "{{ _.baseUrl }}/calendar/swaps",
+      "description": "Get all swap requests",
+      "method": "GET",
+      "type": "request",
+      "_type": "request"
+    },
+    {
+      "_id": "req_calendar_swap_by_id",
+      "parentId": "req_calendar",
+      "modified": 1710849000000,
+      "created": 1710849000000,
+      "name": "Get Swap by ID",
+      "url": "{{ _.baseUrl }}/calendar/swaps/{{ _.swapId }}",
+      "description": "Get a swap request by ID",
+      "method": "GET",
+      "type": "request",
+      "_type": "request"
+    },
+    {
+      "_id": "req_calendar_create_swap",
+      "parentId": "req_calendar",
+      "modified": 1710849000000,
+      "created": 1710849000000,
+      "name": "Create Swap",
+      "url": "{{ _.baseUrl }}/calendar/swaps",
+      "description": "Create a new swap request",
+      "method": "POST",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"rotationId\": \"rotation-id\",\n  \"requesterId\": \"member-id-1\",\n  \"accepterId\": \"member-id-2\",\n  \"swapDate\": \"2024-03-25T00:00:00.000Z\"\n}"
+      },
+      "type": "request",
+      "_type": "request"
+    },
+    {
+      "_id": "req_calendar_update_swap",
+      "parentId": "req_calendar",
+      "modified": 1710849000000,
+      "created": 1710849000000,
+      "name": "Update Swap",
+      "url": "{{ _.baseUrl }}/calendar/swaps/{{ _.swapId }}",
+      "description": "Update a swap request",
+      "method": "PUT",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"status\": \"APPROVED\"\n}"
+      },
+      "type": "request",
+      "_type": "request"
+    },
+    {
+      "_id": "req_calendar_delete_swap",
       "parentId": "req_calendar",
       "modified": 1710849000000,
       "created": 1710849000000,
@@ -530,6 +586,82 @@
       "url": "{{ _.baseUrl }}/calendar/swaps/{{ _.swapId }}",
       "description": "Delete a swap request",
       "method": "DELETE",
+      "type": "request",
+      "_type": "request"
+    },
+    {
+      "_id": "req_calendar_availability",
+      "parentId": "req_calendar",
+      "modified": 1710849000000,
+      "created": 1710849000000,
+      "name": "Get Availability",
+      "url": "{{ _.baseUrl }}/calendar/availability",
+      "description": "Get member availability",
+      "method": "GET",
+      "type": "request",
+      "_type": "request"
+    },
+    {
+      "_id": "req_calendar_update_availability",
+      "parentId": "req_calendar",
+      "modified": 1710849000000,
+      "created": 1710849000000,
+      "name": "Update Availability",
+      "url": "{{ _.baseUrl }}/calendar/availability/{{ _.memberId }}",
+      "description": "Update member availability",
+      "method": "PUT",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"status\": \"ON_LEAVE\"\n}"
+      },
+      "type": "request",
+      "_type": "request"
+    },
+    {
+      "_id": "req_calendar_standup_hosting",
+      "parentId": "req_calendar",
+      "modified": 1710849000000,
+      "created": 1710849000000,
+      "name": "Get Standup Hosting Schedule",
+      "url": "{{ _.baseUrl }}/calendar/standup-hosting/{{ _.squadId }}",
+      "description": "Get standup hosting schedule for a squad",
+      "method": "GET",
+      "parameters": [
+        {
+          "name": "startDate",
+          "value": "2024-03-20",
+          "type": "text"
+        },
+        {
+          "name": "endDate",
+          "value": "2024-04-20",
+          "type": "text"
+        }
+      ],
+      "type": "request",
+      "_type": "request"
+    },
+    {
+      "_id": "req_calendar_incident_rotation",
+      "parentId": "req_calendar",
+      "modified": 1710849000000,
+      "created": 1710849000000,
+      "name": "Get Incident Rotation Schedule",
+      "url": "{{ _.baseUrl }}/calendar/incident-rotation/{{ _.squadId }}",
+      "description": "Get incident rotation schedule for a squad",
+      "method": "GET",
+      "parameters": [
+        {
+          "name": "startDate",
+          "value": "2024-03-20",
+          "type": "text"
+        },
+        {
+          "name": "endDate",
+          "value": "2024-04-20",
+          "type": "text"
+        }
+      ],
       "type": "request",
       "_type": "request"
     },
