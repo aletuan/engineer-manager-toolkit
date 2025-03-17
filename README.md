@@ -7,27 +7,26 @@ A modern web application built to help engineering managers streamline their dai
 Here's a visual tour of the Engineer Manager Toolkit's key features and interfaces:
 
 ### Team & Member Management
-<div style="display: flex; gap: 10px; margin-bottom: 20px;">
-  <img src="docs/images/members-list.png" alt="Members List" width="400"/>
-  <img src="docs/images/member-profile.png" alt="Member Profile" width="400"/>
+<div style="display: flex; gap: 20px; margin-bottom: 30px;">
+  <img src="docs/images/members-list.png" alt="Members List" width="450"/>
+  <img src="docs/images/member-profile.png" alt="Member Profile" width="450"/>
 </div>
 
 ### Schedule & Calendar
-<div style="display: flex; gap: 10px; margin-bottom: 20px;">
-  <img src="docs/images/weekly-schedule.png" alt="Weekly Schedule" width="400"/>
-  <img src="docs/images/monthly-schedule.png" alt="Monthly Schedule" width="400"/>
+<div style="display: flex; gap: 20px; margin-bottom: 30px;">
+  <img src="docs/images/weekly-schedule.png" alt="Weekly Schedule" width="450"/>
+  <img src="docs/images/monthly-schedule.png" alt="Monthly Schedule" width="450"/>
 </div>
 
 ### Task & Focus Management
-<div style="display: flex; gap: 10px; margin-bottom: 20px;">
-  <img src="docs/images/task-details.png" alt="Task Details" width="400"/>
-  <img src="docs/images/top-tasks-in-focus.png" alt="Top Tasks in Focus" width="400"/>
+<div style="display: flex; gap: 20px; margin-bottom: 30px;">
+  <img src="docs/images/task-details.png" alt="Task Details" width="450"/>
+  <img src="docs/images/top-tasks-in-focus.png" alt="Top Tasks in Focus" width="450"/>
 </div>
 
-### Stakeholder & System Architecture
-<div style="display: flex; gap: 10px; margin-bottom: 20px;">
-  <img src="docs/images/stakeholder-profile.png" alt="Stakeholder Profile" width="400"/>
-  <img src="docs/images/entities-diagram.png" alt="Entities Diagram" width="400"/>
+### Stakeholder Management
+<div style="display: flex; justify-content: flex-start; margin-bottom: 30px;">
+  <img src="docs/images/stakeholder-profile.png" alt="Stakeholder Profile" width="450"/>
 </div>
 
 ## 🚀 Features
