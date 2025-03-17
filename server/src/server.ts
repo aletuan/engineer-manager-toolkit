@@ -1,17 +1,18 @@
 import app from './app';
 import { config } from './shared/config';
+import { createApolloServer } from './graphql/server';
 
-const startServer = () => {
-  try {
-    app.listen(config.port, () => {
-      console.log(
-        `Server is running on port ${config.port} in ${config.nodeEnv} mode`
-      );
-    });
-  } catch (error) {
-    console.error('Failed to start server:', error);
-    process.exit(1);
-  }
-};
 
-startServer(); 
+// Start server
+app.listen(config.port, () => {
+  console.log(`🚀 REST API Server ready at http://localhost:${config.port}`);
+  console.log(`📚 API Documentation available at http://localhost:${config.port}/api-docs`);
+});
+
+// Start GraphQL server
+const graphqlPort = 3002;
+createApolloServer().then((graphqlApp) => {
+  graphqlApp.listen(graphqlPort, () => {
+    console.log(`🚀 GraphQL Server ready at http://localhost:${graphqlPort}/graphql`);
+  });
+}); 
