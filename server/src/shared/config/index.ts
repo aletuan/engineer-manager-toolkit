@@ -2,9 +2,8 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-export const config = {
+const config = {
   port: process.env.PORT || 3001,
-  graphqlPort: process.env.GRAPHQL_PORT || 3002,
   nodeEnv: process.env.NODE_ENV || 'development',
   database: {
     url: process.env.DATABASE_URL,

@@ -5,6 +5,19 @@
   "__export_source": "insomnia.desktop.app:v8.5.1",
   "resources": [
     {
+      "_id": "req_engineer_manager_toolkit",
+      "parentId": "wrk_insomnia",
+      "modified": 1710633558000,
+      "created": 1710633558000,
+      "name": "Engineer Manager Toolkit API",
+      "description": "API endpoints for Engineer Manager Toolkit",
+      "environment": {},
+      "environmentPropertyOrder": null,
+      "metaSortKey": -1710633558000,
+      "isPrivate": false,
+      "_type": "request_group"
+    },
+    {
       "_id": "req_root",
       "parentId": "wrk_workspace",
       "modified": 1710849000000,
@@ -16,58 +29,22 @@
       "_type": "request_group"
     },
     {
-      "_id": "req_graphql",
-      "parentId": "req_root",
-      "modified": 1710849000000,
-      "created": 1710849000000,
-      "name": "GraphQL API",
-      "description": "GraphQL API endpoints",
-      "scope": "collection",
-      "type": "request_group",
-      "_type": "request_group"
-    },
-    {
-      "_id": "req_graphql_squads",
-      "parentId": "req_graphql",
-      "modified": 1710849000000,
-      "created": 1710849000000,
-      "name": "Get Squads",
-      "description": "Get all squads with their members",
-      "url": "{{ _.graphqlUrl }}/graphql",
-      "method": "POST",
-      "body": {
-        "mimeType": "application/json",
-        "text": "{\n  \"query\": \"{ squads { id name code description members { id fullName email position pid status } } }\"\n}"
-      },
-      "headers": [
-        {
-          "name": "Content-Type",
-          "value": "application/json",
-          "type": "text"
-        }
-      ],
-      "type": "request",
-      "_type": "request"
-    },
-    {
       "_id": "env_dev",
-      "parentId": "req_root",
+      "parentId": "wrk_workspace",
       "modified": 1710849000000,
       "created": 1710849000000,
       "name": "Development",
       "data": {
         "baseUrl": "http://localhost:3001/api/v1",
-        "graphqlUrl": "http://localhost:3002"
+        "squadId": "squad-sonic"
       },
       "dataPropertyOrder": {
-        "&": ["baseUrl", "graphqlUrl"]
+        "&": ["baseUrl", "squadId"]
       },
       "color": null,
       "isPrivate": false,
-      "isProperty": false,
-      "type": "environment",
-      "_type": "environment",
-      "metaSortKey": -1
+      "metaSortKey": 1710849000000,
+      "_type": "environment"
     },
     {
       "_id": "req_tasks",
