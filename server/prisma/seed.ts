@@ -25,7 +25,7 @@ async function main() {
   // Create squads
   const troySquad = await prisma.squad.create({
     data: {
-      name: "Troy",
+      name: "Squad Troy",
       code: "Troy",
       description: "Development Team",
     },
@@ -33,7 +33,7 @@ async function main() {
 
   const sonicSquad = await prisma.squad.create({
     data: {
-      name: "Sonic",
+      name: "Squad Sonic",
       code: "Sonic",
       description: "Production Support Team",
     },
