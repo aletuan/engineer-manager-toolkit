@@ -21,8 +21,8 @@ import { vietnameseHolidays } from "@/lib/holidays"
 import { cn } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { fetchSquads, fetchSquadMembers, fetchStandupHosting, fetchIncidentRotation, type Squad, type SquadMember, type StandupHosting, type IncidentRotation } from "@/lib/api"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Skeleton } from '@/components/ui/skeleton'
 
@@ -264,18 +264,15 @@ export default function StandupCalendar() {
 
           {/* Team selector */}
           <div className="mt-6 mb-4">
-            <Select value={activeTeam} onValueChange={setActiveTeam}>
-              <SelectTrigger className="w-[200px]">
-                <SelectValue placeholder="Select a team" />
-              </SelectTrigger>
-              <SelectContent>
+            <Tabs value={activeTeam} onValueChange={setActiveTeam}>
+              <TabsList className="grid w-full max-w-md grid-cols-2">
                 {squads.map(squad => (
-                  <SelectItem key={squad.id} value={squad.id}>
+                  <TabsTrigger key={squad.id} value={squad.id}>
                     {squad.name}
-                  </SelectItem>
+                  </TabsTrigger>
                 ))}
-              </SelectContent>
-            </Select>
+              </TabsList>
+            </Tabs>
           </div>
 
           {/* Today's info */}
