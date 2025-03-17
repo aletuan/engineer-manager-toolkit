@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { CalendarService } from '../services/calendar.service';
 import { CreateRotationInput, UpdateRotationInput, CreateSwapInput, UpdateSwapInput, UpdateAvailabilityInput } from '../types/calendar.types';
+import { startOfDay, addDays } from 'date-fns';
 
 export class CalendarController {
   constructor(private service: CalendarService) {}
@@ -479,17 +480,119 @@ export class CalendarController {
    */
   async updateMemberAvailability(req: Request, res: Response) {
     try {
-      const member = await this.service.updateMemberAvailability(
+      const availability = await this.service.updateMemberAvailability(
         req.params.id,
         req.body as UpdateAvailabilityInput
       );
-      res.json(member);
+      res.json(availability);
     } catch (error) {
       if (error instanceof Error) {
         res.status(400).json({ error: error.message });
       } else {
-        res.status(500).json({ error: 'Failed to update member availability' });
+        res.status(500).json({ error: 'Failed to update availability' });
       }
+    }
+  }
+
+  /**
+   * @swagger
+   * /api/v1/calendar/standup-hosting/{squadId}:
+   *   get:
+   *     summary: Get standup hosting schedule for a squad
+   *     tags: [Calendar]
+   *     parameters:
+   *       - in: path
+   *         name: squadId
+   *         required: true
+   *         schema:
+   *           type: string
+   *         description: Squad ID
+   *       - in: query
+   *         name: startDate
+   *         schema:
+   *           type: string
+   *           format: date
+   *         description: Start date for filtering
+   *       - in: query
+   *         name: endDate
+   *         schema:
+   *           type: string
+   *           format: date
+   *         description: End date for filtering
+   *     responses:
+   *       200:
+   *         description: Standup hosting schedule
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: array
+   *               items:
+   *                 $ref: '#/components/schemas/StandupHosting'
+   */
+  async getStandupHostingSchedule(req: Request, res: Response) {
+    try {
+      const { squadId } = req.params;
+      const { startDate, endDate } = req.query;
+
+      const start = startDate ? new Date(startDate as string) : startOfDay(new Date());
+      const end = endDate ? new Date(endDate as string) : addDays(start, 30);
+
+      const hostings = await this.service.getStandupHostingSchedule(squadId, start, end);
+      res.json(hostings);
+    } catch (error) {
+      console.error('Error fetching standup hosting schedule:', error);
+      res.status(500).json({ error: 'Failed to get standup hosting schedule' });
+    }
+  }
+
+  /**
+   * @swagger
+   * /api/v1/calendar/incident-rotation/{squadId}:
+   *   get:
+   *     summary: Get incident rotation schedule for a squad
+   *     tags: [Calendar]
+   *     parameters:
+   *       - in: path
+   *         name: squadId
+   *         required: true
+   *         schema:
+   *           type: string
+   *         description: Squad ID
+   *       - in: query
+   *         name: startDate
+   *         schema:
+   *           type: string
+   *           format: date
+   *         description: Start date for filtering
+   *       - in: query
+   *         name: endDate
+   *         schema:
+   *           type: string
+   *           format: date
+   *         description: End date for filtering
+   *     responses:
+   *       200:
+   *         description: Incident rotation schedule
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: array
+   *               items:
+   *                 $ref: '#/components/schemas/IncidentRotation'
+   */
+  async getIncidentRotationSchedule(req: Request, res: Response) {
+    try {
+      const { squadId } = req.params;
+      const { startDate, endDate } = req.query;
+
+      const start = startDate ? new Date(startDate as string) : startOfDay(new Date());
+      const end = endDate ? new Date(endDate as string) : addDays(start, 30);
+
+      const rotations = await this.service.getIncidentRotationSchedule(squadId, start, end);
+      res.json(rotations);
+    } catch (error) {
+      console.error('Error fetching incident rotation schedule:', error);
+      res.status(500).json({ error: 'Failed to get incident rotation schedule' });
     }
   }
 } 
