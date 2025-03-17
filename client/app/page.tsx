@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { addDays, format, isSameDay, isWeekend, startOfMonth, endOfMonth, eachDayOfInterval, getDay } from "date-fns"
+import { addDays, format, isSameDay, isWeekend, startOfMonth, endOfMonth, eachDayOfInterval, getDay, startOfDay } from "date-fns"
 import { vi } from "date-fns/locale"
 import {
   CalendarIcon,
@@ -16,37 +16,74 @@ import {
 import Link from "next/link"
 
 import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { vietnameseHolidays } from "@/lib/holidays"
-import { getHostForDate } from "@/lib/rotation"
-import { getIncidentResponders } from "@/lib/incident-roster"
 import { cn } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
-
-// Team definitions
-const teams = {
-  sonic: {
-    name: "Squad Sonic",
-    members: ["Andy Le", "Daniel Nguyen", "Chicharito Vu", "Phuc Nguyen", "Viet Anh", "Hoa Nguyen", "Tony Dai"],
-    hasIncidentRoster: true,
-  },
-  troy: {
-    name: "Squad Troy",
-    members: ["Harry Nguyen", "Dany Nguyen", "Kiet Chung", "Luy Hoang"],
-    hasIncidentRoster: false,
-  },
-}
+import { fetchSquads, fetchSquadMembers, fetchStandupHosting, fetchIncidentRotation, type Squad, type SquadMember, type StandupHosting, type IncidentRotation } from "@/lib/api"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Skeleton } from '@/components/ui/skeleton'
 
 export default function StandupCalendar() {
   const [currentDate, setCurrentDate] = useState<Date>(new Date())
   const [visibleDays, setVisibleDays] = useState<Date[]>([])
   const [activeTab, setActiveTab] = useState<"timeline" | "calendar">("timeline")
-  const [activeTeam, setActiveTeam] = useState<"sonic" | "troy">("sonic")
+  const [activeTeam, setActiveTeam] = useState<string>("")
+  
+  // State for API data
+  const [squads, setSquads] = useState<Squad[]>([])
+  const [squadMembers, setSquadMembers] = useState<SquadMember[]>([])
+  const [standupHostings, setStandupHostings] = useState<StandupHosting[]>([])
+  const [incidentRotations, setIncidentRotations] = useState<IncidentRotation[]>([])
+  const [isLoading, setIsLoading] = useState(true)
 
   // Get current team data
-  const currentTeam = teams[activeTeam]
+  const currentTeam = squads.find(squad => squad.id === activeTeam) || {
+    name: "",
+    members: [],
+    hasIncidentRoster: false
+  }
+
+  // Fetch initial data
+  useEffect(() => {
+    const fetchInitialData = async () => {
+      try {
+        const squadsData = await fetchSquads()
+        setSquads(squadsData)
+        if (squadsData.length > 0) {
+          setActiveTeam(squadsData[0].id)
+        }
+      } catch (error) {
+        console.error('Error fetching squads:', error)
+      }
+    }
+    fetchInitialData()
+  }, [])
+
+  // Fetch squad members when active team changes
+  useEffect(() => {
+    const fetchTeamData = async () => {
+      if (!activeTeam) return
+      setIsLoading(true)
+      try {
+        const [members, hostings, rotations] = await Promise.all([
+          fetchSquadMembers(activeTeam),
+          fetchStandupHosting(activeTeam),
+          fetchIncidentRotation(activeTeam)
+        ])
+        setSquadMembers(members)
+        setStandupHostings(hostings)
+        setIncidentRotations(rotations)
+      } catch (error) {
+        console.error('Error fetching team data:', error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    fetchTeamData()
+  }, [activeTeam])
 
   // Generate days for the timeline view (next 14 days)
   useEffect(() => {
@@ -70,6 +107,41 @@ export default function StandupCalendar() {
     const dateString = format(date, "yyyy-MM-dd")
     const holiday = vietnameseHolidays.find((h) => h.date === dateString)
     return holiday ? holiday.name : null
+  }
+
+  // Get host for a specific date
+  const getHostForDateFromAPI = (date: Date): SquadMember | null => {
+    const hosting = standupHostings.find(h => format(new Date(h.date), "yyyy-MM-dd") === format(date, "yyyy-MM-dd"))
+    return hosting?.memberId ? squadMembers.find(m => m.id === hosting.memberId) || null : null
+  }
+
+  // Get incident responders for a specific date
+  const getIncidentRespondersFromAPI = (date: Date): { primary: SquadMember | null, secondary: SquadMember | null } => {
+    const rotation = incidentRotations.find(r => {
+      const start = new Date(r.startDate)
+      const end = new Date(r.endDate)
+      const checkDate = new Date(format(date, "yyyy-MM-dd"))
+      return checkDate >= start && checkDate <= end
+    })
+
+    if (!rotation) return { primary: null, secondary: null }
+
+    const primary = rotation.primaryMemberId ? squadMembers.find(m => m.id === rotation.primaryMemberId) || null : null
+    const secondary = rotation.secondaryMemberId ? squadMembers.find(m => m.id === rotation.secondaryMemberId) || null : null
+
+    // Check for swaps
+    const swap = rotation.swaps?.find(s => format(new Date(s.swapDate), "yyyy-MM-dd") === format(date, "yyyy-MM-dd") && s.status === 'APPROVED')
+    if (swap) {
+      if (swap.requesterId === rotation.primaryMemberId) {
+        const swappedPrimary = squadMembers.find(m => m.id === swap.accepterId) || null
+        return { primary: swappedPrimary, secondary }
+      } else if (swap.requesterId === rotation.secondaryMemberId) {
+        const swappedSecondary = squadMembers.find(m => m.id === swap.accepterId) || null
+        return { primary, secondary: swappedSecondary }
+      }
+    }
+
+    return { primary, secondary }
   }
 
   // Get days for the month view
@@ -121,15 +193,26 @@ export default function StandupCalendar() {
     return { start: sprintStart, end: sprintEnd }
   }
 
-  const today = new Date()
+  const today = startOfDay(new Date())
   const monthDays = getDaysInMonth(currentDate)
   const weekDays = getWeekDays()
 
-  // Get current incident responders (only for Team Sonic)
-  const { primary, secondary } = currentTeam.hasIncidentRoster
-    ? getIncidentResponders(today, currentTeam.members)
-    : { primary: null, secondary: null }
+  // Get current incident responders
+  const { primary, secondary } = currentTeam.hasIncidentRoster ? getIncidentRespondersFromAPI(today) : { primary: null, secondary: null }
   const sprintDates = getSprintDates(today)
+
+  if (isLoading) {
+    return (
+      <div className="container mx-auto p-4">
+        <Skeleton className="h-10 w-[200px] mb-4" />
+        <div className="grid grid-cols-7 gap-4">
+          {Array.from({ length: 14 }).map((_, i) => (
+            <Skeleton key={i} className="h-40" />
+          ))}
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -181,16 +264,18 @@ export default function StandupCalendar() {
 
           {/* Team selector */}
           <div className="mt-6 mb-4">
-            <Tabs
-              defaultValue="sonic"
-              className="w-full"
-              onValueChange={(value) => setActiveTeam(value as "sonic" | "troy")}
-            >
-              <TabsList className="grid w-full max-w-md grid-cols-2">
-                <TabsTrigger value="sonic">Squad Sonic</TabsTrigger>
-                <TabsTrigger value="troy">Squad Troy</TabsTrigger>
-              </TabsList>
-            </Tabs>
+            <Select value={activeTeam} onValueChange={setActiveTeam}>
+              <SelectTrigger className="w-[200px]">
+                <SelectValue placeholder="Select a team" />
+              </SelectTrigger>
+              <SelectContent>
+                {squads.map(squad => (
+                  <SelectItem key={squad.id} value={squad.id}>
+                    {squad.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           {/* Today's info */}
@@ -205,7 +290,7 @@ export default function StandupCalendar() {
                   <div className="text-sm text-gray-500">{format(today, "EEEE, dd/MM/yyyy", { locale: vi })}</div>
                   <div className="font-bold text-lg">
                     {isHostingDay(today)
-                      ? `Host hôm nay: ${getHostForDate(today, currentTeam.members)}`
+                      ? `Host hôm nay: ${getHostForDateFromAPI(today)?.fullName || 'Không có host'}`
                       : getHolidayName(today)
                         ? `Hôm nay là ${getHolidayName(today)} - Không có standup`
                         : "Hôm nay là cuối tuần - Không có standup"}
@@ -228,10 +313,10 @@ export default function StandupCalendar() {
                     <div className="font-bold text-lg flex flex-wrap items-center gap-2">
                       <span>Trực Incident:</span>
                       <Badge variant="outline" className="bg-gray-200 text-gray-800 border-gray-300">
-                        Primary: {primary}
+                        Primary: {primary?.fullName || 'Không có primary'}
                       </Badge>
                       <Badge variant="outline" className="bg-gray-200 text-gray-800 border-gray-300">
-                        Secondary: {secondary}
+                        Secondary: {secondary?.fullName || 'Không có secondary'}
                       </Badge>
                     </div>
                   </div>
@@ -253,11 +338,11 @@ export default function StandupCalendar() {
                 const isToday = isSameDay(day, today)
                 const holidayName = getHolidayName(day)
                 const isHostDay = isHostingDay(day)
-                const host = isHostDay ? getHostForDate(day, currentTeam.members) : null
+                const host = isHostDay ? getHostForDateFromAPI(day) : null
 
                 // Only get incident responders for Team Sonic
                 const { primary: dayPrimary, secondary: daySecondary } = currentTeam.hasIncidentRoster
-                  ? getIncidentResponders(day, currentTeam.members)
+                  ? getIncidentRespondersFromAPI(day)
                   : { primary: null, secondary: null }
 
                 const daySprintDates = getSprintDates(day)
@@ -301,12 +386,9 @@ export default function StandupCalendar() {
                                 isToday ? "bg-primary" : "bg-gray-600",
                               )}
                             >
-                              {host
-                                .split(" ")
-                                .map((part) => part[0])
-                                .join("")}
+                              {host.fullName.split(" ").map((part) => part[0]).join("")}
                             </div>
-                            <span className={cn("ml-3 font-medium", isToday && "text-primary")}>{host}</span>
+                            <span className={cn("ml-3 font-medium", isToday && "text-primary")}>{host.fullName}</span>
                           </div>
                         ) : null}
                       </div>
@@ -321,7 +403,7 @@ export default function StandupCalendar() {
                                   variant="outline"
                                   className="bg-gray-200 text-gray-800 border-gray-300 font-medium"
                                 >
-                                  P: {dayPrimary}
+                                  P: {dayPrimary?.fullName || 'Không có primary'}
                                 </Badge>
                               </TooltipTrigger>
                               <TooltipContent>
@@ -334,7 +416,7 @@ export default function StandupCalendar() {
                             <Tooltip>
                               <TooltipTrigger asChild>
                                 <Badge variant="outline" className="bg-gray-100 text-gray-800 border-gray-300">
-                                  S: {daySecondary}
+                                  S: {daySecondary?.fullName || 'Không có secondary'}
                                 </Badge>
                               </TooltipTrigger>
                               <TooltipContent>
@@ -385,11 +467,11 @@ export default function StandupCalendar() {
                 const isToday = isSameDay(day, today)
                 const holidayName = getHolidayName(day)
                 const isHostDay = isHostingDay(day)
-                const host = isHostDay ? getHostForDate(day, currentTeam.members) : null
+                const host = isHostDay ? getHostForDateFromAPI(day) : null
 
                 // Only get incident responders for Team Sonic
                 const { primary: dayPrimary, secondary: daySecondary } = currentTeam.hasIncidentRoster
-                  ? getIncidentResponders(day, currentTeam.members)
+                  ? getIncidentRespondersFromAPI(day)
                   : { primary: null, secondary: null }
 
                 const isSprintStartDay = isSprintStart(day)
@@ -417,19 +499,19 @@ export default function StandupCalendar() {
                     )}
 
                     {host && (
-                      <div className="mt-1 bg-gray-100 rounded p-1 text-xs truncate" title={`Host: ${host}`}>
-                        <span className="font-medium">H:</span> {host}
+                      <div className="mt-1 bg-gray-100 rounded p-1 text-xs truncate" title={`Host: ${host.fullName}`}>
+                        <span className="font-medium">H:</span> {host.fullName}
                       </div>
                     )}
 
                     {/* Only show incident responders for Team Sonic */}
                     {currentTeam.hasIncidentRoster && (
                       <div className="mt-1 flex flex-col gap-1">
-                        <div className="bg-gray-200 rounded p-1 text-xs truncate" title={`Primary: ${dayPrimary}`}>
-                          <span className="font-medium">P:</span> {dayPrimary}
+                        <div className="bg-gray-200 rounded p-1 text-xs truncate" title={`Primary: ${dayPrimary?.fullName || 'Không có primary'}`}>
+                          <span className="font-medium">P:</span> {dayPrimary?.fullName || 'Không có primary'}
                         </div>
-                        <div className="bg-gray-100 rounded p-1 text-xs truncate" title={`Secondary: ${daySecondary}`}>
-                          <span className="font-medium">S:</span> {daySecondary}
+                        <div className="bg-gray-100 rounded p-1 text-xs truncate" title={`Secondary: ${daySecondary?.fullName || 'Không có secondary'}`}>
+                          <span className="font-medium">S:</span> {daySecondary?.fullName || 'Không có secondary'}
                         </div>
                       </div>
                     )}
@@ -445,12 +527,12 @@ export default function StandupCalendar() {
                 {weekDays.map((day, i) => {
                   const isToday = isSameDay(day, today)
                   const isHostDay = isHostingDay(day)
-                  const host = isHostDay ? getHostForDate(day, currentTeam.members) : null
+                  const host = isHostDay ? getHostForDateFromAPI(day) : null
                   const holidayName = getHolidayName(day)
 
                   // Only get incident responders for Team Sonic
                   const { primary: dayPrimary, secondary: daySecondary } = currentTeam.hasIncidentRoster
-                    ? getIncidentResponders(day, currentTeam.members)
+                    ? getIncidentRespondersFromAPI(day)
                     : { primary: null, secondary: null }
 
                   return (
@@ -462,7 +544,7 @@ export default function StandupCalendar() {
                         {holidayName ? (
                           <div className="text-xs text-red-500">{holidayName}</div>
                         ) : host ? (
-                          <div className="font-medium mb-2">{host}</div>
+                          <div className="font-medium mb-2">{host.fullName}</div>
                         ) : (
                           <div className="text-gray-500 text-sm mb-2">Không có standup</div>
                         )}
@@ -471,10 +553,10 @@ export default function StandupCalendar() {
                         {currentTeam.hasIncidentRoster && (
                           <div className="text-xs flex flex-col gap-1 mt-2">
                             <Badge variant="outline" className="bg-gray-200 text-gray-800 border-gray-300 text-xs">
-                              P: {dayPrimary}
+                              P: {dayPrimary?.fullName || 'Không có primary'}
                             </Badge>
                             <Badge variant="outline" className="bg-gray-100 text-gray-800 border-gray-300 text-xs">
-                              S: {daySecondary}
+                              S: {daySecondary?.fullName || 'Không có secondary'}
                             </Badge>
                           </div>
                         )}
@@ -491,14 +573,14 @@ export default function StandupCalendar() {
         <div className="bg-white rounded-xl shadow-md p-6 mt-6">
           <h2 className="text-xl font-bold mb-4">{currentTeam.name}</h2>
           <div className="flex flex-wrap gap-3">
-            {currentTeam.members.map((member, index) => {
-              const isHostingToday = isHostingDay(today) && getHostForDate(today, currentTeam.members) === member
+            {squadMembers.map((member, index) => {
+              const isHostingToday = isHostingDay(today) && getHostForDateFromAPI(today) === member
 
               // Only check incident roles for Team Sonic
               const isPrimary =
-                currentTeam.hasIncidentRoster && getIncidentResponders(today, currentTeam.members).primary === member
+                currentTeam.hasIncidentRoster && getIncidentRespondersFromAPI(today).primary === member
               const isSecondary =
-                currentTeam.hasIncidentRoster && getIncidentResponders(today, currentTeam.members).secondary === member
+                currentTeam.hasIncidentRoster && getIncidentRespondersFromAPI(today).secondary === member
 
               return (
                 <div
@@ -514,7 +596,7 @@ export default function StandupCalendar() {
                           : "bg-gray-100 text-gray-700",
                   )}
                 >
-                  {member}
+                  {member.fullName}
                   {isPrimary && " (P)"}
                   {isSecondary && " (S)"}
                 </div>

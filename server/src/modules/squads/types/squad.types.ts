@@ -5,6 +5,7 @@ export interface Squad {
   name: string;
   code: string;
   description: string | null;
+  hasIncidentRoster: boolean;
   createdAt: Date;
   updatedAt: Date;
 }

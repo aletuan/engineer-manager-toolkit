@@ -20,7 +20,17 @@ export class SquadRepository {
   }
 
   async findAll(): Promise<Squad[]> {
-    return this.prisma.squad.findMany();
+    return this.prisma.squad.findMany({
+      select: {
+        id: true,
+        name: true,
+        code: true,
+        description: true,
+        hasIncidentRoster: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
   }
 
   async update(id: string, data: UpdateSquadDto): Promise<Squad> {

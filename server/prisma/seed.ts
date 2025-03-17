@@ -30,6 +30,7 @@ async function main() {
       name: "Squad Troy",
       code: "Troy",
       description: "Development Team",
+      hasIncidentRoster: false,
     },
   });
 
@@ -38,6 +39,7 @@ async function main() {
       name: "Squad Sonic",
       code: "Sonic",
       description: "Production Support Team",
+      hasIncidentRoster: true,
     },
   });
 
