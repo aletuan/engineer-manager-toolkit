@@ -148,11 +148,14 @@ export class CalendarService {
   }
 
   async updateMemberAvailability(id: string, data: UpdateAvailabilityInput) {
-    const member = await this.repository.findAvailability({ memberId: id });
-    if (!member.length) {
-      throw new Error('Member not found');
-    }
-
     return this.repository.updateMemberAvailability(id, data);
+  }
+
+  async getStandupHostingSchedule(squadId: string, startDate: Date, endDate: Date) {
+    return this.repository.getStandupHostingSchedule(squadId, startDate, endDate);
+  }
+
+  async getIncidentRotationSchedule(squadId: string, startDate: Date, endDate: Date) {
+    return this.repository.getIncidentRotationSchedule(squadId, startDate, endDate);
   }
 } 

@@ -6,16 +6,29 @@ export class CalendarRepository {
 
   // Rotation Methods
   async findRotations(query: GetRotationsQuery) {
+    const where: any = {};
+    
+    if (query.squadId) {
+      where.squadId = query.squadId;
+    }
+    
+    if (query.memberId) {
+      where.OR = [
+        { primaryMemberId: query.memberId },
+        { secondaryMemberId: query.memberId },
+      ];
+    }
+    
+    if (query.startDate) {
+      where.startDate = { gte: new Date(query.startDate) };
+    }
+    
+    if (query.endDate) {
+      where.endDate = { lte: new Date(query.endDate) };
+    }
+    
     return this.prisma.incidentRotation.findMany({
-      where: {
-        squadId: query.squadId,
-        OR: [
-          { primaryMemberId: query.memberId },
-          { secondaryMemberId: query.memberId },
-        ],
-        startDate: query.startDate ? { gte: new Date(query.startDate) } : undefined,
-        endDate: query.endDate ? { lte: new Date(query.endDate) } : undefined,
-      },
+      where,
       include: {
         squad: true,
         primaryMember: true,
@@ -155,12 +168,94 @@ export class CalendarRepository {
     });
   }
 
-  async updateMemberAvailability(id: string, data: { status: string }) {
+  async updateMemberAvailability(id: string, data: any) {
     return this.prisma.squadMember.update({
       where: { id },
       data,
+    });
+  }
+
+  async getStandupHostingSchedule(squadId: string, startDate: Date, endDate: Date) {
+    return this.prisma.standupHosting.findMany({
+      where: {
+        squadId,
+        date: {
+          gte: startDate,
+          lte: endDate,
+        },
+      },
       include: {
-        squad: true,
+        member: {
+          select: {
+            id: true,
+            fullName: true,
+            email: true,
+            position: true,
+            avatarUrl: true,
+          },
+        },
+      },
+      orderBy: {
+        date: 'asc',
+      },
+    });
+  }
+
+  async getIncidentRotationSchedule(squadId: string, startDate: Date, endDate: Date) {
+    return this.prisma.incidentRotation.findMany({
+      where: {
+        squadId,
+        startDate: {
+          lte: endDate,
+        },
+        endDate: {
+          gte: startDate,
+        },
+      },
+      include: {
+        primaryMember: {
+          select: {
+            id: true,
+            fullName: true,
+            email: true,
+            position: true,
+            avatarUrl: true,
+          },
+        },
+        secondaryMember: {
+          select: {
+            id: true,
+            fullName: true,
+            email: true,
+            position: true,
+            avatarUrl: true,
+          },
+        },
+        swaps: {
+          include: {
+            requester: {
+              select: {
+                id: true,
+                fullName: true,
+                email: true,
+                position: true,
+                avatarUrl: true,
+              },
+            },
+            accepter: {
+              select: {
+                id: true,
+                fullName: true,
+                email: true,
+                position: true,
+                avatarUrl: true,
+              },
+            },
+          },
+        },
+      },
+      orderBy: {
+        startDate: 'asc',
       },
     });
   }

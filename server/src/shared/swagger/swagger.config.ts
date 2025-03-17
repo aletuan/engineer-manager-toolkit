@@ -154,6 +154,19 @@ const options: swaggerJsdoc.Options = {
           },
           required: ['status'],
         },
+        StandupHosting: {
+          type: 'object',
+          properties: {
+            id: { type: 'string', format: 'uuid' },
+            squadId: { type: 'string', format: 'uuid' },
+            memberId: { type: 'string', format: 'uuid' },
+            date: { type: 'string', format: 'date' },
+            status: { type: 'string', enum: ['SCHEDULED', 'COMPLETED', 'CANCELLED'] },
+            createdAt: { type: 'string', format: 'date-time' },
+            updatedAt: { type: 'string', format: 'date-time' },
+          },
+          required: ['id', 'squadId', 'memberId', 'date', 'status', 'createdAt', 'updatedAt'],
+        },
         Error: {
           type: 'object',
           properties: {

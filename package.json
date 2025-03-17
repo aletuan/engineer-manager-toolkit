@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "concurrently \"cd client && pnpm dev\" \"cd server && pnpm dev\"",
+    "dev": "lsof -ti:3000,3001 | xargs kill -9 2>/dev/null || true && concurrently \"cd client && pnpm dev\" \"cd server && pnpm dev\"",
     "build": "concurrently \"cd client && pnpm build\" \"cd server && pnpm build\"",
     "start": "concurrently \"cd client && pnpm start\" \"cd server && pnpm start\"",
     "lint": "concurrently \"cd client && pnpm lint\" \"cd server && pnpm lint\"",

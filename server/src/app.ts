@@ -22,7 +22,7 @@ import { createTaskRouter } from './modules/tasks/routes/task.routes';
 import { CalendarRepository } from './modules/calendar/repositories/calendar.repository';
 import { CalendarService } from './modules/calendar/services/calendar.service';
 import { CalendarController } from './modules/calendar/controllers/calendar.controller';
-import { calendarRoutes } from './modules/calendar';
+import { createCalendarRouter } from './modules/calendar/routes/calendar.routes';
 import { swaggerSpec } from './shared/swagger/swagger.config';
 
 const app = express();
@@ -68,7 +68,7 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use('/api/v1/squads', createSquadRouter(squadController));
 app.use('/api/v1/roles', createRoleRouter(roleController));
 app.use('/api/v1/tasks', createTaskRouter(taskController));
-app.use('/api/v1/calendar', calendarRoutes);
+app.use('/api/v1/calendar', createCalendarRouter(calendarController));
 
 // Error handling
 app.use(notFoundHandler);

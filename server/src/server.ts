@@ -1,17 +1,8 @@
 import app from './app';
 import { config } from './shared/config';
 
-const startServer = () => {
-  try {
-    app.listen(config.port, () => {
-      console.log(
-        `Server is running on port ${config.port} in ${config.nodeEnv} mode`
-      );
-    });
-  } catch (error) {
-    console.error('Failed to start server:', error);
-    process.exit(1);
-  }
-};
-
-startServer(); 
+// Start server
+app.listen(config.port, () => {
+  console.log(`REST API Server ready at http://localhost:${config.port}`);
+  console.log(`API Documentation available at http://localhost:${config.port}/api-docs`);
+}); 
