@@ -31,6 +31,7 @@ model Squad {
   incidentRotations IncidentRotation[]
   sprintReports     SprintReport[]
   roleAssignments   RoleAssignment[]
+  standupHostings   StandupHosting[]
   createdAt         DateTime          @default(now())
   updatedAt         DateTime          @updatedAt
 
@@ -60,6 +61,7 @@ model SquadMember {
   requestedSwaps    RotationSwap[]    @relation("SwapRequester")
   acceptedSwaps     RotationSwap[]    @relation("SwapAccepter")
   roleAssignments   RoleAssignment[]
+  standupHostings   StandupHosting[]
   createdAt         DateTime          @default(now())
   updatedAt         DateTime          @updatedAt
 
@@ -241,11 +243,33 @@ model SprintReport {
   @@map("sprint_reports")
 }
 
+model StandupHosting {
+  id        String      @id @default(uuid())
+  squad     Squad       @relation(fields: [squadId], references: [id])
+  squadId   String
+  member    SquadMember @relation(fields: [memberId], references: [id])
+  memberId  String
+  date      DateTime
+  status    String      @default("SCHEDULED")
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  @@index([squadId])
+  @@index([memberId])
+  @@map("standup_hostings")
+}
+
 // Enums
 enum MemberStatus {
   ACTIVE
   INACTIVE
   ON_LEAVE
+}
+
+enum HostingStatus {
+  SCHEDULED
+  COMPLETED
+  CANCELLED
 }
 
 enum TaskPriority {

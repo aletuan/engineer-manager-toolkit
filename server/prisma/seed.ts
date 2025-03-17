@@ -1,5 +1,6 @@
 import { PrismaClient, MemberStatus, TaskStatus, TaskPriority, AssigneeRole, DependencyType } from '@prisma/client';
 import { hash } from 'bcryptjs';
+import { addDays, startOfDay } from 'date-fns';
 
 const prisma = new PrismaClient();
 
@@ -9,6 +10,7 @@ async function main() {
   await prisma.activityLog.deleteMany();
   await prisma.rotationSwap.deleteMany();
   await prisma.incidentRotation.deleteMany();
+  await prisma.standupHosting.deleteMany();
   await prisma.roleAssignment.deleteMany();
   await prisma.role.deleteMany();
   await prisma.taskDependency.deleteMany();
@@ -405,6 +407,165 @@ async function main() {
       createdAt: new Date(),
     },
   });
+
+  // Create StandupHosting for the next 30 days
+  const today = startOfDay(new Date());
+  const squadSonic = await prisma.squad.findUnique({
+    where: { code: 'Sonic' },
+    include: { members: true }
+  });
+
+  const squadTroy = await prisma.squad.findUnique({
+    where: { code: 'Troy' },
+    include: { members: true }
+  });
+
+  if (squadSonic && squadTroy) {
+    // Generate StandupHosting for Squad Sonic (Monday to Friday only)
+    for (let i = 0; i < 30; i++) {
+      const date = addDays(today, i);
+      const dayOfWeek = date.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+
+      // Skip weekends (Saturday and Sunday)
+      if (dayOfWeek === 0 || dayOfWeek === 6) continue;
+
+      const memberIndex = i % squadSonic.members.length;
+      const member = squadSonic.members[memberIndex];
+
+      await prisma.standupHosting.create({
+        data: {
+          squadId: squadSonic.id,
+          memberId: member.id,
+          date,
+          status: 'SCHEDULED'
+        }
+      });
+    }
+
+    // Generate StandupHosting for Squad Troy (Monday to Friday only)
+    for (let i = 0; i < 30; i++) {
+      const date = addDays(today, i);
+      const dayOfWeek = date.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+
+      // Skip weekends (Saturday and Sunday)
+      if (dayOfWeek === 0 || dayOfWeek === 6) continue;
+
+      const memberIndex = i % squadTroy.members.length;
+      const member = squadTroy.members[memberIndex];
+
+      await prisma.standupHosting.create({
+        data: {
+          squadId: squadTroy.id,
+          memberId: member.id,
+          date,
+          status: 'SCHEDULED'
+        }
+      });
+    }
+
+    // Generate IncidentRotation for Squad Sonic (all days including weekends)
+    const sprintLength = 14; // 2 weeks
+    const numberOfSprints = 4; // Generate for 4 sprints
+
+    for (let sprint = 0; sprint < numberOfSprints; sprint++) {
+      const startDate = addDays(today, sprint * sprintLength);
+      const endDate = addDays(startDate, sprintLength - 1);
+
+      // Create rotation for each sprint
+      await prisma.incidentRotation.create({
+        data: {
+          squadId: squadSonic.id,
+          primaryMemberId: squadSonic.members[sprint % squadSonic.members.length].id,
+          secondaryMemberId: squadSonic.members[(sprint + 1) % squadSonic.members.length].id,
+          startDate,
+          endDate,
+          sprintNumber: sprint + 1
+        }
+      });
+
+      // Create some rotation swaps for weekends
+      const weekendSwaps = [
+        {
+          requesterId: squadSonic.members[sprint % squadSonic.members.length].id,
+          accepterId: squadSonic.members[(sprint + 2) % squadSonic.members.length].id,
+          swapDate: addDays(startDate, 6), // First Saturday
+        },
+        {
+          requesterId: squadSonic.members[(sprint + 1) % squadSonic.members.length].id,
+          accepterId: squadSonic.members[(sprint + 3) % squadSonic.members.length].id,
+          swapDate: addDays(startDate, 13), // Second Saturday
+        }
+      ];
+
+      for (const swap of weekendSwaps) {
+        await prisma.rotationSwap.create({
+          data: {
+            rotationId: (await prisma.incidentRotation.findFirst({
+              where: {
+                squadId: squadSonic.id,
+                startDate,
+                endDate,
+              }
+            }))!.id,
+            requesterId: swap.requesterId,
+            accepterId: swap.accepterId,
+            swapDate: swap.swapDate,
+            status: 'PENDING'
+          }
+        });
+      }
+    }
+
+    // Generate IncidentRotation for Squad Troy (all days including weekends)
+    for (let sprint = 0; sprint < numberOfSprints; sprint++) {
+      const startDate = addDays(today, sprint * sprintLength);
+      const endDate = addDays(startDate, sprintLength - 1);
+
+      // Create rotation for each sprint
+      await prisma.incidentRotation.create({
+        data: {
+          squadId: squadTroy.id,
+          primaryMemberId: squadTroy.members[sprint % squadTroy.members.length].id,
+          secondaryMemberId: squadTroy.members[(sprint + 1) % squadTroy.members.length].id,
+          startDate,
+          endDate,
+          sprintNumber: sprint + 1
+        }
+      });
+
+      // Create some rotation swaps for weekends
+      const weekendSwaps = [
+        {
+          requesterId: squadTroy.members[sprint % squadTroy.members.length].id,
+          accepterId: squadTroy.members[(sprint + 2) % squadTroy.members.length].id,
+          swapDate: addDays(startDate, 6), // First Saturday
+        },
+        {
+          requesterId: squadTroy.members[(sprint + 1) % squadTroy.members.length].id,
+          accepterId: squadTroy.members[(sprint + 3) % squadTroy.members.length].id,
+          swapDate: addDays(startDate, 13), // Second Saturday
+        }
+      ];
+
+      for (const swap of weekendSwaps) {
+        await prisma.rotationSwap.create({
+          data: {
+            rotationId: (await prisma.incidentRotation.findFirst({
+              where: {
+                squadId: squadTroy.id,
+                startDate,
+                endDate,
+              }
+            }))!.id,
+            requesterId: swap.requesterId,
+            accepterId: swap.accepterId,
+            swapDate: swap.swapDate,
+            status: 'PENDING'
+          }
+        });
+      }
+    }
+  }
 }
 
 main()
