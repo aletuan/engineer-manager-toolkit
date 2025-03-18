@@ -244,15 +244,97 @@ async function main() {
   // Create stakeholders
   const stakeholder1 = await prisma.stakeholder.create({
     data: {
-      code: 'STK001',
-      name: 'Product Owner',
-      description: 'Product owner for the project',
-      contactName: 'Alice Johnson',
-      contactEmail: 'alice@example.com',
-      contactPhone: '1234567890',
-      groupName: 'Product Management',
-      createdAt: new Date(),
-      updatedAt: new Date(),
+      code: 'EDMS',
+      name: 'Enterprise Document Management System',
+      description: 'Enterprise system for managing and processing documents across the organization',
+      contactName: 'Bob Smith',
+      contactEmail: 'bob.smith@example.com',
+      contactPhone: '+84 123 456 789',
+      groupName: 'Document Management',
+    },
+  });
+
+  const stakeholder2 = await prisma.stakeholder.create({
+    data: {
+      code: 'ISSO',
+      name: 'Fraud Detection Service',
+      description: 'Intelligent system for detecting and preventing fraudulent activities',
+      contactName: 'Carol Davis',
+      contactEmail: 'carol.davis@example.com',
+      contactPhone: '+84 123 456 790',
+      groupName: 'Security Services',
+    },
+  });
+
+  const stakeholder3 = await prisma.stakeholder.create({
+    data: {
+      code: 'ECOM',
+      name: 'Customer Onboarding Experience System',
+      description: 'Digital platform for customer onboarding and account creation',
+      contactName: 'David Wilson',
+      contactEmail: 'david.wilson@example.com',
+      contactPhone: '+84 123 456 791',
+      groupName: 'Customer Experience',
+    },
+  });
+
+  const stakeholder4 = await prisma.stakeholder.create({
+    data: {
+      code: 'PEB',
+      name: 'Personal Everyday Banking',
+      description: 'Core banking system for personal banking services',
+      contactName: 'Emma Brown',
+      contactEmail: 'emma.brown@example.com',
+      contactPhone: '+84 123 456 792',
+      groupName: 'Personal Banking',
+    },
+  });
+
+  const stakeholder5 = await prisma.stakeholder.create({
+    data: {
+      code: 'BEB',
+      name: 'Business Everyday Banking',
+      description: 'Core banking system for business banking services',
+      contactName: 'Frank Miller',
+      contactEmail: 'frank.miller@example.com',
+      contactPhone: '+84 123 456 793',
+      groupName: 'Business Banking',
+    },
+  });
+
+  const stakeholder6 = await prisma.stakeholder.create({
+    data: {
+      code: 'IB',
+      name: 'Internet Banking',
+      description: 'Digital banking platform for online banking services',
+      contactName: 'Grace Lee',
+      contactEmail: 'grace.lee@example.com',
+      contactPhone: '+84 123 456 794',
+      groupName: 'Digital Banking',
+    },
+  });
+
+  const stakeholder7 = await prisma.stakeholder.create({
+    data: {
+      code: 'nabConnect',
+      name: 'Digital Business Platform',
+      description: 'Comprehensive digital platform for business customers',
+      contactName: 'Henry Taylor',
+      contactEmail: 'henry.taylor@example.com',
+      contactPhone: '+84 123 456 795',
+      groupName: 'Business Digital',
+    },
+  });
+
+  const stakeholder8 = await prisma.stakeholder.create({
+    data: {
+      code: 'nabOne',
+      name: 'Digital Colleague Platform',
+      description: 'Internal platform for employee collaboration and productivity',
+      contactName: 'Ivy Chen',
+      contactEmail: 'ivy.chen@example.com',
+      contactPhone: '+84 123 456 796',
+      groupName: 'Employee Digital',
     },
   });
 
@@ -287,54 +369,195 @@ async function main() {
     },
   });
 
-  // Create task assignees
-  await prisma.taskAssignee.create({
+  const task3 = await prisma.task.create({
     data: {
-      taskId: task1.id,
-      memberId: troyMembers[0].squadMember!.id,
-      role: AssigneeRole.PRIMARY,
-      createdAt: new Date(),
+      title: 'Implement Document Upload API',
+      description: 'Create REST API endpoints for document upload and processing',
+      status: 'TODO',
+      priority: 'HIGH',
+      dueDate: new Date('2024-12-15'),
+      featureId: 'EDMS-001',
+      assignedToId: troyMembers[1].squadMember!.id,
+      createdById: troyMembers[0].squadMember!.id,
+      tags: ['api', 'document-management'],
+      attachments: {},
     },
   });
 
-  // Create task stakeholders
-  await prisma.taskStakeholder.create({
+  const task4 = await prisma.task.create({
     data: {
-      taskId: task1.id,
-      stakeholderId: stakeholder1.id,
-      createdAt: new Date(),
-    },
-  });
-
-  // Create task dependencies
-  await prisma.taskDependency.create({
-    data: {
-      taskId: task1.id,
-      dependentTaskId: task2.id,
-      dependencyType: DependencyType.BLOCKS,
-      createdAt: new Date(),
-    },
-  });
-
-  // Create task notes
-  await prisma.taskNote.create({
-    data: {
-      content: 'Initial implementation plan',
-      taskId: task1.id,
-      authorId: troyMembers[0].squadMember!.id,
-      createdAt: new Date(),
-    },
-  });
-
-  // Create task comments
-  await prisma.taskComment.create({
-    data: {
-      content: 'Please review the implementation plan',
-      taskId: task1.id,
+      title: 'Implement Fraud Detection Rules',
+      description: 'Develop and implement new fraud detection rules for transaction monitoring',
+      status: 'IN_PROGRESS',
+      priority: 'HIGH',
+      dueDate: new Date('2024-12-20'),
+      featureId: 'ISSO-001',
+      assignedToId: sonicMembers[1].squadMember!.id,
       createdById: sonicMembers[0].squadMember!.id,
-      createdAt: new Date(),
+      tags: ['security', 'fraud-detection'],
+      attachments: {},
     },
   });
+
+  const task5 = await prisma.task.create({
+    data: {
+      title: 'Customer Onboarding Flow Enhancement',
+      description: 'Improve the customer onboarding experience with new UI/UX design',
+      status: 'TODO',
+      priority: 'MEDIUM',
+      dueDate: new Date('2024-12-25'),
+      featureId: 'ECOM-001',
+      assignedToId: troyMembers[2].squadMember!.id,
+      createdById: troyMembers[0].squadMember!.id,
+      tags: ['ui-ux', 'customer-experience'],
+      attachments: {},
+    },
+  });
+
+  // Create task assignees for new tasks
+  await Promise.all([
+    prisma.taskAssignee.create({
+      data: {
+        taskId: task3.id,
+        memberId: troyMembers[1].squadMember!.id,
+        role: AssigneeRole.PRIMARY,
+        createdAt: new Date(),
+      },
+    }),
+    prisma.taskAssignee.create({
+      data: {
+        taskId: task3.id,
+        memberId: troyMembers[2].squadMember!.id,
+        role: AssigneeRole.SECONDARY,
+        createdAt: new Date(),
+      },
+    }),
+    prisma.taskAssignee.create({
+      data: {
+        taskId: task4.id,
+        memberId: sonicMembers[1].squadMember!.id,
+        role: AssigneeRole.PRIMARY,
+        createdAt: new Date(),
+      },
+    }),
+    prisma.taskAssignee.create({
+      data: {
+        taskId: task4.id,
+        memberId: sonicMembers[2].squadMember!.id,
+        role: AssigneeRole.SECONDARY,
+        createdAt: new Date(),
+      },
+    }),
+    prisma.taskAssignee.create({
+      data: {
+        taskId: task5.id,
+        memberId: troyMembers[2].squadMember!.id,
+        role: AssigneeRole.PRIMARY,
+        createdAt: new Date(),
+      },
+    }),
+  ]);
+
+  // Create task stakeholders for new tasks
+  await Promise.all([
+    prisma.taskStakeholder.create({
+      data: {
+        taskId: task3.id,
+        stakeholderId: stakeholder1.id, // EDMS
+        createdAt: new Date(),
+      },
+    }),
+    prisma.taskStakeholder.create({
+      data: {
+        taskId: task4.id,
+        stakeholderId: stakeholder2.id, // ISSO
+        createdAt: new Date(),
+      },
+    }),
+    prisma.taskStakeholder.create({
+      data: {
+        taskId: task5.id,
+        stakeholderId: stakeholder3.id, // ECOM
+        createdAt: new Date(),
+      },
+    }),
+  ]);
+
+  // Create task notes for new tasks
+  await Promise.all([
+    prisma.taskNote.create({
+      data: {
+        content: 'API should support multiple file formats including PDF, DOCX, and images',
+        taskId: task3.id,
+        authorId: troyMembers[1].squadMember!.id,
+        createdAt: new Date(),
+      },
+    }),
+    prisma.taskNote.create({
+      data: {
+        content: 'New rules should focus on transaction amount patterns and frequency',
+        taskId: task4.id,
+        authorId: sonicMembers[1].squadMember!.id,
+        createdAt: new Date(),
+      },
+    }),
+    prisma.taskNote.create({
+      data: {
+        content: 'Focus on reducing the number of steps in the onboarding process',
+        taskId: task5.id,
+        authorId: troyMembers[2].squadMember!.id,
+        createdAt: new Date(),
+      },
+    }),
+  ]);
+
+  // Create task comments for new tasks
+  await Promise.all([
+    prisma.taskComment.create({
+      data: {
+        content: 'Should we add virus scanning for uploaded documents?',
+        taskId: task3.id,
+        createdById: troyMembers[2].squadMember!.id,
+        createdAt: new Date(),
+      },
+    }),
+    prisma.taskComment.create({
+      data: {
+        content: 'We need to consider performance impact of new rules',
+        taskId: task4.id,
+        createdById: sonicMembers[2].squadMember!.id,
+        createdAt: new Date(),
+      },
+    }),
+    prisma.taskComment.create({
+      data: {
+        content: 'Can we get some user feedback on the current pain points?',
+        taskId: task5.id,
+        createdById: troyMembers[3].squadMember!.id,
+        createdAt: new Date(),
+      },
+    }),
+  ]);
+
+  // Create task dependencies for new tasks
+  await Promise.all([
+    prisma.taskDependency.create({
+      data: {
+        taskId: task3.id,
+        dependentTaskId: task1.id,
+        dependencyType: DependencyType.BLOCKS,
+        createdAt: new Date(),
+      },
+    }),
+    prisma.taskDependency.create({
+      data: {
+        taskId: task4.id,
+        dependentTaskId: task2.id,
+        dependencyType: DependencyType.RELATES_TO,
+        createdAt: new Date(),
+      },
+    }),
+  ]);
 
   // Create roles
   const role1 = await prisma.role.create({
