@@ -258,5 +258,65 @@ export function createSquadRouter(controller: SquadController): Router {
    */
   router.delete('/members/:id', controller.removeMember.bind(controller));
 
+  /**
+   * @swagger
+   * /api/v1/squads/members/{id}/details:
+   *   get:
+   *     summary: Get detailed information of a squad member
+   *     tags: [Squads]
+   *     parameters:
+   *       - in: path
+   *         name: id
+   *         required: true
+   *         schema:
+   *           type: string
+   *           format: uuid
+   *         description: The ID of the squad member
+   *     responses:
+   *       200:
+   *         description: Member details retrieved successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 id:
+   *                   type: string
+   *                   format: uuid
+   *                 pid:
+   *                   type: string
+   *                 fullName:
+   *                   type: string
+   *                 email:
+   *                   type: string
+   *                 phone:
+   *                   type: string
+   *                   nullable: true
+   *                 position:
+   *                   type: string
+   *                   nullable: true
+   *                 avatarUrl:
+   *                   type: string
+   *                   nullable: true
+   *                 status:
+   *                   type: string
+   *                   enum: [ACTIVE, INACTIVE]
+   *                 squad:
+   *                   type: object
+   *                   properties:
+   *                     id:
+   *                       type: string
+   *                       format: uuid
+   *                     name:
+   *                       type: string
+   *                     code:
+   *                       type: string
+   *                     hasIncidentRoster:
+   *                       type: boolean
+   *       404:
+   *         description: Member not found
+   */
+  router.get('/members/:id/details', controller.getMemberById.bind(controller));
+
   return router;
 } 
