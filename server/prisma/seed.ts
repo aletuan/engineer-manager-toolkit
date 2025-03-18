@@ -633,116 +633,158 @@ async function main() {
     },
   });
 
-  // Create StandupHosting for the next 30 days
-  const today = startOfDay(new Date());
-  const squadSonic = await prisma.squad.findUnique({
-    where: { code: 'Sonic' },
-    include: { members: true }
-  });
+  // Helper functions for date manipulation
+  function isWeekend(date: Date): boolean {
+    const day = date.getDay();
+    return day === 0 || day === 6; // 0 is Sunday, 6 is Saturday
+  }
 
-  const squadTroy = await prisma.squad.findUnique({
-    where: { code: 'Troy' },
-    include: { members: true }
-  });
+  function getNextWorkday(date: Date): Date {
+    let nextDay = new Date(date);
+    nextDay.setDate(nextDay.getDate() + 1);
+    while (isWeekend(nextDay)) {
+      nextDay.setDate(nextDay.getDate() + 1);
+    }
+    return nextDay;
+  }
 
-  if (squadSonic && squadTroy) {
-    // Generate StandupHosting for Squad Sonic (Monday to Friday only)
-    for (let i = 0; i < 30; i++) {
-      const date = addDays(today, i);
-      const dayOfWeek = date.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+  // Create incident rotations for Sonic squad (last 3 months)
+  const startDateIncident = new Date();
+  startDateIncident.setMonth(startDateIncident.getMonth() - 3);
+  startDateIncident.setDate(1); // Start from the first day of the month
+  let currentDateIncident = startOfDay(startDateIncident);
 
-      // Skip weekends (Saturday and Sunday)
-      if (dayOfWeek === 0 || dayOfWeek === 6) continue;
+  // Get Sonic members for rotation
+  const sonicMemberIds = sonicMembers.map(member => member.squadMember!.id);
+  let primaryIndex = 0;
+  let secondaryIndex = 1;
 
-      const memberIndex = i % squadSonic.members.length;
-      const member = squadSonic.members[memberIndex];
+  while (currentDateIncident < new Date()) {
+    // Create 2-week sprint rotation
+    const sprintStartDate = new Date(currentDateIncident);
+    const sprintEndDate = new Date(currentDateIncident);
+    sprintEndDate.setDate(sprintEndDate.getDate() + 13); // 14 days sprint
 
-      await prisma.standupHosting.create({
-        data: {
-          squadId: squadSonic.id,
-          memberId: member.id,
-          date,
-          status: 'SCHEDULED'
-        }
-      });
+    await prisma.incidentRotation.create({
+      data: {
+        squadId: sonicSquad.id,
+        startDate: sprintStartDate,
+        endDate: sprintEndDate,
+        sprintNumber: Math.floor(Math.random() * 1000), // Random sprint number for demo
+        primaryMemberId: sonicMemberIds[primaryIndex],
+        secondaryMemberId: sonicMemberIds[secondaryIndex],
+      },
+    });
+
+    // Rotate members for next sprint
+    primaryIndex = (primaryIndex + 2) % sonicMemberIds.length;
+    secondaryIndex = (secondaryIndex + 2) % sonicMemberIds.length;
+    if (secondaryIndex === primaryIndex) {
+      secondaryIndex = (secondaryIndex + 1) % sonicMemberIds.length;
     }
 
-    // Generate StandupHosting for Squad Troy (Monday to Friday only)
-    for (let i = 0; i < 30; i++) {
-      const date = addDays(today, i);
-      const dayOfWeek = date.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+    // Move to next sprint
+    currentDateIncident.setDate(currentDateIncident.getDate() + 14);
+  }
 
-      // Skip weekends (Saturday and Sunday)
-      if (dayOfWeek === 0 || dayOfWeek === 6) continue;
+  // Create standup hosting schedule for both squads (last 3 months)
+  const startDateStandup = new Date();
+  startDateStandup.setMonth(startDateStandup.getMonth() - 3);
+  startDateStandup.setDate(1); // Start from the first day of the month
+  let currentDateStandup = startOfDay(startDateStandup);
 
-      const memberIndex = i % squadTroy.members.length;
-      const member = squadTroy.members[memberIndex];
+  // Get members for hosting
+  const troyMemberIds = troyMembers.map(member => member.squadMember!.id);
+  let troyHostIndex = 0;
+  let sonicHostIndex = 0;
 
+  while (currentDateStandup < new Date()) {
+    if (!isWeekend(currentDateStandup)) {
+      // Create hosting for Troy squad
       await prisma.standupHosting.create({
         data: {
-          squadId: squadTroy.id,
-          memberId: member.id,
-          date,
-          status: 'SCHEDULED'
-        }
-      });
-    }
-
-    // Generate IncidentRotation for Squad Sonic only (all days including weekends)
-    // Since they are the Production Support team
-    const sprintLength = 14; // 2 weeks
-    const numberOfSprints = 4; // Generate for 4 sprints
-
-    for (let sprint = 0; sprint < numberOfSprints; sprint++) {
-      const startDate = addDays(today, sprint * sprintLength);
-      const endDate = addDays(startDate, sprintLength - 1);
-
-      // Create rotation for each sprint
-      await prisma.incidentRotation.create({
-        data: {
-          squadId: squadSonic.id,
-          primaryMemberId: squadSonic.members[sprint % squadSonic.members.length].id,
-          secondaryMemberId: squadSonic.members[(sprint + 1) % squadSonic.members.length].id,
-          startDate,
-          endDate,
-          sprintNumber: sprint + 1
-        }
-      });
-
-      // Create some rotation swaps for weekends
-      const weekendSwaps = [
-        {
-          requesterId: squadSonic.members[sprint % squadSonic.members.length].id,
-          accepterId: squadSonic.members[(sprint + 2) % squadSonic.members.length].id,
-          swapDate: addDays(startDate, 6), // First Saturday
+          squadId: troySquad.id,
+          memberId: troyMemberIds[troyHostIndex],
+          date: new Date(currentDateStandup),
+          status: currentDateStandup < new Date() ? 'COMPLETED' : 'SCHEDULED',
         },
-        {
-          requesterId: squadSonic.members[(sprint + 1) % squadSonic.members.length].id,
-          accepterId: squadSonic.members[(sprint + 3) % squadSonic.members.length].id,
-          swapDate: addDays(startDate, 13), // Second Saturday
-        }
-      ];
+      });
 
-      for (const swap of weekendSwaps) {
-        await prisma.rotationSwap.create({
-          data: {
-            rotationId: (await prisma.incidentRotation.findFirst({
-              where: {
-                squadId: squadSonic.id,
-                startDate,
-                endDate,
-              }
-            }))!.id,
-            requesterId: swap.requesterId,
-            accepterId: swap.accepterId,
-            swapDate: swap.swapDate,
-            status: 'PENDING'
-          }
-        });
-      }
+      // Create hosting for Sonic squad
+      await prisma.standupHosting.create({
+        data: {
+          squadId: sonicSquad.id,
+          memberId: sonicMemberIds[sonicHostIndex],
+          date: new Date(currentDateStandup),
+          status: currentDateStandup < new Date() ? 'COMPLETED' : 'SCHEDULED',
+        },
+      });
+
+      // Rotate hosts for next day
+      troyHostIndex = (troyHostIndex + 1) % troyMemberIds.length;
+      sonicHostIndex = (sonicHostIndex + 1) % sonicMemberIds.length;
     }
 
-    // No IncidentRotation for Squad Troy as they are not a Production Support team
+    // Move to next day
+    currentDateStandup.setDate(currentDateStandup.getDate() + 1);
+  }
+
+  // Create some future standup hosting and incident rotations
+  const futureDate = new Date();
+  futureDate.setMonth(futureDate.getMonth() + 1); // One month in the future
+
+  // Future incident rotations
+  while (currentDateIncident < futureDate) {
+    const sprintStartDate = new Date(currentDateIncident);
+    const sprintEndDate = new Date(currentDateIncident);
+    sprintEndDate.setDate(sprintEndDate.getDate() + 13);
+
+    await prisma.incidentRotation.create({
+      data: {
+        squadId: sonicSquad.id,
+        startDate: sprintStartDate,
+        endDate: sprintEndDate,
+        sprintNumber: Math.floor(Math.random() * 1000),
+        primaryMemberId: sonicMemberIds[primaryIndex],
+        secondaryMemberId: sonicMemberIds[secondaryIndex],
+      },
+    });
+
+    primaryIndex = (primaryIndex + 2) % sonicMemberIds.length;
+    secondaryIndex = (secondaryIndex + 2) % sonicMemberIds.length;
+    if (secondaryIndex === primaryIndex) {
+      secondaryIndex = (secondaryIndex + 1) % sonicMemberIds.length;
+    }
+
+    currentDateIncident.setDate(currentDateIncident.getDate() + 14);
+  }
+
+  // Future standup hosting
+  while (currentDateStandup < futureDate) {
+    if (!isWeekend(currentDateStandup)) {
+      await prisma.standupHosting.create({
+        data: {
+          squadId: troySquad.id,
+          memberId: troyMemberIds[troyHostIndex],
+          date: new Date(currentDateStandup),
+          status: 'SCHEDULED',
+        },
+      });
+
+      await prisma.standupHosting.create({
+        data: {
+          squadId: sonicSquad.id,
+          memberId: sonicMemberIds[sonicHostIndex],
+          date: new Date(currentDateStandup),
+          status: 'SCHEDULED',
+        },
+      });
+
+      troyHostIndex = (troyHostIndex + 1) % troyMemberIds.length;
+      sonicHostIndex = (sonicHostIndex + 1) % sonicMemberIds.length;
+    }
+
+    currentDateStandup.setDate(currentDateStandup.getDate() + 1);
   }
 }
 
