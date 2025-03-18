@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { CalendarService } from '../services/calendar.service';
 import { CreateRotationInput, UpdateRotationInput, CreateSwapInput, UpdateSwapInput, UpdateAvailabilityInput } from '../types/calendar.types';
-import { startOfDay, addDays } from 'date-fns';
+import { startOfDay, addDays, startOfMonth, endOfMonth } from 'date-fns';
 
 export class CalendarController {
   constructor(private service: CalendarService) {}
@@ -534,8 +534,18 @@ export class CalendarController {
       const { squadId } = req.params;
       const { startDate, endDate } = req.query;
 
-      const start = startDate ? new Date(startDate as string) : startOfDay(new Date());
-      const end = endDate ? new Date(endDate as string) : addDays(start, 30);
+      // Get the current date
+      const currentDate = new Date();
+      
+      // If no startDate provided, use start of current month
+      const start = startDate 
+        ? new Date(startDate as string) 
+        : startOfMonth(currentDate);
+      
+      // If no endDate provided, use end of current month
+      const end = endDate 
+        ? new Date(endDate as string)
+        : endOfMonth(currentDate);
 
       const hostings = await this.service.getStandupHostingSchedule(squadId, start, end);
       res.json(hostings);
@@ -585,8 +595,18 @@ export class CalendarController {
       const { squadId } = req.params;
       const { startDate, endDate } = req.query;
 
-      const start = startDate ? new Date(startDate as string) : startOfDay(new Date());
-      const end = endDate ? new Date(endDate as string) : addDays(start, 30);
+      // Get the current date
+      const currentDate = new Date();
+      
+      // If no startDate provided, use start of current month
+      const start = startDate 
+        ? new Date(startDate as string) 
+        : startOfMonth(currentDate);
+      
+      // If no endDate provided, use end of current month
+      const end = endDate 
+        ? new Date(endDate as string)
+        : endOfMonth(currentDate);
 
       const rotations = await this.service.getIncidentRotationSchedule(squadId, start, end);
       res.json(rotations);
