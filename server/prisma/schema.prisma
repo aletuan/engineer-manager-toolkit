@@ -184,6 +184,7 @@ model IncidentRotation {
   startDate         DateTime
   endDate           DateTime
   sprintNumber      Int
+  isCompleted       Boolean       @default(true)
   swaps             RotationSwap[]
   createdAt         DateTime      @default(now())
 
@@ -245,15 +246,16 @@ model SprintReport {
 }
 
 model StandupHosting {
-  id        String      @id @default(uuid())
-  squad     Squad       @relation(fields: [squadId], references: [id])
-  squadId   String
-  member    SquadMember @relation(fields: [memberId], references: [id])
-  memberId  String
-  date      DateTime
-  status    String      @default("SCHEDULED")
-  createdAt DateTime    @default(now())
-  updatedAt DateTime    @updatedAt
+  id          String      @id @default(uuid())
+  squad       Squad       @relation(fields: [squadId], references: [id])
+  squadId     String
+  member      SquadMember @relation(fields: [memberId], references: [id])
+  memberId    String
+  date        DateTime
+  status      String      @default("SCHEDULED")
+  isCompleted Boolean     @default(true)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
 
   @@index([squadId])
   @@index([memberId])

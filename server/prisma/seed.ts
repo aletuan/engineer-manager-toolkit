@@ -705,7 +705,9 @@ async function main() {
           secondaryMemberId: squadSonic.members[(sprint + 1) % squadSonic.members.length].id,
           startDate,
           endDate,
-          sprintNumber: sprint + 1
+          sprintNumber: sprint + 1,
+          isCompleted: true,
+          createdAt: new Date(),
         }
       });
 

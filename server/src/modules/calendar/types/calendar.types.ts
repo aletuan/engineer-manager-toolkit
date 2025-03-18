@@ -1,5 +1,7 @@
 import { z } from 'zod';
 import { MemberStatus } from '@prisma/client';
+import { SquadMember } from '../../squads/types/squad.types';
+import { RotationSwap } from './rotation-swap.types';
 
 // Rotation Types
 export const createRotationSchema = z.object({
@@ -61,4 +63,31 @@ export const getAvailabilityQuerySchema = z.object({
 
 export type GetRotationsQuery = z.infer<typeof getRotationsQuerySchema>;
 export type GetSwapsQuery = z.infer<typeof getSwapsQuerySchema>;
-export type GetAvailabilityQuery = z.infer<typeof getAvailabilityQuerySchema>; 
+export type GetAvailabilityQuery = z.infer<typeof getAvailabilityQuerySchema>;
+
+export interface IncidentRotation {
+  id: string;
+  squadId: string;
+  primaryMemberId: string;
+  secondaryMemberId: string;
+  startDate: Date;
+  endDate: Date;
+  sprintNumber: number;
+  isCompleted: boolean;
+  createdAt: Date;
+  primaryMember?: SquadMember;
+  secondaryMember?: SquadMember;
+  swaps?: RotationSwap[];
+}
+
+export interface StandupHosting {
+  id: string;
+  squadId: string;
+  memberId: string;
+  date: Date;
+  status: string;
+  isCompleted: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+  member?: SquadMember;
+} 
