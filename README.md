@@ -33,10 +33,12 @@ Here's a visual tour of the Engineer Manager Toolkit's key features and interfac
 
 - [ ] Frontend
   - [ ] Team Management Dashboard
-    - [ ] Loading Team List from a JSON file, each member should:
-      - [ ] Full Name
-      - [ ] Phone Contact
-      - [ ] Email
+    - [x] Loading Team List, each member should:
+      - [x] Full Name
+      - [x] Phone Contact
+      - [x] Email
+      - [x] PID
+      - [x] Squad
     - [ ] Adding new Team member 
     - [ ] Remove a current Team member
   - [ ] Task (Schedule, and Effort) Tracking
@@ -51,8 +53,8 @@ Here's a visual tour of the Engineer Manager Toolkit's key features and interfac
     - [ ] Block Items
     - [ ] Note
   - [ ] Team Calendar & Rotation Management
-    - [ ] Daily schedule display
-    - [ ] Weekly / Monthly schedule
+    - [x] Daily schedule display
+    - [x] Weekly / Monthly schedule
     - [ ] Rotation Swap (Week Swap, Day Swap)
   - [ ] Report in graphic / dashboard
     - [ ] How many sprint a member doing a host
