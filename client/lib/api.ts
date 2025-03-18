@@ -24,6 +24,7 @@ export interface SquadMember {
   avatarUrl?: string;
   squadId: string;
   squadName?: string;
+  pid: string;
 }
 
 export interface IncidentRotation {
