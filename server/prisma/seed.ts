@@ -47,16 +47,17 @@ async function main() {
   const troyMembers = await Promise.all([
     prisma.user.create({
       data: {
-        email: "daniel.nguyen@example.com",
+        email: "daniel.nguyen@nab.com.au",
         passwordHash: "hashed_password",
         squadMember: {
           create: {
             squadId: troySquad.id,
             pid: "EMP001",
             fullName: "Daniel Nguyen",
-            email: "daniel.nguyen@example.com",
+            email: "daniel.nguyen@nab.com.au",
             position: "Senior Developer",
             status: "ACTIVE",
+            phone: "(084) +32-8269-358",
           },
         },
       },
@@ -66,16 +67,17 @@ async function main() {
     }),
     prisma.user.create({
       data: {
-        email: "harry.nguyen@example.com",
+        email: "harry.nguyen@nab.com.au",
         passwordHash: "hashed_password",
         squadMember: {
           create: {
             squadId: troySquad.id,
             pid: "EMP002",
             fullName: "Harry Nguyen",
-            email: "harry.nguyen@example.com",
+            email: "harry.nguyen@nab.com.au",
             position: "Senior Developer",
             status: "ACTIVE",
+            phone: "(084) +32-8269-359",
           },
         },
       },
@@ -85,16 +87,17 @@ async function main() {
     }),
     prisma.user.create({
       data: {
-        email: "kiet.chung@example.com",
+        email: "kiet.chung@nab.com.au",
         passwordHash: "hashed_password",
         squadMember: {
           create: {
             squadId: troySquad.id,
             pid: "EMP003",
             fullName: "Kiet Chung",
-            email: "kiet.chung@example.com",
+            email: "kiet.chung@nab.com.au",
             position: "Senior Developer",
             status: "ACTIVE",
+            phone: "(084) +32-8269-360",
           },
         },
       },
@@ -104,16 +107,17 @@ async function main() {
     }),
     prisma.user.create({
       data: {
-        email: "luy.hoang@example.com",
+        email: "luy.hoang@nab.com.au",
         passwordHash: "hashed_password",
         squadMember: {
           create: {
             squadId: troySquad.id,
             pid: "EMP004",
             fullName: "Luy Hoang",
-            email: "luy.hoang@example.com",
+            email: "luy.hoang@nab.com.au",
             position: "Senior Developer",
             status: "ACTIVE",
+            phone: "(084) +32-8269-361",
           },
         },
       },
@@ -123,16 +127,17 @@ async function main() {
     }),
     prisma.user.create({
       data: {
-        email: "andy.le@example.com",
+        email: "andy.le@nab.com.au",
         passwordHash: "hashed_password",
         squadMember: {
           create: {
             squadId: troySquad.id,
             pid: "EMP005",
             fullName: "Andy Le",
-            email: "andy.le@example.com",
+            email: "andy.le@nab.com.au",
             position: "Senior Developer",
             status: "ACTIVE",
+            phone: "(084) +32-8269-362",
           },
         },
       },
@@ -146,16 +151,17 @@ async function main() {
   const sonicMembers = await Promise.all([
     prisma.user.create({
       data: {
-        email: "chicharito.vu@example.com",
+        email: "chicharito.vu@nab.com.au",
         passwordHash: "hashed_password",
         squadMember: {
           create: {
             squadId: sonicSquad.id,
             pid: "EMP006",
             fullName: "Chicharito Vu",
-            email: "chicharito.vu@example.com",
+            email: "chicharito.vu@nab.com.au",
             position: "Senior Developer",
             status: "ACTIVE",
+            phone: "(084) +32-8269-363",
           },
         },
       },
@@ -165,16 +171,17 @@ async function main() {
     }),
     prisma.user.create({
       data: {
-        email: "anh.vu@example.com",
+        email: "anh.vu@nab.com.au",
         passwordHash: "hashed_password",
         squadMember: {
           create: {
             squadId: sonicSquad.id,
             pid: "EMP007",
             fullName: "Anh Vu",
-            email: "anh.vu@example.com",
+            email: "anh.vu@nab.com.au",
             position: "Senior Developer",
             status: "ACTIVE",
+            phone: "(084) +32-8269-364",
           },
         },
       },
@@ -184,16 +191,17 @@ async function main() {
     }),
     prisma.user.create({
       data: {
-        email: "hoa.nguyen@example.com",
+        email: "hoa.nguyen@nab.com.au",
         passwordHash: "hashed_password",
         squadMember: {
           create: {
             squadId: sonicSquad.id,
             pid: "EMP008",
             fullName: "Hoa Nguyen",
-            email: "hoa.nguyen@example.com",
+            email: "hoa.nguyen@nab.com.au",
             position: "Senior Developer",
             status: "ACTIVE",
+            phone: "(084) +32-8269-365",
           },
         },
       },
@@ -203,16 +211,17 @@ async function main() {
     }),
     prisma.user.create({
       data: {
-        email: "phuc.nguyen@example.com",
+        email: "phuc.nguyen@nab.com.au",
         passwordHash: "hashed_password",
         squadMember: {
           create: {
             squadId: sonicSquad.id,
             pid: "EMP009",
             fullName: "Phuc Nguyen",
-            email: "phuc.nguyen@example.com",
+            email: "phuc.nguyen@nab.com.au",
             position: "Senior Developer",
             status: "ACTIVE",
+            phone: "(084) +32-8269-366",
           },
         },
       },
@@ -222,16 +231,17 @@ async function main() {
     }),
     prisma.user.create({
       data: {
-        email: "tony.dai@example.com",
+        email: "tony.dai@nab.com.au",
         passwordHash: "hashed_password",
         squadMember: {
           create: {
             squadId: sonicSquad.id,
             pid: "EMP010",
             fullName: "Tony Dai",
-            email: "tony.dai@example.com",
+            email: "tony.dai@nab.com.au",
             position: "Senior Developer",
             status: "ACTIVE",
+            phone: "(084) +32-8269-367",
           },
         },
       },
