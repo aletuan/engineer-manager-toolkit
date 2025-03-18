@@ -1,11 +1,8 @@
-import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../../../shared/services/prisma.service';
+import { PrismaClient } from '@prisma/client';
 import { GetRotationsQuery, GetSwapsQuery, GetAvailabilityQuery } from '../types/calendar.types';
-import { IncidentRotation, StandupHosting } from '../types/calendar.types';
 
-@Injectable()
 export class CalendarRepository {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaClient) {}
 
   // Rotation Methods
   async findRotations(query: GetRotationsQuery) {
@@ -259,85 +256,6 @@ export class CalendarRepository {
       },
       orderBy: {
         startDate: 'asc',
-      },
-    });
-  }
-
-  async findIncidentRotations(squadId: string, startDate?: Date, endDate?: Date): Promise<IncidentRotation[]> {
-    const where: any = { squadId };
-    if (startDate) where.startDate = { gte: startDate };
-    if (endDate) where.endDate = { lte: endDate };
-
-    return this.prisma.incidentRotation.findMany({
-      where,
-      include: {
-        primaryMember: {
-          select: {
-            id: true,
-            fullName: true,
-            email: true,
-            position: true,
-            avatarUrl: true,
-          },
-        },
-        secondaryMember: {
-          select: {
-            id: true,
-            fullName: true,
-            email: true,
-            position: true,
-            avatarUrl: true,
-          },
-        },
-        swaps: {
-          include: {
-            requester: {
-              select: {
-                id: true,
-                fullName: true,
-                email: true,
-                position: true,
-                avatarUrl: true,
-              },
-            },
-            accepter: {
-              select: {
-                id: true,
-                fullName: true,
-                email: true,
-                position: true,
-                avatarUrl: true,
-              },
-            },
-          },
-        },
-      },
-      orderBy: {
-        startDate: 'asc',
-      },
-    });
-  }
-
-  async findStandupHostings(squadId: string, startDate?: Date, endDate?: Date): Promise<StandupHosting[]> {
-    const where: any = { squadId };
-    if (startDate) where.date = { gte: startDate };
-    if (endDate) where.date = { lte: endDate };
-
-    return this.prisma.standupHosting.findMany({
-      where,
-      include: {
-        member: {
-          select: {
-            id: true,
-            fullName: true,
-            email: true,
-            position: true,
-            avatarUrl: true,
-          },
-        },
-      },
-      orderBy: {
-        date: 'asc',
       },
     });
   }
