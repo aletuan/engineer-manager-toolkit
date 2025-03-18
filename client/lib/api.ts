@@ -94,6 +94,16 @@ export interface StandupHosting {
 }
 
 /**
+ * Interface for detailed member information
+ */
+export interface MemberDetails extends SquadMember {
+  squad: Squad;
+  roles?: string[];
+  status: 'ACTIVE' | 'INACTIVE' | 'ON_LEAVE';
+  phone?: string;
+}
+
+/**
  * Fetch all squads from the server
  */
 export async function fetchSquads(): Promise<Squad[]> {
@@ -261,6 +271,97 @@ export async function fetchStandupHosting(
   } catch (error) {
     console.error(`Error fetching standup hosting for squad ${squadId}:`, error);
     // Return empty array in case of error
+    return [];
+  }
+}
+
+/**
+ * Fetch detailed information of a squad member
+ */
+export async function fetchMemberDetails(memberId: string): Promise<MemberDetails | null> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/squads/members/${memberId}/details`);
+    
+    if (!response.ok) {
+      throw new Error(`Failed to fetch member details: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error(`Error fetching member details ${memberId}:`, error);
+    return null;
+  }
+}
+
+/**
+ * Fetch standup hosting history for a member
+ * Optional date range parameters can be provided
+ */
+export async function fetchMemberStandupHistory(
+  memberId: string,
+  startDate?: string,
+  endDate?: string
+): Promise<StandupHosting[]> {
+  try {
+    let url = `${API_BASE_URL}/calendar/standup-hosting/history/${memberId}`;
+    
+    // Add query parameters if provided
+    const params = new URLSearchParams();
+    if (startDate) params.append('startDate', startDate);
+    if (endDate) params.append('endDate', endDate);
+    
+    const queryString = params.toString();
+    if (queryString) {
+      url += `?${queryString}`;
+    }
+    
+    const response = await fetch(url);
+    
+    if (!response.ok) {
+      throw new Error(`Failed to fetch standup history: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error(`Error fetching standup history for member ${memberId}:`, error);
+    return [];
+  }
+}
+
+/**
+ * Fetch incident rotation history for a member
+ * Optional date range parameters can be provided
+ */
+export async function fetchMemberIncidentHistory(
+  memberId: string,
+  startDate?: string,
+  endDate?: string
+): Promise<IncidentRotation[]> {
+  try {
+    let url = `${API_BASE_URL}/calendar/incident-rotation/history/${memberId}`;
+    
+    // Add query parameters if provided
+    const params = new URLSearchParams();
+    if (startDate) params.append('startDate', startDate);
+    if (endDate) params.append('endDate', endDate);
+    
+    const queryString = params.toString();
+    if (queryString) {
+      url += `?${queryString}`;
+    }
+    
+    const response = await fetch(url);
+    
+    if (!response.ok) {
+      throw new Error(`Failed to fetch incident rotation history: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error(`Error fetching incident rotation history for member ${memberId}:`, error);
     return [];
   }
 } 
