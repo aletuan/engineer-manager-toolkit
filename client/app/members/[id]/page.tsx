@@ -3,53 +3,91 @@
 import { useEffect, useState } from "react"
 import { useParams, useRouter } from "next/navigation"
 import Link from "next/link"
-import { getMemberById, type TeamMember } from "@/lib/team-data"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { ArrowLeft, Mail, Phone, User, Building, Calendar, Shield } from "lucide-react"
-import { getNextHostingDate } from "@/lib/rotation"
-import { getNextIncidentDuty } from "@/lib/incident-roster"
+import { 
+  fetchMemberDetails, 
+  fetchMemberStandupHistory, 
+  fetchMemberIncidentHistory,
+  type MemberDetails,
+  type StandupHosting,
+  type IncidentRotation
+} from "@/lib/api"
 
 export default function MemberDetailPage() {
   const params = useParams()
   const router = useRouter()
-  const [member, setMember] = useState<TeamMember | null>(null)
-  const [nextHostingDate, setNextHostingDate] = useState<Date | null>(null)
-  const [nextIncidentDuty, setNextIncidentDuty] = useState<{
-    role: "primary" | "secondary" | null
-    startDate: Date | null
-    endDate: Date | null
-  }>({ role: null, startDate: null, endDate: null })
+  const [member, setMember] = useState<MemberDetails | null>(null)
+  const [standupHistory, setStandupHistory] = useState<StandupHosting[]>([])
+  const [incidentHistory, setIncidentHistory] = useState<IncidentRotation[]>([])
+  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    if (params.id) {
-      const memberData = getMemberById(params.id as string)
-      if (memberData) {
-        setMember(memberData)
+    async function fetchMemberData(memberId: string) {
+      try {
+        setIsLoading(true)
+        const [details, standupData, incidentData] = await Promise.all([
+          fetchMemberDetails(memberId),
+          fetchMemberStandupHistory(memberId),
+          fetchMemberIncidentHistory(memberId)
+        ])
 
-        // Tìm ngày host standup tiếp theo
-        const nextDate = getNextHostingDate(memberData.name)
-        setNextHostingDate(nextDate)
-
-        // Tìm lịch trực incident tiếp theo (chỉ cho Team Sonic)
-        if (memberData.team === "Sonic") {
-          const duty = getNextIncidentDuty(memberData.name)
-          setNextIncidentDuty(duty)
+        if (details) {
+          setMember(details)
+          setStandupHistory(standupData)
+          setIncidentHistory(incidentData)
+        } else {
+          // Nếu không tìm thấy thành viên, chuyển về trang danh sách
+          router.push("/members")
         }
-      } else {
-        // Nếu không tìm thấy thành viên, chuyển về trang danh sách
+      } catch (error) {
+        console.error('Error fetching member data:', error)
         router.push("/members")
+      } finally {
+        setIsLoading(false)
       }
+    }
+
+    if (params.id) {
+      fetchMemberData(params.id as string)
     }
   }, [params.id, router])
 
-  if (!member) {
+  // Tìm ngày host standup tiếp theo từ lịch sử
+  const nextStandupHosting = standupHistory
+    .filter(hosting => new Date(hosting.date) > new Date())
+    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())[0]
+
+  // Tìm lịch trực incident tiếp theo từ lịch sử
+  const nextIncidentDuty = incidentHistory
+    .filter(rotation => new Date(rotation.endDate) > new Date())
+    .sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime())
+    .map(rotation => ({
+      role: rotation.primaryMemberId === member?.id ? "primary" : "secondary",
+      startDate: new Date(rotation.startDate),
+      endDate: new Date(rotation.endDate)
+    }))[0]
+
+  if (isLoading || !member) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <p>Đang tải thông tin...</p>
       </div>
     )
   }
+
+  // Lấy 5 lịch sử standup gần nhất
+  const recentStandupHistory = standupHistory
+    .filter(hosting => new Date(hosting.date) <= new Date())
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+    .slice(0, 5)
+
+  // Lấy 5 lịch sử incident rotation gần nhất
+  const recentIncidentHistory = incidentHistory
+    .filter(rotation => new Date(rotation.endDate) <= new Date())
+    .sort((a, b) => new Date(b.endDate).getTime() - new Date(a.endDate).getTime())
+    .slice(0, 5)
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -79,20 +117,16 @@ export default function MemberDetailPage() {
             <CardContent>
               <div className="flex flex-col items-center mb-6">
                 <div className="w-24 h-24 rounded-full bg-gray-200 flex items-center justify-center text-3xl font-bold text-gray-700 mb-4">
-                  {member.name
+                  {member.fullName
                     .split(" ")
                     .map((part) => part[0])
                     .join("")}
                 </div>
-                <h2 className="text-xl font-bold">{member.name}</h2>
+                <h2 className="text-xl font-bold">{member.fullName}</h2>
                 <p className="text-gray-500">{member.position}</p>
                 <div className="mt-2">
-                  <span
-                    className={`px-3 py-1 rounded-full text-xs font-medium ${
-                      member.team === "Sonic" ? "bg-gray-200" : "bg-gray-300"
-                    }`}
-                  >
-                    {member.squadName || `Squad ${member.team}`}
+                  <span className="px-3 py-1 rounded-full text-xs font-medium bg-gray-200">
+                    {member.squad.name}
                   </span>
                 </div>
               </div>
@@ -118,7 +152,7 @@ export default function MemberDetailPage() {
                   <Phone className="h-5 w-5 text-gray-400" />
                   <div>
                     <p className="text-sm text-gray-500">Số điện thoại</p>
-                    <p className="font-medium">{member.phone}</p>
+                    <p className="font-medium">{member.phone || "Chưa cập nhật"}</p>
                   </div>
                 </div>
 
@@ -126,7 +160,7 @@ export default function MemberDetailPage() {
                   <Building className="h-5 w-5 text-gray-400" />
                   <div>
                     <p className="text-sm text-gray-500">Team</p>
-                    <p className="font-medium">{member.squadName || `Squad ${member.team}`}</p>
+                    <p className="font-medium">{member.squad.name}</p>
                   </div>
                 </div>
               </div>
@@ -161,11 +195,11 @@ export default function MemberDetailPage() {
                     <Calendar className="h-5 w-5 text-gray-700 mt-1" />
                     <div>
                       <h3 className="font-medium text-lg">Host Stand-up</h3>
-                      {nextHostingDate ? (
+                      {nextStandupHosting ? (
                         <div className="mt-2">
                           <p className="text-gray-600">Lần host tiếp theo:</p>
                           <p className="text-lg font-medium mt-1">
-                            {nextHostingDate.toLocaleDateString("vi-VN", {
+                            {new Date(nextStandupHosting.date).toLocaleDateString("vi-VN", {
                               weekday: "long",
                               day: "numeric",
                               month: "numeric",
@@ -180,14 +214,14 @@ export default function MemberDetailPage() {
                   </div>
                 </div>
 
-                {/* Incident duty - only for Team Sonic */}
-                {member.team === "Sonic" && (
+                {/* Incident duty - only for squads with incident roster */}
+                {member.squad.hasIncidentRoster && (
                   <div className="p-4 bg-gray-100 rounded-lg">
                     <div className="flex items-start gap-3">
                       <Shield className="h-5 w-5 text-gray-700 mt-1" />
                       <div>
                         <h3 className="font-medium text-lg">Trực Incident</h3>
-                        {nextIncidentDuty.role ? (
+                        {nextIncidentDuty ? (
                           <div className="mt-2">
                             <div className="flex items-center gap-2">
                               <p className="text-gray-600">Vai trò:</p>
@@ -196,23 +230,21 @@ export default function MemberDetailPage() {
                               </span>
                             </div>
 
-                            {nextIncidentDuty.startDate && nextIncidentDuty.endDate && (
-                              <div className="mt-2">
-                                <p className="text-gray-600">Thời gian trực:</p>
-                                <p className="text-lg font-medium mt-1">
-                                  {nextIncidentDuty.startDate.toLocaleDateString("vi-VN", {
-                                    day: "numeric",
-                                    month: "numeric",
-                                  })}{" "}
-                                  -{" "}
-                                  {nextIncidentDuty.endDate.toLocaleDateString("vi-VN", {
-                                    day: "numeric",
-                                    month: "numeric",
-                                    year: "numeric",
-                                  })}
-                                </p>
-                              </div>
-                            )}
+                            <div className="mt-2">
+                              <p className="text-gray-600">Thời gian trực:</p>
+                              <p className="text-lg font-medium mt-1">
+                                {nextIncidentDuty.startDate.toLocaleDateString("vi-VN", {
+                                  day: "numeric",
+                                  month: "numeric",
+                                })}{" "}
+                                -{" "}
+                                {nextIncidentDuty.endDate.toLocaleDateString("vi-VN", {
+                                  day: "numeric",
+                                  month: "numeric",
+                                  year: "numeric",
+                                })}
+                              </p>
+                            </div>
                           </div>
                         ) : (
                           <p className="text-gray-500 mt-2">Không tìm thấy thông tin lịch trực incident sắp tới.</p>
@@ -226,32 +258,47 @@ export default function MemberDetailPage() {
                 <div className="mt-6">
                   <h3 className="font-medium text-lg mb-4">Lịch Sử Gần Đây</h3>
                   <div className="space-y-3">
-                    <div className="p-3 border rounded-lg flex justify-between items-center">
-                      <div>
-                        <p className="font-medium">Host Stand-up</p>
-                        <p className="text-sm text-gray-500">Thứ Hai, 04/03/2024</p>
+                    {recentStandupHistory.map((hosting) => (
+                      <div key={hosting.id} className="p-3 border rounded-lg flex justify-between items-center">
+                        <div>
+                          <p className="font-medium">Host Stand-up</p>
+                          <p className="text-sm text-gray-500">
+                            {new Date(hosting.date).toLocaleDateString("vi-VN", {
+                              weekday: "long",
+                              day: "numeric",
+                              month: "numeric",
+                              year: "numeric",
+                            })}
+                          </p>
+                        </div>
+                        <span className="px-2 py-1 bg-gray-100 rounded text-xs">{hosting.status}</span>
                       </div>
-                      <span className="px-2 py-1 bg-gray-100 rounded text-xs">Hoàn thành</span>
-                    </div>
+                    ))}
 
-                    {member.team === "Sonic" && (
-                      <>
-                        <div className="p-3 border rounded-lg flex justify-between items-center">
-                          <div>
-                            <p className="font-medium">Trực Incident (Primary)</p>
-                            <p className="text-sm text-gray-500">15/02/2024 - 28/02/2024</p>
-                          </div>
-                          <span className="px-2 py-1 bg-gray-100 rounded text-xs">Hoàn thành</span>
+                    {member.squad.hasIncidentRoster && recentIncidentHistory.map((rotation) => (
+                      <div key={rotation.id} className="p-3 border rounded-lg flex justify-between items-center">
+                        <div>
+                          <p className="font-medium">
+                            Trực Incident ({rotation.primaryMemberId === member.id ? "Primary" : "Secondary"})
+                          </p>
+                          <p className="text-sm text-gray-500">
+                            {new Date(rotation.startDate).toLocaleDateString("vi-VN", {
+                              day: "numeric",
+                              month: "numeric",
+                            })}{" "}
+                            -{" "}
+                            {new Date(rotation.endDate).toLocaleDateString("vi-VN", {
+                              day: "numeric",
+                              month: "numeric",
+                              year: "numeric",
+                            })}
+                          </p>
                         </div>
-                        <div className="p-3 border rounded-lg flex justify-between items-center">
-                          <div>
-                            <p className="font-medium">Trực Incident (Secondary)</p>
-                            <p className="text-sm text-gray-500">01/01/2024 - 14/01/2024</p>
-                          </div>
-                          <span className="px-2 py-1 bg-gray-100 rounded text-xs">Hoàn thành</span>
-                        </div>
-                      </>
-                    )}
+                        <span className="px-2 py-1 bg-gray-100 rounded text-xs">
+                          {new Date(rotation.endDate) < new Date() ? "Hoàn thành" : "Chưa hoàn thành"}
+                        </span>
+                      </div>
+                    ))}
                   </div>
                 </div>
               </div>

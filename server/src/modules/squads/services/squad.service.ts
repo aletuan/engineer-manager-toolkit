@@ -64,4 +64,12 @@ export class SquadService {
     }
     return this.repository.findSquadMembers(squadId);
   }
+
+  async getMemberById(id: string): Promise<SquadMember | null> {
+    const member = await this.repository.findMemberById(id);
+    if (!member) {
+      throw new Error('Member not found');
+    }
+    return member;
+  }
 } 

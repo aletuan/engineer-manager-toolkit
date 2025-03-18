@@ -595,4 +595,38 @@ export class CalendarController {
       res.status(500).json({ error: 'Failed to get incident rotation schedule' });
     }
   }
+
+  async getMemberStandupHostingHistory(req: Request, res: Response) {
+    try {
+      const { memberId } = req.params;
+      const { startDate, endDate } = req.query;
+
+      const history = await this.service.getMemberStandupHostingHistory(
+        memberId,
+        startDate ? new Date(startDate as string) : undefined,
+        endDate ? new Date(endDate as string) : undefined
+      );
+      res.json(history);
+    } catch (error) {
+      console.error('Error fetching standup hosting history:', error);
+      res.status(500).json({ error: 'Failed to get standup hosting history' });
+    }
+  }
+
+  async getMemberIncidentRotationHistory(req: Request, res: Response) {
+    try {
+      const { memberId } = req.params;
+      const { startDate, endDate } = req.query;
+
+      const history = await this.service.getMemberIncidentRotationHistory(
+        memberId,
+        startDate ? new Date(startDate as string) : undefined,
+        endDate ? new Date(endDate as string) : undefined
+      );
+      res.json(history);
+    } catch (error) {
+      console.error('Error fetching incident rotation history:', error);
+      res.status(500).json({ error: 'Failed to get incident rotation history' });
+    }
+  }
 } 

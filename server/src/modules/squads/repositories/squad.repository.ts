@@ -71,6 +71,16 @@ export class SquadRepository {
   async findMemberById(id: string): Promise<SquadMember | null> {
     return this.prisma.squadMember.findUnique({
       where: { id },
+      include: {
+        squad: {
+          select: {
+            id: true,
+            name: true,
+            code: true,
+            hasIncidentRoster: true
+          }
+        }
+      }
     });
   }
 

@@ -105,4 +105,20 @@ export class SquadController {
       throw error;
     }
   }
+
+  async getMemberById(req: Request, res: Response) {
+    const { id } = req.params;
+    try {
+      const member = await this.service.getMemberById(id);
+      if (!member) {
+        return res.status(404).json({ message: 'Member not found' });
+      }
+      res.json(member);
+    } catch (error) {
+      if (error instanceof Error && error.message === 'Member not found') {
+        return res.status(404).json({ message: 'Member not found' });
+      }
+      throw error;
+    }
+  }
 } 
