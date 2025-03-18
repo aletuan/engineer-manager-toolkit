@@ -434,7 +434,9 @@ export default function StandupCalendar() {
         {activeTab === "calendar" && (
           <div className="bg-white rounded-xl shadow-md p-6">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-bold">{format(currentDate, "MMMM yyyy", { locale: vi })}</h2>
+              <h2 className="text-xl font-bold">
+                {format(currentDate, "'Tháng' MM 'năm' yyyy", { locale: vi })}
+              </h2>
               <div className="flex items-center space-x-2">
                 <Button variant="outline" size="icon" onClick={handlePrevMonth}>
                   <ChevronLeft className="h-4 w-4" />
