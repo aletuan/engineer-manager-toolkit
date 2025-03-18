@@ -595,8 +595,18 @@ export class CalendarController {
       const { squadId } = req.params;
       const { startDate, endDate } = req.query;
 
-      const start = startDate ? new Date(startDate as string) : startOfDay(new Date());
-      const end = endDate ? new Date(endDate as string) : addDays(start, 30);
+      // Get the current date
+      const currentDate = new Date();
+      
+      // If no startDate provided, use start of current month
+      const start = startDate 
+        ? new Date(startDate as string) 
+        : startOfMonth(currentDate);
+      
+      // If no endDate provided, use end of current month
+      const end = endDate 
+        ? new Date(endDate as string)
+        : endOfMonth(currentDate);
 
       const rotations = await this.service.getIncidentRotationSchedule(squadId, start, end);
       res.json(rotations);
