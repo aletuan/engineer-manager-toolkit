@@ -259,4 +259,116 @@ export class CalendarRepository {
       },
     });
   }
+
+  async getMemberStandupHostingHistory(memberId: string, startDate?: Date, endDate?: Date) {
+    const where: any = {
+      memberId,
+    };
+
+    if (startDate) {
+      where.date = {
+        ...where.date,
+        gte: startDate,
+      };
+    }
+
+    if (endDate) {
+      where.date = {
+        ...where.date,
+        lte: endDate,
+      };
+    }
+
+    return this.prisma.standupHosting.findMany({
+      where,
+      include: {
+        squad: true,
+        member: {
+          select: {
+            id: true,
+            fullName: true,
+            email: true,
+            position: true,
+            avatarUrl: true,
+          },
+        },
+      },
+      orderBy: {
+        date: 'desc',
+      },
+    });
+  }
+
+  async getMemberIncidentRotationHistory(memberId: string, startDate?: Date, endDate?: Date) {
+    const where: any = {
+      OR: [
+        { primaryMemberId: memberId },
+        { secondaryMemberId: memberId },
+      ],
+    };
+
+    if (startDate) {
+      where.startDate = {
+        ...where.startDate,
+        gte: startDate,
+      };
+    }
+
+    if (endDate) {
+      where.endDate = {
+        ...where.endDate,
+        lte: endDate,
+      };
+    }
+
+    return this.prisma.incidentRotation.findMany({
+      where,
+      include: {
+        squad: true,
+        primaryMember: {
+          select: {
+            id: true,
+            fullName: true,
+            email: true,
+            position: true,
+            avatarUrl: true,
+          },
+        },
+        secondaryMember: {
+          select: {
+            id: true,
+            fullName: true,
+            email: true,
+            position: true,
+            avatarUrl: true,
+          },
+        },
+        swaps: {
+          include: {
+            requester: {
+              select: {
+                id: true,
+                fullName: true,
+                email: true,
+                position: true,
+                avatarUrl: true,
+              },
+            },
+            accepter: {
+              select: {
+                id: true,
+                fullName: true,
+                email: true,
+                position: true,
+                avatarUrl: true,
+              },
+            },
+          },
+        },
+      },
+      orderBy: {
+        startDate: 'desc',
+      },
+    });
+  }
 } 

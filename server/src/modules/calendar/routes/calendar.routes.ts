@@ -233,6 +233,80 @@ export function createCalendarRouter(controller: CalendarController): Router {
    */
   router.get('/incident-rotation/:squadId', controller.getIncidentRotationSchedule.bind(controller));
 
+  /**
+   * @swagger
+   * /api/v1/calendar/standup-hosting/history/{memberId}:
+   *   get:
+   *     summary: Get standup hosting history for a member
+   *     tags: [Calendar]
+   *     parameters:
+   *       - in: path
+   *         name: memberId
+   *         required: true
+   *         schema:
+   *           type: string
+   *         description: Member ID
+   *       - in: query
+   *         name: startDate
+   *         schema:
+   *           type: string
+   *           format: date
+   *         description: Optional start date for filtering (YYYY-MM-DD)
+   *       - in: query
+   *         name: endDate
+   *         schema:
+   *           type: string
+   *           format: date
+   *         description: Optional end date for filtering (YYYY-MM-DD)
+   *     responses:
+   *       200:
+   *         description: Member's standup hosting history
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: array
+   *               items:
+   *                 $ref: '#/components/schemas/StandupHosting'
+   */
+  router.get('/standup-hosting/history/:memberId', controller.getMemberStandupHostingHistory.bind(controller));
+
+  /**
+   * @swagger
+   * /api/v1/calendar/incident-rotation/history/{memberId}:
+   *   get:
+   *     summary: Get incident rotation history for a member
+   *     tags: [Calendar]
+   *     parameters:
+   *       - in: path
+   *         name: memberId
+   *         required: true
+   *         schema:
+   *           type: string
+   *         description: Member ID
+   *       - in: query
+   *         name: startDate
+   *         schema:
+   *           type: string
+   *           format: date
+   *         description: Optional start date for filtering (YYYY-MM-DD)
+   *       - in: query
+   *         name: endDate
+   *         schema:
+   *           type: string
+   *           format: date
+   *         description: Optional end date for filtering (YYYY-MM-DD)
+   *     responses:
+   *       200:
+   *         description: Member's incident rotation history
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: array
+   *               items:
+   *                 $ref: '#/components/schemas/IncidentRotation'
+   */
+  router.get('/incident-rotation/history/:memberId', controller.getMemberIncidentRotationHistory.bind(controller));
+
   return router;
 }
 

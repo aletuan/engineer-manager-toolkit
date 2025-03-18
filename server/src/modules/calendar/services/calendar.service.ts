@@ -158,4 +158,12 @@ export class CalendarService {
   async getIncidentRotationSchedule(squadId: string, startDate: Date, endDate: Date) {
     return this.repository.getIncidentRotationSchedule(squadId, startDate, endDate);
   }
+
+  async getMemberStandupHostingHistory(memberId: string) {
+    return this.repository.getMemberStandupHostingHistory(memberId);
+  }
+
+  async getMemberIncidentRotationHistory(memberId: string) {
+    return this.repository.getMemberIncidentRotationHistory(memberId);
+  }
 } 
