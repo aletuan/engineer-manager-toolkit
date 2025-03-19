@@ -175,22 +175,38 @@ export default function StandupCalendar() {
 
   // Check if a date is the start of a sprint
   const isSprintStart = (date: Date) => {
-    // For simplicity, we'll consider every other Monday as the start of a sprint
-    return getDay(date) === 1 && Math.floor(date.getDate() / 14) !== Math.floor(addDays(date, -7).getDate() / 14)
+    // Sprint starts on Wednesday (day 3)
+    return getDay(date) === 3
   }
 
   // Get sprint dates (start and end) for a given date
   const getSprintDates = (date: Date) => {
-    // Find the start of the sprint (going backwards to find the most recent sprint start)
-    let sprintStart = new Date(date)
-    while (!isSprintStart(sprintStart)) {
-      sprintStart = addDays(sprintStart, -1)
+    // Find the start of the financial year
+    const financialYearStart = new Date(date.getFullYear(), 9, 1); // Month is 0-based, so 9 is October
+    if (date < financialYearStart) {
+      financialYearStart.setFullYear(financialYearStart.getFullYear() - 1);
     }
 
-    // Sprint ends after 2 weeks (14 days)
-    const sprintEnd = addDays(sprintStart, 13)
+    // Find the first Wednesday after financial year start
+    let firstSprintStart = new Date(financialYearStart);
+    while (getDay(firstSprintStart) !== 3) { // 3 is Wednesday
+      firstSprintStart.setDate(firstSprintStart.getDate() + 1);
+    }
 
-    return { start: sprintStart, end: sprintEnd }
+    // Calculate days since first sprint start
+    const daysSinceStart = Math.floor((date.getTime() - firstSprintStart.getTime()) / (1000 * 60 * 60 * 24));
+    
+    // Calculate sprint number and days into current sprint
+    const sprintNumber = Math.floor(daysSinceStart / 14) + 1;
+    const daysToAdd = (sprintNumber - 1) * 14;
+
+    // Calculate current sprint start and end dates
+    const sprintStart = new Date(firstSprintStart);
+    sprintStart.setDate(firstSprintStart.getDate() + daysToAdd);
+    const sprintEnd = new Date(sprintStart);
+    sprintEnd.setDate(sprintStart.getDate() + 13);
+
+    return { start: sprintStart, end: sprintEnd, sprintNumber }
   }
 
   const today = startOfDay(new Date())
@@ -349,7 +365,7 @@ export default function StandupCalendar() {
                   <div key={index}>
                     {currentTeam.hasIncidentRoster && isFirstDayOfSprint && (
                       <div className="bg-gray-200 p-2 rounded-lg mb-2 text-sm font-medium">
-                        Sprint: {format(daySprintDates.start, "dd/MM")} - {format(daySprintDates.end, "dd/MM")}
+                        Sprint {daySprintDates.sprintNumber}: {format(daySprintDates.start, "dd/MM")} - {format(daySprintDates.end, "dd/MM")}
                       </div>
                     )}
 
@@ -488,7 +504,9 @@ export default function StandupCalendar() {
                     <div className={cn("text-right mb-1", isToday && "font-bold text-primary")}>{format(day, "d")}</div>
 
                     {currentTeam.hasIncidentRoster && isSprintStartDay && (
-                      <div className="text-xs bg-gray-200 text-gray-700 rounded px-1 py-0.5 mb-1">Sprint Start</div>
+                      <div className="text-xs bg-gray-200 text-gray-700 rounded px-1 py-0.5 mb-1">
+                        Sprint {getSprintDates(day).sprintNumber} Start
+                      </div>
                     )}
 
                     {holidayName && (
