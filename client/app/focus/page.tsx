@@ -31,7 +31,7 @@ import { fetchTasks, fetchSquads, type Task, type Squad, fetchSquadMembers } fro
 
 export default function FocusPage() {
   const [currentDate, setCurrentDate] = useState<Date>(new Date())
-  const [activeSquad, setActiveSquad] = useState<"Sonic" | "Troy">("Sonic")
+  const [activeSquad, setActiveSquad] = useState<string>("")
   const [squads, setSquads] = useState<Squad[]>([])
   const [allTasks, setAllTasks] = useState<Task[]>([])
   const [filteredTasks, setFilteredTasks] = useState<Task[]>([])
@@ -51,9 +51,13 @@ export default function FocusPage() {
     const loadSquads = async () => {
       const data = await fetchSquads()
       setSquads(data)
+      // Set default active squad to first squad in list
+      if (data.length > 0 && !activeSquad) {
+        setActiveSquad(data[0].code)
+      }
     }
     loadSquads()
-  }, [])
+  }, [activeSquad])
 
   const currentSquad = squads.find(squad => squad.code === activeSquad)
 
@@ -241,13 +245,16 @@ export default function FocusPage() {
           {/* Squad selector và Navigation */}
           <div className="mt-6 mb-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
             <Tabs
-              defaultValue="Sonic"
-              className="w-full md:w-auto"
-              onValueChange={(value) => setActiveSquad(value as "Sonic" | "Troy")}
+              value={activeSquad}
+              className="w-full"
+              onValueChange={(value) => setActiveSquad(value)}
             >
               <TabsList className="grid w-full max-w-md grid-cols-2">
-                <TabsTrigger value="Sonic">Squad Sonic</TabsTrigger>
-                <TabsTrigger value="Troy">Squad Troy</TabsTrigger>
+                {squads.map(squad => (
+                  <TabsTrigger key={squad.id} value={squad.code}>
+                    {squad.name}
+                  </TabsTrigger>
+                ))}
               </TabsList>
             </Tabs>
 
