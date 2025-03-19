@@ -176,7 +176,13 @@ export default function StandupCalendar() {
   // Check if a date is the start of a sprint
   const isSprintStart = (date: Date) => {
     // Sprint starts on Wednesday (day 3)
-    return getDay(date) === 3
+    if (getDay(date) !== 3) return false;
+
+    // Get sprint dates for this date
+    const { start } = getSprintDates(date);
+    
+    // Check if this date is the start date of the sprint
+    return isSameDay(date, start);
   }
 
   // Get sprint dates (start and end) for a given date
