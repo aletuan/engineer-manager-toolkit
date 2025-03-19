@@ -5,6 +5,7 @@ export const createTaskSchema = z.object({
   description: z.string().min(1),
   status: z.enum(['TODO', 'IN_PROGRESS', 'DONE']).default('TODO'),
   priority: z.enum(['LOW', 'MEDIUM', 'HIGH']).default('MEDIUM'),
+  progress: z.number().min(0).max(100).default(0),
   dueDate: z.string().datetime(),
   featureId: z.string(),
   assignedToId: z.string(),
@@ -34,6 +35,7 @@ export interface Task {
   description: string;
   status: 'TODO' | 'IN_PROGRESS' | 'DONE';
   priority: 'LOW' | 'MEDIUM' | 'HIGH';
+  progress: number;
   dueDate: Date;
   featureId: string;
   assignedTo: {
