@@ -166,17 +166,29 @@ export default function FocusPage() {
   const getStakeholderColor = (stakeholder: string) => {
     switch (stakeholder) {
       case "Fraud":
-        return "bg-purple-100 text-purple-800"
+        return "bg-purple-100 text-purple-800 border-purple-200"
       case "BEB":
-        return "bg-blue-100 text-blue-800"
+        return "bg-blue-100 text-blue-800 border-blue-200"
       case "ECOM":
-        return "bg-green-100 text-green-800"
+        return "bg-emerald-100 text-emerald-800 border-emerald-200"
       case "CM":
-        return "bg-orange-100 text-orange-800"
+        return "bg-amber-100 text-amber-800 border-amber-200"
       case "CE":
-        return "bg-pink-100 text-pink-800"
+        return "bg-rose-100 text-rose-800 border-rose-200"
+      case "Risk":
+        return "bg-indigo-100 text-indigo-800 border-indigo-200"
+      case "Ops":
+        return "bg-cyan-100 text-cyan-800 border-cyan-200"
+      case "IB":
+        return "bg-fuchsia-100 text-fuchsia-800 border-fuchsia-200"
+      case "EDMS":
+        return "bg-teal-100 text-teal-800 border-teal-200"
+      case "NABOne":
+        return "bg-violet-100 text-violet-800 border-violet-200"
+      case "ISSO":
+        return "bg-lime-100 text-lime-800 border-lime-200"
       default:
-        return "bg-gray-100 text-gray-800"
+        return "bg-slate-100 text-slate-800 border-slate-200"
     }
   }
 
@@ -285,7 +297,7 @@ export default function FocusPage() {
                       </Link>
                     </div>
                     <div className="flex items-center gap-1">
-                      <span className="text-sm font-medium">{task.points} points</span>
+                      <span className="text-sm font-bold">{task.points} points</span>
                     </div>
                   </div>
                   <CardDescription className="mt-2">{task.description}</CardDescription>
@@ -317,7 +329,7 @@ export default function FocusPage() {
                           <Badge
                             variant="outline"
                             className={cn(
-                              "text-xs cursor-pointer hover:ring-1 hover:ring-primary/30",
+                              "text-xs cursor-pointer hover:ring-1 hover:ring-primary/30 border",
                               getStakeholderColor(item.stakeholder.code)
                             )}
                             title={item.stakeholder.name}
