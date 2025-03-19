@@ -27,11 +27,12 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { Input } from "@/components/ui/input"
 import { cn } from "@/lib/utils"
-import { fetchTasks, type Task } from "@/lib/api"
+import { fetchTasks, fetchSquads, type Task, type Squad, fetchSquadMembers } from "@/lib/api"
 
 export default function FocusPage() {
   const [currentDate, setCurrentDate] = useState<Date>(new Date())
   const [activeSquad, setActiveSquad] = useState<"Sonic" | "Troy">("Sonic")
+  const [squads, setSquads] = useState<Squad[]>([])
   const [allTasks, setAllTasks] = useState<Task[]>([])
   const [filteredTasks, setFilteredTasks] = useState<Task[]>([])
   const [searchQuery, setSearchQuery] = useState("")
@@ -47,6 +48,16 @@ export default function FocusPage() {
   }
 
   useEffect(() => {
+    const loadSquads = async () => {
+      const data = await fetchSquads()
+      setSquads(data)
+    }
+    loadSquads()
+  }, [])
+
+  const currentSquad = squads.find(squad => squad.code === activeSquad)
+
+  useEffect(() => {
     const loadTasks = async () => {
       setIsLoading(true)
       try {
@@ -60,8 +71,17 @@ export default function FocusPage() {
           sortBy: "priority",
           sortOrder: "desc"
         })
-        setAllTasks(response.tasks)
-        setFilteredTasks(response.tasks)
+        
+        // Filter tasks based on active squad's members
+        const squadMembers = await fetchSquadMembers(currentSquad?.id || '')
+        const squadMemberIds = new Set(squadMembers.map(member => member.id))
+        
+        const squadTasks = response.tasks.filter(task => 
+          task.assignees.some(assignee => squadMemberIds.has(assignee.memberId))
+        )
+        
+        setAllTasks(squadTasks)
+        setFilteredTasks(squadTasks)
       } catch (error) {
         console.error("Error fetching tasks:", error)
       } finally {
@@ -69,8 +89,10 @@ export default function FocusPage() {
       }
     }
 
-    loadTasks()
-  }, [currentDate, activeSquad])
+    if (currentSquad) {
+      loadTasks()
+    }
+  }, [currentDate, activeSquad, currentSquad])
 
   useEffect(() => {
     const filtered = allTasks.filter(task => 
@@ -182,7 +204,7 @@ export default function FocusPage() {
               <div>
                 <h1 className="text-2xl font-bold">Focus</h1>
                 <p className="text-gray-500">
-                  Top 5 tasks quan trọng của Squad {activeSquad} ({format(startOfWeek(currentDate), "dd/MM")} -{" "}
+                  Top 5 tasks quan trọng của {currentSquad?.name || `Squad ${activeSquad}`} ({format(startOfWeek(currentDate), "dd/MM")} -{" "}
                   {format(endOfWeek(currentDate), "dd/MM/yyyy")})
                 </p>
               </div>
