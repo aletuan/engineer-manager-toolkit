@@ -117,14 +117,16 @@ export interface TaskAssignee {
 }
 
 export interface TaskStakeholder {
-  id: string;
-  name: string;
-  code: string;
-  description?: string;
-  contactName?: string;
-  contactEmail?: string;
-  contactPhone?: string;
-  groupName?: string;
+  stakeholder: {
+    id: string;
+    name: string;
+    code: string;
+    description?: string;
+    contactName?: string;
+    contactEmail?: string;
+    contactPhone?: string;
+    groupName?: string;
+  }
 }
 
 export interface Task {

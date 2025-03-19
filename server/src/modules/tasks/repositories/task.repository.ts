@@ -98,9 +98,20 @@ export class TaskRepository {
             },
           },
           stakeholders: {
-            include: {
-              stakeholder: true,
-            },
+            select: {
+              stakeholder: {
+                select: {
+                  id: true,
+                  name: true,
+                  code: true,
+                  description: true,
+                  contactName: true,
+                  contactEmail: true,
+                  contactPhone: true,
+                  groupName: true,
+                }
+              }
+            }
           },
         },
       }),
@@ -146,9 +157,20 @@ export class TaskRepository {
           },
         },
         stakeholders: {
-          include: {
-            stakeholder: true,
-          },
+          select: {
+            stakeholder: {
+              select: {
+                id: true,
+                name: true,
+                code: true,
+                description: true,
+                contactName: true,
+                contactEmail: true,
+                contactPhone: true,
+                groupName: true,
+              }
+            }
+          }
         },
       },
     });
@@ -229,6 +251,22 @@ export class TaskRepository {
           include: {
             createdBy: true,
           },
+        },
+        stakeholders: {
+          select: {
+            stakeholder: {
+              select: {
+                id: true,
+                name: true,
+                code: true,
+                description: true,
+                contactName: true,
+                contactEmail: true,
+                contactPhone: true,
+                groupName: true,
+              }
+            }
+          }
         },
       },
     });

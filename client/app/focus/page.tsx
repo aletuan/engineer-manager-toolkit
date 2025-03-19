@@ -290,16 +290,17 @@ export default function FocusPage() {
                     </div>
 
                     <div className="flex flex-wrap gap-1 mt-3 sm:mt-0">
-                      {task.stakeholders?.map((stakeholder) => (
-                        <Link href={`/stakeholders/${stakeholder.id}`} key={stakeholder.id}>
+                      {task.stakeholders?.map((item) => (
+                        <Link href={`/stakeholders/${item.stakeholder.id}`} key={item.stakeholder.id}>
                           <Badge
                             variant="outline"
                             className={cn(
                               "text-xs cursor-pointer hover:ring-1 hover:ring-primary/30",
-                              getStakeholderColor(stakeholder.code)
+                              getStakeholderColor(item.stakeholder.code)
                             )}
+                            title={item.stakeholder.name}
                           >
-                            {stakeholder.name}
+                            {item.stakeholder.code}
                           </Badge>
                         </Link>
                       ))}
