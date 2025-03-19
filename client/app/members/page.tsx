@@ -10,12 +10,12 @@ import { CalendarIcon, Search, Users } from "lucide-react"
 import { fetchSquads, fetchSquadMembers, type Squad, type SquadMember } from "@/lib/api"
 
 interface MemberWithTeamInfo extends SquadMember {
-  team: "Sonic" | "Troy"
+  squadId: string
   squadName: string
 }
 
 export default function MembersPage() {
-  const [activeTeam, setActiveTeam] = useState<"Sonic" | "Troy">("Sonic")
+  const [activeTeam, setActiveTeam] = useState<string>("")
   const [searchQuery, setSearchQuery] = useState("")
   const [searchParams, setSearchParams] = useState<URLSearchParams | null>(null)
   const [squads, setSquads] = useState<Squad[]>([])
@@ -29,21 +29,13 @@ export default function MembersPage() {
         const squadsData = await fetchSquads()
         setSquads(squadsData)
 
-        // Get initial squad ID based on active team
-        const initialSquad = squadsData.find(squad => squad.name.includes(activeTeam))
-        if (initialSquad) {
-          const membersData = await fetchSquadMembers(initialSquad.id)
-          const membersWithTeam = membersData.map(member => ({
-            ...member,
-            team: activeTeam,
-            squadName: initialSquad.name
-          }))
-          setMembers(membersWithTeam)
+        // Set initial active squad
+        if (squadsData.length > 0) {
+          const initialSquadCode = squadsData[0].code
+          setActiveTeam(initialSquadCode)
         }
       } catch (error) {
         console.error('Error fetching initial data:', error)
-      } finally {
-        setLoading(false)
       }
     }
 
@@ -55,12 +47,12 @@ export default function MembersPage() {
     async function fetchTeamMembers() {
       try {
         setLoading(true)
-        const currentSquad = squads.find(squad => squad.name.includes(activeTeam))
+        const currentSquad = squads.find(squad => squad.code === activeTeam)
         if (currentSquad) {
           const membersData = await fetchSquadMembers(currentSquad.id)
           const membersWithTeam = membersData.map(member => ({
             ...member,
-            team: activeTeam,
+            squadId: currentSquad.id,
             squadName: currentSquad.name
           }))
           setMembers(membersWithTeam)
@@ -72,7 +64,7 @@ export default function MembersPage() {
       }
     }
 
-    if (squads.length > 0) {
+    if (squads.length > 0 && activeTeam) {
       fetchTeamMembers()
     }
   }, [activeTeam, squads])
@@ -84,11 +76,11 @@ export default function MembersPage() {
       setSearchParams(params)
 
       const squadParam = params.get("squad")
-      if (squadParam === "Sonic" || squadParam === "Troy") {
+      if (squadParam && squads.some(squad => squad.code === squadParam)) {
         setActiveTeam(squadParam)
       }
     }
-  }, [])
+  }, [squads])
 
   // Filter members based on search query
   const filteredMembers = members.filter(
@@ -96,6 +88,8 @@ export default function MembersPage() {
       member.fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
       member.email.toLowerCase().includes(searchQuery.toLowerCase())
   )
+
+  const currentSquad = squads.find(squad => squad.code === activeTeam)
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -126,14 +120,16 @@ export default function MembersPage() {
           {/* Team selector */}
           <div className="mt-6 mb-4">
             <Tabs
-              defaultValue={activeTeam}
               value={activeTeam}
               className="w-full"
-              onValueChange={(value) => setActiveTeam(value as "Sonic" | "Troy")}
+              onValueChange={setActiveTeam}
             >
-              <TabsList className="grid w-full max-w-md grid-cols-2">
-                <TabsTrigger value="Sonic">Squad Sonic</TabsTrigger>
-                <TabsTrigger value="Troy">Squad Troy</TabsTrigger>
+              <TabsList className="grid w-full max-w-md" style={{ gridTemplateColumns: `repeat(${squads.length}, 1fr)` }}>
+                {squads.map(squad => (
+                  <TabsTrigger key={squad.id} value={squad.code}>
+                    {squad.name}
+                  </TabsTrigger>
+                ))}
               </TabsList>
             </Tabs>
           </div>
@@ -186,11 +182,7 @@ export default function MembersPage() {
                           <span className="font-medium">{member.position}</span>
                         </div>
                         <div className="pt-2">
-                          <span
-                            className={`px-3 py-1 rounded-full text-xs font-medium ${
-                              member.team === "Sonic" ? "bg-gray-200" : "bg-gray-300"
-                            }`}
-                          >
+                          <span className="px-3 py-1 rounded-full text-xs font-medium bg-gray-200">
                             {member.squadName}
                           </span>
                         </div>
