@@ -601,6 +601,13 @@ export default function StandupCalendar() {
               const isPrimary = currentTeam.hasIncidentRoster && getIncidentRespondersFromAPI(today).primary === member
               const isSecondary = currentTeam.hasIncidentRoster && getIncidentRespondersFromAPI(today).secondary === member
 
+              // Combine role indicators
+              const roles = []
+              if (isHostingToday) roles.push("H")
+              if (isPrimary) roles.push("P")
+              if (isSecondary) roles.push("S")
+              const rolesText = roles.length > 0 ? ` (${roles.join(", ")})` : ""
+
               return (
                 <Link
                   key={index}
@@ -617,8 +624,7 @@ export default function StandupCalendar() {
                   )}
                 >
                   {member.fullName}
-                  {isPrimary && " (P)"}
-                  {isSecondary && " (S)"}
+                  {rolesText}
                 </Link>
               )
             })}
