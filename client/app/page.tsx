@@ -321,7 +321,7 @@ export default function StandupCalendar() {
                   </div>
                   <div>
                     <div className="text-sm text-gray-500">
-                      Sprint: {format(sprintDates.start, "dd/MM")} - {format(sprintDates.end, "dd/MM")}
+                      Sprint {sprintDates.sprintNumber}: {format(sprintDates.start, "dd/MM")} - {format(sprintDates.end, "dd/MM")}
                     </div>
                     <div className="font-bold text-lg flex flex-wrap items-center gap-2">
                       <span>Trực Incident:</span>
