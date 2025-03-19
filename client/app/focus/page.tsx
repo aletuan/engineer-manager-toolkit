@@ -221,8 +221,8 @@ export default function FocusPage() {
               <Button variant="outline" size="icon" onClick={() => navigateWeek('prev')}>
                 <ChevronLeft className="h-4 w-4" />
               </Button>
-              <Button variant="outline" onClick={() => navigateWeek('next')}>
-                Tuần này
+              <Button variant="outline" size="icon" onClick={() => navigateWeek('next')}>
+                <ChevronRight className="h-4 w-4" />
               </Button>
             </div>
           </div>
