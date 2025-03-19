@@ -175,22 +175,44 @@ export default function StandupCalendar() {
 
   // Check if a date is the start of a sprint
   const isSprintStart = (date: Date) => {
-    // For simplicity, we'll consider every other Monday as the start of a sprint
-    return getDay(date) === 1 && Math.floor(date.getDate() / 14) !== Math.floor(addDays(date, -7).getDate() / 14)
+    // Sprint starts on Wednesday (day 3)
+    if (getDay(date) !== 3) return false;
+
+    // Get sprint dates for this date
+    const { start } = getSprintDates(date);
+    
+    // Check if this date is the start date of the sprint
+    return isSameDay(date, start);
   }
 
   // Get sprint dates (start and end) for a given date
   const getSprintDates = (date: Date) => {
-    // Find the start of the sprint (going backwards to find the most recent sprint start)
-    let sprintStart = new Date(date)
-    while (!isSprintStart(sprintStart)) {
-      sprintStart = addDays(sprintStart, -1)
+    // Find the start of the financial year
+    const financialYearStart = new Date(date.getFullYear(), 9, 1); // Month is 0-based, so 9 is October
+    if (date < financialYearStart) {
+      financialYearStart.setFullYear(financialYearStart.getFullYear() - 1);
     }
 
-    // Sprint ends after 2 weeks (14 days)
-    const sprintEnd = addDays(sprintStart, 13)
+    // Find the first Wednesday after financial year start
+    let firstSprintStart = new Date(financialYearStart);
+    while (getDay(firstSprintStart) !== 3) { // 3 is Wednesday
+      firstSprintStart.setDate(firstSprintStart.getDate() + 1);
+    }
 
-    return { start: sprintStart, end: sprintEnd }
+    // Calculate days since first sprint start
+    const daysSinceStart = Math.floor((date.getTime() - firstSprintStart.getTime()) / (1000 * 60 * 60 * 24));
+    
+    // Calculate sprint number and days into current sprint
+    const sprintNumber = Math.floor(daysSinceStart / 14) + 1;
+    const daysToAdd = (sprintNumber - 1) * 14;
+
+    // Calculate current sprint start and end dates
+    const sprintStart = new Date(firstSprintStart);
+    sprintStart.setDate(firstSprintStart.getDate() + daysToAdd);
+    const sprintEnd = new Date(sprintStart);
+    sprintEnd.setDate(sprintStart.getDate() + 13);
+
+    return { start: sprintStart, end: sprintEnd, sprintNumber }
   }
 
   const today = startOfDay(new Date())
@@ -305,7 +327,7 @@ export default function StandupCalendar() {
                   </div>
                   <div>
                     <div className="text-sm text-gray-500">
-                      Sprint: {format(sprintDates.start, "dd/MM")} - {format(sprintDates.end, "dd/MM")}
+                      Sprint {sprintDates.sprintNumber}: {format(sprintDates.start, "dd/MM")} - {format(sprintDates.end, "dd/MM")}
                     </div>
                     <div className="font-bold text-lg flex flex-wrap items-center gap-2">
                       <span>Trực Incident:</span>
@@ -347,9 +369,9 @@ export default function StandupCalendar() {
 
                 return (
                   <div key={index}>
-                    {currentTeam.hasIncidentRoster && isFirstDayOfSprint && (
+                    {isFirstDayOfSprint && (
                       <div className="bg-gray-200 p-2 rounded-lg mb-2 text-sm font-medium">
-                        Sprint: {format(daySprintDates.start, "dd/MM")} - {format(daySprintDates.end, "dd/MM")}
+                        Sprint {daySprintDates.sprintNumber}: {format(daySprintDates.start, "dd/MM")} - {format(daySprintDates.end, "dd/MM")}
                       </div>
                     )}
 
@@ -482,13 +504,15 @@ export default function StandupCalendar() {
                       "p-2 h-28 rounded-md border overflow-hidden",
                       isToday ? "border-primary bg-primary/5" : "border-gray-100",
                       isWeekend(day) && "bg-gray-50",
-                      currentTeam.hasIncidentRoster && isSprintStartDay && "border-gray-400",
+                      isSprintStartDay && "border-gray-400",
                     )}
                   >
                     <div className={cn("text-right mb-1", isToday && "font-bold text-primary")}>{format(day, "d")}</div>
 
-                    {currentTeam.hasIncidentRoster && isSprintStartDay && (
-                      <div className="text-xs bg-gray-200 text-gray-700 rounded px-1 py-0.5 mb-1">Sprint Start</div>
+                    {isSprintStartDay && (
+                      <div className="text-xs bg-gray-200 text-gray-700 rounded px-1 py-0.5 mb-1">
+                        Sprint {getSprintDates(day).sprintNumber} Start
+                      </div>
                     )}
 
                     {holidayName && (

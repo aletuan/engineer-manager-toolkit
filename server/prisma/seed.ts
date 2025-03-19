@@ -591,30 +591,90 @@ async function main() {
     },
   });
 
-  // Create incident rotations
-  const rotation1 = await prisma.incidentRotation.create({
-    data: {
-      squadId: troySquad.id,
-      primaryMemberId: troyMembers[0].squadMember!.id,
-      secondaryMemberId: troyMembers[1].squadMember!.id,
-      startDate: new Date(),
-      endDate: new Date('2024-12-31'),
-      sprintNumber: 1,
-      createdAt: new Date(),
-    },
-  });
+  // Create incident rotations for Sonic squad (last 3 months to 1 month in future)
+  const startDateIncident = new Date();
+  startDateIncident.setMonth(startDateIncident.getMonth() - 3);
+  startDateIncident.setDate(1); // Start from the first day of the month
+  let currentDateIncident = startOfDay(startDateIncident);
 
-  // Create rotation swaps
-  await prisma.rotationSwap.create({
-    data: {
-      rotationId: rotation1.id,
-      requesterId: troyMembers[0].squadMember!.id,
-      accepterId: troyMembers[1].squadMember!.id,
-      swapDate: new Date('2024-12-25'),
-      status: 'PENDING',
-      createdAt: new Date(),
-    },
-  });
+  const futureDate = new Date();
+  futureDate.setMonth(futureDate.getMonth() + 1); // One month in the future
+
+  // Get Sonic members for rotation
+  const sonicMemberIds = sonicMembers.map(member => member.squadMember!.id);
+  let primaryIndex = 0;
+  let secondaryIndex = 1;
+
+  // Create incident rotations from past to future
+  while (currentDateIncident < futureDate) {
+    // Get sprint information for current date
+    const { startDate: sprintStartDate, endDate: sprintEndDate, sprintNumber } = getSprintDates(currentDateIncident);
+
+    await prisma.incidentRotation.create({
+      data: {
+        squadId: sonicSquad.id,
+        startDate: sprintStartDate,
+        endDate: sprintEndDate,
+        sprintNumber,
+        primaryMemberId: sonicMemberIds[primaryIndex],
+        secondaryMemberId: sonicMemberIds[secondaryIndex],
+      },
+    });
+
+    // Rotate members for next sprint
+    primaryIndex = (primaryIndex + 2) % sonicMemberIds.length;
+    secondaryIndex = (secondaryIndex + 2) % sonicMemberIds.length;
+    if (secondaryIndex === primaryIndex) {
+      secondaryIndex = (secondaryIndex + 1) % sonicMemberIds.length;
+    }
+
+    // Move to next sprint
+    currentDateIncident = new Date(sprintEndDate);
+    currentDateIncident.setDate(currentDateIncident.getDate() + 1);
+  }
+
+  // Create standup hosting schedule for both squads (last 3 months to 1 month in future)
+  const startDateStandup = new Date();
+  startDateStandup.setMonth(startDateStandup.getMonth() - 3);
+  startDateStandup.setDate(1); // Start from the first day of the month
+  let currentDateStandup = startOfDay(startDateStandup);
+
+  // Get members for hosting
+  const troyMemberIds = troyMembers.map(member => member.squadMember!.id);
+  let troyHostIndex = 0;
+  let sonicHostIndex = 0;
+
+  // Create standup hosting from past to future
+  while (currentDateStandup < futureDate) {
+    if (!isWeekend(currentDateStandup)) {
+      // Create hosting for Troy squad
+      await prisma.standupHosting.create({
+        data: {
+          squadId: troySquad.id,
+          memberId: troyMemberIds[troyHostIndex],
+          date: new Date(currentDateStandup),
+          status: currentDateStandup < new Date() ? 'COMPLETED' : 'SCHEDULED',
+        },
+      });
+
+      // Create hosting for Sonic squad
+      await prisma.standupHosting.create({
+        data: {
+          squadId: sonicSquad.id,
+          memberId: sonicMemberIds[sonicHostIndex],
+          date: new Date(currentDateStandup),
+          status: currentDateStandup < new Date() ? 'COMPLETED' : 'SCHEDULED',
+        },
+      });
+
+      // Rotate hosts for next day
+      troyHostIndex = (troyHostIndex + 1) % troyMemberIds.length;
+      sonicHostIndex = (sonicHostIndex + 1) % sonicMemberIds.length;
+    }
+
+    // Move to next day
+    currentDateStandup.setDate(currentDateStandup.getDate() + 1);
+  }
 
   // Create sprint reports
   await prisma.sprintReport.create({
@@ -658,143 +718,63 @@ async function main() {
     return nextDay;
   }
 
-  // Create incident rotations for Sonic squad (last 3 months)
-  const startDateIncident = new Date();
-  startDateIncident.setMonth(startDateIncident.getMonth() - 3);
-  startDateIncident.setDate(1); // Start from the first day of the month
-  let currentDateIncident = startOfDay(startDateIncident);
-
-  // Get Sonic members for rotation
-  const sonicMemberIds = sonicMembers.map(member => member.squadMember!.id);
-  let primaryIndex = 0;
-  let secondaryIndex = 1;
-
-  while (currentDateIncident < new Date()) {
-    // Create 2-week sprint rotation
-    const sprintStartDate = new Date(currentDateIncident);
-    const sprintEndDate = new Date(currentDateIncident);
-    sprintEndDate.setDate(sprintEndDate.getDate() + 13); // 14 days sprint
-
-    await prisma.incidentRotation.create({
-      data: {
-        squadId: sonicSquad.id,
-        startDate: sprintStartDate,
-        endDate: sprintEndDate,
-        sprintNumber: Math.floor(Math.random() * 1000), // Random sprint number for demo
-        primaryMemberId: sonicMemberIds[primaryIndex],
-        secondaryMemberId: sonicMemberIds[secondaryIndex],
-      },
-    });
-
-    // Rotate members for next sprint
-    primaryIndex = (primaryIndex + 2) % sonicMemberIds.length;
-    secondaryIndex = (secondaryIndex + 2) % sonicMemberIds.length;
-    if (secondaryIndex === primaryIndex) {
-      secondaryIndex = (secondaryIndex + 1) % sonicMemberIds.length;
+  // Helper function to find first Wednesday after a given date
+  function getFirstWednesday(date: Date): Date {
+    const result = new Date(date);
+    while (result.getDay() !== 3) { // 3 is Wednesday
+      result.setDate(result.getDate() + 1);
     }
-
-    // Move to next sprint
-    currentDateIncident.setDate(currentDateIncident.getDate() + 14);
+    return result;
   }
 
-  // Create standup hosting schedule for both squads (last 3 months)
-  const startDateStandup = new Date();
-  startDateStandup.setMonth(startDateStandup.getMonth() - 3);
-  startDateStandup.setDate(1); // Start from the first day of the month
-  let currentDateStandup = startOfDay(startDateStandup);
-
-  // Get members for hosting
-  const troyMemberIds = troyMembers.map(member => member.squadMember!.id);
-  let troyHostIndex = 0;
-  let sonicHostIndex = 0;
-
-  while (currentDateStandup < new Date()) {
-    if (!isWeekend(currentDateStandup)) {
-      // Create hosting for Troy squad
-      await prisma.standupHosting.create({
-        data: {
-          squadId: troySquad.id,
-          memberId: troyMemberIds[troyHostIndex],
-          date: new Date(currentDateStandup),
-          status: currentDateStandup < new Date() ? 'COMPLETED' : 'SCHEDULED',
-        },
-      });
-
-      // Create hosting for Sonic squad
-      await prisma.standupHosting.create({
-        data: {
-          squadId: sonicSquad.id,
-          memberId: sonicMemberIds[sonicHostIndex],
-          date: new Date(currentDateStandup),
-          status: currentDateStandup < new Date() ? 'COMPLETED' : 'SCHEDULED',
-        },
-      });
-
-      // Rotate hosts for next day
-      troyHostIndex = (troyHostIndex + 1) % troyMemberIds.length;
-      sonicHostIndex = (sonicHostIndex + 1) % sonicMemberIds.length;
+  // Helper function to calculate sprint number
+  function calculateSprintNumber(date: Date): number {
+    // Financial year starts from October 1st
+    const financialYearStart = new Date(date.getFullYear(), 9, 1); // Month is 0-based, so 9 is October
+    if (date < financialYearStart) {
+      financialYearStart.setFullYear(financialYearStart.getFullYear() - 1);
     }
 
-    // Move to next day
-    currentDateStandup.setDate(currentDateStandup.getDate() + 1);
+    // Find the first Wednesday after financial year start
+    const firstSprintStart = getFirstWednesday(financialYearStart);
+    
+    // Calculate days since first sprint start
+    const daysSinceStart = Math.floor((date.getTime() - firstSprintStart.getTime()) / (1000 * 60 * 60 * 24));
+    
+    // Each sprint is 14 days
+    const sprintNumber = Math.floor(daysSinceStart / 14) + 1;
+    
+    return sprintNumber;
   }
 
-  // Create some future standup hosting and incident rotations
-  const futureDate = new Date();
-  futureDate.setMonth(futureDate.getMonth() + 1); // One month in the future
-
-  // Future incident rotations
-  while (currentDateIncident < futureDate) {
-    const sprintStartDate = new Date(currentDateIncident);
-    const sprintEndDate = new Date(currentDateIncident);
-    sprintEndDate.setDate(sprintEndDate.getDate() + 13);
-
-    await prisma.incidentRotation.create({
-      data: {
-        squadId: sonicSquad.id,
-        startDate: sprintStartDate,
-        endDate: sprintEndDate,
-        sprintNumber: Math.floor(Math.random() * 1000),
-        primaryMemberId: sonicMemberIds[primaryIndex],
-        secondaryMemberId: sonicMemberIds[secondaryIndex],
-      },
-    });
-
-    primaryIndex = (primaryIndex + 2) % sonicMemberIds.length;
-    secondaryIndex = (secondaryIndex + 2) % sonicMemberIds.length;
-    if (secondaryIndex === primaryIndex) {
-      secondaryIndex = (secondaryIndex + 1) % sonicMemberIds.length;
+  // Helper function to get sprint dates
+  function getSprintDates(date: Date): { startDate: Date; endDate: Date; sprintNumber: number } {
+    // Find the start of the financial year
+    const financialYearStart = new Date(date.getFullYear(), 9, 1);
+    if (date < financialYearStart) {
+      financialYearStart.setFullYear(financialYearStart.getFullYear() - 1);
     }
 
-    currentDateIncident.setDate(currentDateIncident.getDate() + 14);
-  }
+    // Find the first Wednesday after financial year start
+    const firstSprintStart = getFirstWednesday(financialYearStart);
 
-  // Future standup hosting
-  while (currentDateStandup < futureDate) {
-    if (!isWeekend(currentDateStandup)) {
-      await prisma.standupHosting.create({
-        data: {
-          squadId: troySquad.id,
-          memberId: troyMemberIds[troyHostIndex],
-          date: new Date(currentDateStandup),
-          status: 'SCHEDULED',
-        },
-      });
+    // Calculate sprint number
+    const sprintNumber = calculateSprintNumber(date);
 
-      await prisma.standupHosting.create({
-        data: {
-          squadId: sonicSquad.id,
-          memberId: sonicMemberIds[sonicHostIndex],
-          date: new Date(currentDateStandup),
-          status: 'SCHEDULED',
-        },
-      });
+    // Calculate sprint start date (each sprint is 14 days)
+    const daysToAdd = (sprintNumber - 1) * 14;
+    const sprintStartDate = new Date(firstSprintStart);
+    sprintStartDate.setDate(firstSprintStart.getDate() + daysToAdd);
 
-      troyHostIndex = (troyHostIndex + 1) % troyMemberIds.length;
-      sonicHostIndex = (sonicHostIndex + 1) % sonicMemberIds.length;
-    }
+    // Calculate sprint end date (13 days after start date)
+    const sprintEndDate = new Date(sprintStartDate);
+    sprintEndDate.setDate(sprintStartDate.getDate() + 13);
 
-    currentDateStandup.setDate(currentDateStandup.getDate() + 1);
+    return {
+      startDate: sprintStartDate,
+      endDate: sprintEndDate,
+      sprintNumber
+    };
   }
 }
 
