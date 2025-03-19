@@ -47,17 +47,17 @@ async function main() {
   const troyMembers = await Promise.all([
     prisma.user.create({
       data: {
-        email: "daniel.nguyen@nab.com.au",
+        email: "danny.nguyen2@nab.com.au",
         passwordHash: "hashed_password",
         squadMember: {
           create: {
             squadId: troySquad.id,
-            pid: "EMP001",
-            fullName: "Daniel Nguyen",
-            email: "daniel.nguyen@nab.com.au",
-            position: "Senior Developer",
+            pid: "22831433",
+            fullName: "Danny Nguyen",
+            email: "danny.nguyen2@nab.com.au",
+            position: "Analysis Engineer",
             status: "ACTIVE",
-            phone: "(084) +32-8269-358",
+            phone: "(084) 096-3729-875",
           },
         },
       },
@@ -67,17 +67,17 @@ async function main() {
     }),
     prisma.user.create({
       data: {
-        email: "harry.nguyen@nab.com.au",
+        email: "harry.nguyen3@nab.com.au",
         passwordHash: "hashed_password",
         squadMember: {
           create: {
             squadId: troySquad.id,
-            pid: "EMP002",
+            pid: "40010912",
             fullName: "Harry Nguyen",
-            email: "harry.nguyen@nab.com.au",
-            position: "Senior Developer",
+            email: "harry.nguyen3@nab.com.au",
+            position: "Analyst Engineer",
             status: "ACTIVE",
-            phone: "(084) +32-8269-359",
+            phone: "(084) 086-8300-742",
           },
         },
       },
@@ -92,12 +92,12 @@ async function main() {
         squadMember: {
           create: {
             squadId: troySquad.id,
-            pid: "EMP003",
+            pid: "22832742",
             fullName: "Kiet Chung",
             email: "kiet.chung@nab.com.au",
-            position: "Senior Developer",
+            position: "Associate Engineer",
             status: "ACTIVE",
-            phone: "(084) +32-8269-360",
+            phone: "(084) 083-4184-481",
           },
         },
       },
@@ -112,12 +112,12 @@ async function main() {
         squadMember: {
           create: {
             squadId: troySquad.id,
-            pid: "EMP004",
+            pid: "22834499",
             fullName: "Luy Hoang",
             email: "luy.hoang@nab.com.au",
-            position: "Senior Developer",
+            position: "Senior Analyst Engineer",
             status: "ACTIVE",
-            phone: "(084) +32-8269-361",
+            phone: "(084) 035-6067-905",
           },
         },
       },
@@ -127,17 +127,17 @@ async function main() {
     }),
     prisma.user.create({
       data: {
-        email: "andy.le@nab.com.au",
+        email: "andy.le1@nab.com.au",
         passwordHash: "hashed_password",
         squadMember: {
           create: {
             squadId: troySquad.id,
-            pid: "EMP005",
+            pid: "22831955",
             fullName: "Andy Le",
-            email: "andy.le@nab.com.au",
-            position: "Senior Developer",
+            email: "andy.le1@nab.com.au",
+            position: "Engineer Manager",
             status: "ACTIVE",
-            phone: "(084) +32-8269-362",
+            phone: "(084) 032-8269-358",
           },
         },
       },
@@ -156,12 +156,12 @@ async function main() {
         squadMember: {
           create: {
             squadId: sonicSquad.id,
-            pid: "EMP006",
+            pid: "22831174",
             fullName: "Chicharito Vu",
             email: "chicharito.vu@nab.com.au",
-            position: "Senior Developer",
+            position: "Analyst Engineer",
             status: "ACTIVE",
-            phone: "(084) +32-8269-363",
+            phone: "(084) 037-9970-761",
           },
         },
       },
@@ -171,17 +171,17 @@ async function main() {
     }),
     prisma.user.create({
       data: {
-        email: "anh.vu@nab.com.au",
+        email: "anh.vu2@nab.com.au",
         passwordHash: "hashed_password",
         squadMember: {
           create: {
             squadId: sonicSquad.id,
-            pid: "EMP007",
+            pid: "22842810",
             fullName: "Anh Vu",
-            email: "anh.vu@nab.com.au",
-            position: "Senior Developer",
+            email: "anh.vu2@nab.com.au",
+            position: "Associate Engineer",
             status: "ACTIVE",
-            phone: "(084) +32-8269-364",
+            phone: "(084) 083-2532-867",
           },
         },
       },
@@ -191,17 +191,17 @@ async function main() {
     }),
     prisma.user.create({
       data: {
-        email: "hoa.nguyen@nab.com.au",
+        email: "hoa.r.tran@nab.com.au",
         passwordHash: "hashed_password",
         squadMember: {
           create: {
             squadId: sonicSquad.id,
-            pid: "EMP008",
-            fullName: "Hoa Nguyen",
-            email: "hoa.nguyen@nab.com.au",
-            position: "Senior Developer",
+            pid: "40010013",
+            fullName: "Hoa R Tran",
+            email: "hoa.r.tran@nab.com.au",
+            position: "Associate Engineer",
             status: "ACTIVE",
-            phone: "(084) +32-8269-365",
+            phone: "(084) 082-9841-172",
           },
         },
       },
@@ -211,17 +211,17 @@ async function main() {
     }),
     prisma.user.create({
       data: {
-        email: "phuc.nguyen@nab.com.au",
+        email: "phuc.nguyen1@nab.com.au",
         passwordHash: "hashed_password",
         squadMember: {
           create: {
             squadId: sonicSquad.id,
-            pid: "EMP009",
+            pid: "22833707",
             fullName: "Phuc Nguyen",
-            email: "phuc.nguyen@nab.com.au",
-            position: "Senior Developer",
+            email: "phuc.nguyen1@nab.com.au",
+            position: "Analyst Engineer",
             status: "ACTIVE",
-            phone: "(084) +32-8269-366",
+            phone: "(084) 034-7331-230",
           },
         },
       },
@@ -231,17 +231,17 @@ async function main() {
     }),
     prisma.user.create({
       data: {
-        email: "tony.dai@nab.com.au",
+        email: "tony.tran3@nab.com.au",
         passwordHash: "hashed_password",
         squadMember: {
           create: {
             squadId: sonicSquad.id,
-            pid: "EMP010",
-            fullName: "Tony Dai",
-            email: "tony.dai@nab.com.au",
-            position: "Senior Developer",
+            pid: "22837549",
+            fullName: "Tony Tran",
+            email: "tony.tran3@nab.com.au",
+            position: "Senior Analyst Engineer",
             status: "ACTIVE",
-            phone: "(084) +32-8269-367",
+            phone: "(084) 034-2106-381",
           },
         },
       },

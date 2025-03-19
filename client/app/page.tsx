@@ -420,7 +420,7 @@ export default function StandupCalendar() {
                               <TooltipTrigger asChild>
                                 <Badge
                                   variant="outline"
-                                  className="bg-gray-200 text-gray-800 border-gray-300 font-medium"
+                                  className="bg-blue-100 text-blue-800 border-blue-200 font-medium"
                                 >
                                   P: {dayPrimary?.fullName || 'Không có primary'}
                                 </Badge>
@@ -434,7 +434,7 @@ export default function StandupCalendar() {
                           <TooltipProvider>
                             <Tooltip>
                               <TooltipTrigger asChild>
-                                <Badge variant="outline" className="bg-gray-100 text-gray-800 border-gray-300">
+                                <Badge variant="outline" className="bg-purple-100 text-purple-800 border-purple-200">
                                   S: {daySecondary?.fullName || 'Không có secondary'}
                                 </Badge>
                               </TooltipTrigger>
@@ -522,7 +522,7 @@ export default function StandupCalendar() {
                     )}
 
                     {host && (
-                      <div className="mt-1 bg-gray-100 rounded p-1 text-xs truncate" title={`Host: ${host.fullName}`}>
+                      <div className="mt-1 bg-green-100 rounded p-1 text-xs truncate text-green-800" title={`Host: ${host.fullName}`}>
                         <span className="font-medium">H:</span> {host.fullName}
                       </div>
                     )}
@@ -530,10 +530,10 @@ export default function StandupCalendar() {
                     {/* Only show incident responders for Team Sonic */}
                     {currentTeam.hasIncidentRoster && (
                       <div className="mt-1 flex flex-col gap-1">
-                        <div className="bg-gray-200 rounded p-1 text-xs truncate" title={`Primary: ${dayPrimary?.fullName || 'Không có primary'}`}>
+                        <div className="bg-blue-100 rounded p-1 text-xs truncate text-blue-800" title={`Primary: ${dayPrimary?.fullName || 'Không có primary'}`}>
                           <span className="font-medium">P:</span> {dayPrimary?.fullName || 'Không có primary'}
                         </div>
-                        <div className="bg-gray-100 rounded p-1 text-xs truncate" title={`Secondary: ${daySecondary?.fullName || 'Không có secondary'}`}>
+                        <div className="bg-purple-100 rounded p-1 text-xs truncate text-purple-800" title={`Secondary: ${daySecondary?.fullName || 'Không có secondary'}`}>
                           <span className="font-medium">S:</span> {daySecondary?.fullName || 'Không có secondary'}
                         </div>
                       </div>
@@ -567,7 +567,7 @@ export default function StandupCalendar() {
                         {holidayName ? (
                           <div className="text-xs text-red-500">{holidayName}</div>
                         ) : host ? (
-                          <div className="font-medium mb-2">{host.fullName}</div>
+                          <div className="font-medium mb-2 bg-green-100 text-green-800 rounded-full px-2 py-1">{host.fullName}</div>
                         ) : (
                           <div className="text-gray-500 text-sm mb-2">Không có standup</div>
                         )}
@@ -575,10 +575,10 @@ export default function StandupCalendar() {
                         {/* Only show incident responders for Team Sonic */}
                         {currentTeam.hasIncidentRoster && (
                           <div className="text-xs flex flex-col gap-1 mt-2">
-                            <Badge variant="outline" className="bg-gray-200 text-gray-800 border-gray-300 text-xs">
+                            <Badge variant="outline" className="bg-blue-100 text-blue-800 border-blue-200 text-xs">
                               P: {dayPrimary?.fullName || 'Không có primary'}
                             </Badge>
-                            <Badge variant="outline" className="bg-gray-100 text-gray-800 border-gray-300 text-xs">
+                            <Badge variant="outline" className="bg-purple-100 text-purple-800 border-purple-200 text-xs">
                               S: {daySecondary?.fullName || 'Không có secondary'}
                             </Badge>
                           </div>
@@ -598,18 +598,22 @@ export default function StandupCalendar() {
           <div className="flex flex-wrap gap-3">
             {squadMembers.map((member, index) => {
               const isHostingToday = isHostingDay(today) && getHostForDateFromAPI(today) === member
+              const isPrimary = currentTeam.hasIncidentRoster && getIncidentRespondersFromAPI(today).primary === member
+              const isSecondary = currentTeam.hasIncidentRoster && getIncidentRespondersFromAPI(today).secondary === member
 
-              // Only check incident roles for Team Sonic
-              const isPrimary =
-                currentTeam.hasIncidentRoster && getIncidentRespondersFromAPI(today).primary === member
-              const isSecondary =
-                currentTeam.hasIncidentRoster && getIncidentRespondersFromAPI(today).secondary === member
+              // Combine role indicators
+              const roles = []
+              if (isHostingToday) roles.push("H")
+              if (isPrimary) roles.push("P")
+              if (isSecondary) roles.push("S")
+              const rolesText = roles.length > 0 ? ` (${roles.join(", ")})` : ""
 
               return (
-                <div
+                <Link
                   key={index}
+                  href={`/members/${member.id}`}
                   className={cn(
-                    "px-4 py-2 rounded-full text-sm font-medium",
+                    "px-4 py-2 rounded-full text-sm font-medium transition-colors hover:opacity-80",
                     isHostingToday
                       ? "bg-primary text-white"
                       : isPrimary
@@ -620,9 +624,8 @@ export default function StandupCalendar() {
                   )}
                 >
                   {member.fullName}
-                  {isPrimary && " (P)"}
-                  {isSecondary && " (S)"}
-                </div>
+                  {rolesText}
+                </Link>
               )
             })}
           </div>
