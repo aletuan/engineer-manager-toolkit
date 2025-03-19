@@ -353,13 +353,14 @@ async function main() {
     data: {
       title: 'Implement user authentication',
       description: 'Set up JWT authentication with refresh tokens',
-      status: 'TODO',
+      status: 'IN_PROGRESS',
       priority: 'HIGH',
       createdAt: new Date('2025-02-01'),
       updatedAt: new Date('2025-02-15'),
       dueDate: new Date('2025-03-15'),
       featureId: 'AUTH-001',
-      progress: 0,
+      progress: 75.5,
+      points: 8,
       assignedToId: troyMembers[0].squadMember!.id,
       createdById: sonicMembers[0].squadMember!.id,
       tags: ['authentication', 'security'],
@@ -397,7 +398,8 @@ async function main() {
       updatedAt: new Date('2025-03-01'),
       dueDate: new Date('2025-03-30'),
       featureId: 'DB-001',
-      progress: 45.5,
+      progress: 85.5,
+      points: 5,
       assignedToId: sonicMembers[0].squadMember!.id,
       createdById: troyMembers[0].squadMember!.id,
       tags: ['database', 'design'],
@@ -429,13 +431,14 @@ async function main() {
     data: {
       title: 'Implement Document Upload API',
       description: 'Create REST API endpoints for document upload and processing',
-      status: 'TODO',
+      status: 'IN_PROGRESS',
       priority: 'HIGH',
       createdAt: new Date('2025-03-01'),
       updatedAt: new Date('2025-03-15'),
       dueDate: new Date('2025-04-15'),
       featureId: 'EDMS-001',
-      progress: 0,
+      progress: 65.8,
+      points: 13,
       assignedToId: troyMembers[1].squadMember!.id,
       createdById: troyMembers[0].squadMember!.id,
       tags: ['api', 'document-management'],
@@ -453,7 +456,8 @@ async function main() {
       updatedAt: new Date('2025-03-30'),
       dueDate: new Date('2025-04-30'),
       featureId: 'ISSO-001',
-      progress: 75.8,
+      progress: 92.3,
+      points: 21,
       assignedToId: sonicMembers[1].squadMember!.id,
       createdById: sonicMembers[0].squadMember!.id,
       tags: ['security', 'fraud-detection'],
@@ -465,13 +469,14 @@ async function main() {
     data: {
       title: 'Customer Onboarding Flow Enhancement',
       description: 'Improve the customer onboarding experience with new UI/UX design',
-      status: 'TODO',
+      status: 'IN_PROGRESS',
       priority: 'MEDIUM',
       createdAt: new Date('2025-04-01'),
       updatedAt: new Date('2025-04-15'),
       dueDate: new Date('2025-05-15'),
       featureId: 'ECOM-001',
-      progress: 0,
+      progress: 55.5,
+      points: 8,
       assignedToId: troyMembers[2].squadMember!.id,
       createdById: troyMembers[0].squadMember!.id,
       tags: ['ui-ux', 'customer-experience'],
@@ -523,27 +528,93 @@ async function main() {
     }),
   ]);
 
-  // Create task stakeholders for new tasks
+  // Create task stakeholder relationships
   await Promise.all([
+    // Task 1 (AUTH-001) stakeholders
+    prisma.taskStakeholder.create({
+      data: {
+        taskId: task1.id,
+        stakeholderId: stakeholder2.id, // ISSO for security
+      },
+    }),
+    prisma.taskStakeholder.create({
+      data: {
+        taskId: task1.id,
+        stakeholderId: stakeholder6.id, // IB for authentication
+      },
+    }),
+
+    // Task 2 (DB-001) stakeholders
+    prisma.taskStakeholder.create({
+      data: {
+        taskId: task2.id,
+        stakeholderId: stakeholder1.id, // EDMS for document management
+      },
+    }),
+    prisma.taskStakeholder.create({
+      data: {
+        taskId: task2.id,
+        stakeholderId: stakeholder8.id, // nabOne for internal platform
+      },
+    }),
+
+    // Task 3 (EDMS-001) stakeholders
     prisma.taskStakeholder.create({
       data: {
         taskId: task3.id,
-        stakeholderId: stakeholder1.id, // EDMS
-        createdAt: new Date(),
+        stakeholderId: stakeholder1.id, // EDMS primary stakeholder
+      },
+    }),
+    prisma.taskStakeholder.create({
+      data: {
+        taskId: task3.id,
+        stakeholderId: stakeholder5.id, // BEB for business documents
+      },
+    }),
+    prisma.taskStakeholder.create({
+      data: {
+        taskId: task3.id,
+        stakeholderId: stakeholder4.id, // PEB for personal documents
+      },
+    }),
+
+    // Task 4 (ISSO-001) stakeholders
+    prisma.taskStakeholder.create({
+      data: {
+        taskId: task4.id,
+        stakeholderId: stakeholder2.id, // ISSO primary stakeholder
       },
     }),
     prisma.taskStakeholder.create({
       data: {
         taskId: task4.id,
-        stakeholderId: stakeholder2.id, // ISSO
-        createdAt: new Date(),
+        stakeholderId: stakeholder6.id, // IB for online banking security
+      },
+    }),
+    prisma.taskStakeholder.create({
+      data: {
+        taskId: task4.id,
+        stakeholderId: stakeholder7.id, // nabConnect for business platform security
+      },
+    }),
+
+    // Task 5 (ECOM-001) stakeholders
+    prisma.taskStakeholder.create({
+      data: {
+        taskId: task5.id,
+        stakeholderId: stakeholder3.id, // ECOM primary stakeholder
       },
     }),
     prisma.taskStakeholder.create({
       data: {
         taskId: task5.id,
-        stakeholderId: stakeholder3.id, // ECOM
-        createdAt: new Date(),
+        stakeholderId: stakeholder4.id, // PEB for personal banking onboarding
+      },
+    }),
+    prisma.taskStakeholder.create({
+      data: {
+        taskId: task5.id,
+        stakeholderId: stakeholder5.id, // BEB for business banking onboarding
       },
     }),
   ]);

@@ -309,7 +309,17 @@ export default function StandupCalendar() {
                   <div className="text-sm text-gray-500">{format(today, "EEEE, dd/MM/yyyy", { locale: vi })}</div>
                   <div className="font-bold text-lg">
                     {isHostingDay(today)
-                      ? `Host hôm nay: ${getHostForDateFromAPI(today)?.fullName || 'Không có host'}`
+                      ? (() => {
+                          const host = getHostForDateFromAPI(today)
+                          return host ? (
+                            <>
+                              Host hôm nay:{" "}
+                              <Link href={`/members/${host.id}`} className="hover:text-primary hover:underline">
+                                {host.fullName}
+                              </Link>
+                            </>
+                          ) : "Không có host"
+                        })()
                       : getHolidayName(today)
                         ? `Hôm nay là ${getHolidayName(today)} - Không có standup`
                         : "Hôm nay là cuối tuần - Không có standup"}
@@ -332,10 +342,20 @@ export default function StandupCalendar() {
                     <div className="font-bold text-lg flex flex-wrap items-center gap-2">
                       <span>Trực Incident:</span>
                       <Badge variant="outline" className="bg-gray-200 text-gray-800 border-gray-300">
-                        Primary: {primary?.fullName || 'Không có primary'}
+                        Primary:{" "}
+                        {primary ? (
+                          <Link href={`/members/${primary.id}`} className="hover:text-primary">
+                            {primary.fullName}
+                          </Link>
+                        ) : "Không có primary"}
                       </Badge>
                       <Badge variant="outline" className="bg-gray-200 text-gray-800 border-gray-300">
-                        Secondary: {secondary?.fullName || 'Không có secondary'}
+                        Secondary:{" "}
+                        {secondary ? (
+                          <Link href={`/members/${secondary.id}`} className="hover:text-primary">
+                            {secondary.fullName}
+                          </Link>
+                        ) : "Không có secondary"}
                       </Badge>
                     </div>
                   </div>
@@ -407,7 +427,15 @@ export default function StandupCalendar() {
                             >
                               {host.fullName.split(" ").map((part) => part[0]).join("")}
                             </div>
-                            <span className={cn("ml-3 font-medium", isToday && "text-primary")}>{host.fullName}</span>
+                            <Link 
+                              href={`/members/${host.id}`}
+                              className={cn(
+                                "ml-3 font-medium hover:text-primary hover:underline",
+                                isToday && "text-primary"
+                              )}
+                            >
+                              {host.fullName}
+                            </Link>
                           </div>
                         ) : null}
                       </div>
@@ -422,7 +450,12 @@ export default function StandupCalendar() {
                                   variant="outline"
                                   className="bg-blue-100 text-blue-800 border-blue-200 font-medium"
                                 >
-                                  P: {dayPrimary?.fullName || 'Không có primary'}
+                                  P:{" "}
+                                  {dayPrimary ? (
+                                    <Link href={`/members/${dayPrimary.id}`} className="hover:text-blue-600">
+                                      {dayPrimary.fullName}
+                                    </Link>
+                                  ) : "Không có primary"}
                                 </Badge>
                               </TooltipTrigger>
                               <TooltipContent>
@@ -435,7 +468,12 @@ export default function StandupCalendar() {
                             <Tooltip>
                               <TooltipTrigger asChild>
                                 <Badge variant="outline" className="bg-purple-100 text-purple-800 border-purple-200">
-                                  S: {daySecondary?.fullName || 'Không có secondary'}
+                                  S:{" "}
+                                  {daySecondary ? (
+                                    <Link href={`/members/${daySecondary.id}`} className="hover:text-purple-600">
+                                      {daySecondary.fullName}
+                                    </Link>
+                                  ) : "Không có secondary"}
                                 </Badge>
                               </TooltipTrigger>
                               <TooltipContent>
@@ -523,7 +561,13 @@ export default function StandupCalendar() {
 
                     {host && (
                       <div className="mt-1 bg-green-100 rounded p-1 text-xs truncate text-green-800" title={`Host: ${host.fullName}`}>
-                        <span className="font-medium">H:</span> {host.fullName}
+                        <span className="font-medium">H:</span>{" "}
+                        <Link 
+                          href={`/members/${host.id}`}
+                          className="hover:text-green-600 hover:underline"
+                        >
+                          {host.fullName}
+                        </Link>
                       </div>
                     )}
 
@@ -531,10 +575,26 @@ export default function StandupCalendar() {
                     {currentTeam.hasIncidentRoster && (
                       <div className="mt-1 flex flex-col gap-1">
                         <div className="bg-blue-100 rounded p-1 text-xs truncate text-blue-800" title={`Primary: ${dayPrimary?.fullName || 'Không có primary'}`}>
-                          <span className="font-medium">P:</span> {dayPrimary?.fullName || 'Không có primary'}
+                          <span className="font-medium">P:</span>{" "}
+                          {dayPrimary ? (
+                            <Link 
+                              href={`/members/${dayPrimary.id}`}
+                              className="hover:text-blue-600 hover:underline"
+                            >
+                              {dayPrimary.fullName}
+                            </Link>
+                          ) : 'Không có primary'}
                         </div>
                         <div className="bg-purple-100 rounded p-1 text-xs truncate text-purple-800" title={`Secondary: ${daySecondary?.fullName || 'Không có secondary'}`}>
-                          <span className="font-medium">S:</span> {daySecondary?.fullName || 'Không có secondary'}
+                          <span className="font-medium">S:</span>{" "}
+                          {daySecondary ? (
+                            <Link 
+                              href={`/members/${daySecondary.id}`}
+                              className="hover:text-purple-600 hover:underline"
+                            >
+                              {daySecondary.fullName}
+                            </Link>
+                          ) : 'Không có secondary'}
                         </div>
                       </div>
                     )}
@@ -567,7 +627,14 @@ export default function StandupCalendar() {
                         {holidayName ? (
                           <div className="text-xs text-red-500">{holidayName}</div>
                         ) : host ? (
-                          <div className="font-medium mb-2 bg-green-100 text-green-800 rounded-full px-2 py-1">{host.fullName}</div>
+                          <div className="font-medium mb-2 bg-green-100 text-green-800 rounded-full px-2 py-1">
+                            <Link 
+                              href={`/members/${host.id}`}
+                              className="hover:text-green-600 hover:underline"
+                            >
+                              {host.fullName}
+                            </Link>
+                          </div>
                         ) : (
                           <div className="text-gray-500 text-sm mb-2">Không có standup</div>
                         )}
@@ -576,10 +643,26 @@ export default function StandupCalendar() {
                         {currentTeam.hasIncidentRoster && (
                           <div className="text-xs flex flex-col gap-1 mt-2">
                             <Badge variant="outline" className="bg-blue-100 text-blue-800 border-blue-200 text-xs">
-                              P: {dayPrimary?.fullName || 'Không có primary'}
+                              P:{" "}
+                              {dayPrimary ? (
+                                <Link 
+                                  href={`/members/${dayPrimary.id}`}
+                                  className="hover:text-blue-600"
+                                >
+                                  {dayPrimary.fullName}
+                                </Link>
+                              ) : 'Không có primary'}
                             </Badge>
                             <Badge variant="outline" className="bg-purple-100 text-purple-800 border-purple-200 text-xs">
-                              S: {daySecondary?.fullName || 'Không có secondary'}
+                              S:{" "}
+                              {daySecondary ? (
+                                <Link 
+                                  href={`/members/${daySecondary.id}`}
+                                  className="hover:text-purple-600"
+                                >
+                                  {daySecondary.fullName}
+                                </Link>
+                              ) : 'Không có secondary'}
                             </Badge>
                           </div>
                         )}
