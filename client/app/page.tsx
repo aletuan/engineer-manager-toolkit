@@ -363,7 +363,7 @@ export default function StandupCalendar() {
 
                 return (
                   <div key={index}>
-                    {currentTeam.hasIncidentRoster && isFirstDayOfSprint && (
+                    {isFirstDayOfSprint && (
                       <div className="bg-gray-200 p-2 rounded-lg mb-2 text-sm font-medium">
                         Sprint {daySprintDates.sprintNumber}: {format(daySprintDates.start, "dd/MM")} - {format(daySprintDates.end, "dd/MM")}
                       </div>
@@ -498,12 +498,12 @@ export default function StandupCalendar() {
                       "p-2 h-28 rounded-md border overflow-hidden",
                       isToday ? "border-primary bg-primary/5" : "border-gray-100",
                       isWeekend(day) && "bg-gray-50",
-                      currentTeam.hasIncidentRoster && isSprintStartDay && "border-gray-400",
+                      isSprintStartDay && "border-gray-400",
                     )}
                   >
                     <div className={cn("text-right mb-1", isToday && "font-bold text-primary")}>{format(day, "d")}</div>
 
-                    {currentTeam.hasIncidentRoster && isSprintStartDay && (
+                    {isSprintStartDay && (
                       <div className="text-xs bg-gray-200 text-gray-700 rounded px-1 py-0.5 mb-1">
                         Sprint {getSprintDates(day).sprintNumber} Start
                       </div>
