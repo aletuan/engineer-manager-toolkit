@@ -1,122 +1,122 @@
 # Operation Guidelines
 
-Tài liệu này tóm tắt các lệnh thường dùng trong quá trình phát triển dự án Engineer Manager Toolkit.
+This document summarizes the commonly used commands in the development process of the Engineer Manager Toolkit project.
 
-## Cài đặt và Khởi động
+## Installation and Startup
 
-### Cài đặt dependencies
+### Installing Dependencies
 
 ```bash
-# Cài đặt dependencies cho toàn bộ dự án (cả frontend và backend)
+# Install dependencies for the entire project (both frontend and backend)
 pnpm install
 
-# Cài đặt dependencies cho backend
+# Install dependencies for backend
 cd server
 pnpm install
 ```
 
-### Khởi động ứng dụng
+### Starting the Application
 
 ```bash
-# Khởi động backend server
+# Start backend server
 cd server
 pnpm run dev
 
-# Khởi động frontend (từ thư mục gốc)
+# Start frontend (from root directory)
 pnpm run dev
 ```
 
 ## Prisma Commands
 
-### Quản lý Schema và Database
+### Schema and Database Management
 
 ```bash
-# Generate Prisma Client sau khi thay đổi schema
+# Generate Prisma Client after schema changes
 cd server
 pnpm prisma generate
 
-# Tạo migration mới khi thay đổi schema
+# Create new migration when schema changes
 cd server
-pnpm prisma migrate dev --name <tên_migration>
+pnpm prisma migrate dev --name <migration_name>
 
-# Áp dụng migration vào database
+# Apply migrations to database
 cd server
 pnpm prisma migrate deploy
 
-# Reset database và áp dụng lại tất cả migrations
+# Reset database and reapply all migrations
 cd server
 pnpm prisma migrate reset
 
-# Push schema trực tiếp vào database (không tạo migration)
+# Push schema directly to database (without creating migration)
 cd server
 pnpm prisma db push
 
-# Reset database và áp dụng schema (force)
+# Reset database and apply schema (force)
 cd server
 pnpm prisma db push --force-reset
 
-# Seed database với dữ liệu mẫu
+# Seed database with sample data
 cd server
 pnpm prisma db seed
 ```
 
-### Khám phá và Quản lý Dữ liệu
+### Data Exploration and Management
 
 ```bash
-# Mở Prisma Studio để xem và chỉnh sửa dữ liệu
+# Open Prisma Studio to view and edit data
 cd server
 pnpm prisma studio
 ```
 
-## Scripts Hữu ích
+## Useful Scripts
 
-### Kiểm tra Lịch trực
+### Checking Duty Schedules
 
 ```bash
-# Kiểm tra lịch trực Standup Hosting
+# Check Standup Hosting schedule
 cd server
 pnpm ts-node scripts/check-standup-hosting.ts
 
-# Kiểm tra lịch trực Incident Rotation
+# Check Incident Rotation schedule
 cd server
 pnpm ts-node scripts/check-incident-rotation.ts
 ```
 
-## Quản lý Git
+## Git Management
 
 ```bash
-# Kiểm tra trạng thái hiện tại
+# Check current status
 git status
 
-# Tạo branch mới
-git checkout -b feature/<tên_feature>
+# Create new branch
+git checkout -b feature/<feature_name>
 
-# Commit thay đổi
+# Commit changes
 git add .
-git commit -m "feat: mô tả thay đổi"
+git commit -m "feat: change description"
 
-# Push lên remote repository
-git push origin <tên_branch>
+# Push to remote repository
+git push origin <branch_name>
 
-# Pull code mới nhất từ remote
-git pull origin <tên_branch>
+# Pull latest code from remote
+git pull origin <branch_name>
 ```
 
 ## Testing
 
 ```bash
-# Chạy unit tests
+# Run unit tests
 cd server
 pnpm test
 
-# Chạy tests với coverage
+# Run tests with coverage
 cd server
 pnpm test:coverage
 ```
 
 ## Swagger API Documentation
 
-Sau khi khởi động server, bạn có thể truy cập Swagger UI để xem và thử nghiệm API tại:
+After starting the server, you can access the Swagger UI to view and test APIs at:
 
 ```
 http://localhost:3001/api-docs
@@ -124,16 +124,16 @@ http://localhost:3001/api-docs
 
 ## Troubleshooting
 
-### Lỗi Prisma Client không nhận diện model mới
+### New Model Not Recognized by Prisma Client
 
-Nếu gặp lỗi "Property 'modelName' does not exist on type 'PrismaClient'", hãy thực hiện:
+If you encounter the error "Property 'modelName' does not exist on type 'PrismaClient'", perform:
 
 ```bash
 cd server
 pnpm prisma generate
 ```
 
-### Lỗi Database không đồng bộ với Schema
+### Database Not in Sync with Schema
 
 ```bash
 cd server
@@ -141,30 +141,30 @@ pnpm prisma db push --force-reset
 pnpm prisma db seed
 ```
 
-### Lỗi Port đã được sử dụng
+### Port Already in Use
 
-Nếu gặp lỗi "Port 3001 is already in use", hãy tìm và kill process đang sử dụng port:
+If you encounter the error "Port 3001 is already in use", find and kill the process using the port:
 
 ```bash
-# Tìm process sử dụng port
+# Find process using port
 lsof -i :3001
 
 # Kill process
 kill -9 <PID>
 ```
 
-## Quy trình Phát triển
+## Development Workflow
 
-1. Pull code mới nhất từ branch chính
-2. Tạo branch mới cho feature/fix
-3. Phát triển và test locally
-4. Commit và push code
-5. Tạo Pull Request
-6. Review và merge sau khi được approve
+1. Pull latest code from main branch
+2. Create new branch for feature/fix
+3. Develop and test locally
+4. Commit and push code
+5. Create Pull Request
+6. Review and merge after approval
 
-## Lưu ý
+## Notes
 
-- Luôn chạy `pnpm prisma generate` sau khi thay đổi schema
-- Sử dụng conventional commits để dễ dàng theo dõi lịch sử thay đổi
-- Đảm bảo tests pass trước khi tạo Pull Request
-- Cập nhật documentation khi thêm tính năng mới 
+- Always run `pnpm prisma generate` after schema changes
+- Use conventional commits for easier change tracking
+- Ensure tests pass before creating Pull Request
+- Update documentation when adding new features 
