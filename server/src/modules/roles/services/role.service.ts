@@ -1,5 +1,5 @@
 import { RoleRepository } from '../repositories/role.repository';
-import { CreateRoleDto, UpdateRoleDto, Role, RoleAssignment } from '../types/role.types';
+import { CreateRoleDto, UpdateRoleDto, Role, RoleAssignment, RoleAssignmentDto } from '../types/role.types';
 import { AppError } from '../../../shared/errors/errorHandler';
 
 export class RoleService {
