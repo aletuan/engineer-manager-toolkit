@@ -131,6 +131,7 @@ export interface Task {
   id: string;
   title: string;
   description: string;
+  featureId: string;
   priority: 'LOW' | 'MEDIUM' | 'HIGH';
   status: 'TODO' | 'IN_PROGRESS' | 'DONE';
   progress: number;

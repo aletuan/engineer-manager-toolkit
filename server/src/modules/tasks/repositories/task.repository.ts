@@ -69,13 +69,37 @@ export class TaskRepository {
           assignedTo: {
             select: {
               id: true,
+              fullName: true,
               email: true,
+              position: true,
+              avatarUrl: true,
             },
           },
           createdBy: {
             select: {
               id: true,
+              fullName: true,
               email: true,
+              position: true,
+              avatarUrl: true,
+            },
+          },
+          assignees: {
+            include: {
+              member: {
+                select: {
+                  id: true,
+                  fullName: true,
+                  email: true,
+                  position: true,
+                  avatarUrl: true,
+                },
+              },
+            },
+          },
+          stakeholders: {
+            include: {
+              stakeholder: true,
             },
           },
         },
@@ -93,13 +117,37 @@ export class TaskRepository {
         assignedTo: {
           select: {
             id: true,
+            fullName: true,
             email: true,
+            position: true,
+            avatarUrl: true,
           },
         },
         createdBy: {
           select: {
             id: true,
+            fullName: true,
             email: true,
+            position: true,
+            avatarUrl: true,
+          },
+        },
+        assignees: {
+          include: {
+            member: {
+              select: {
+                id: true,
+                fullName: true,
+                email: true,
+                position: true,
+                avatarUrl: true,
+              },
+            },
+          },
+        },
+        stakeholders: {
+          include: {
+            stakeholder: true,
           },
         },
       },

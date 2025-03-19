@@ -355,7 +355,9 @@ async function main() {
       description: 'Set up JWT authentication with refresh tokens',
       status: 'TODO',
       priority: 'HIGH',
-      dueDate: new Date('2024-12-31'),
+      createdAt: new Date('2025-02-01'),
+      updatedAt: new Date('2025-02-15'),
+      dueDate: new Date('2025-03-15'),
       featureId: 'AUTH-001',
       progress: 0,
       assignedToId: troyMembers[0].squadMember!.id,
@@ -365,13 +367,35 @@ async function main() {
     },
   });
 
+  // Add assignees for task1 (AUTH-001)
+  await Promise.all([
+    prisma.taskAssignee.create({
+      data: {
+        taskId: task1.id,
+        memberId: troyMembers[0].squadMember!.id,
+        role: AssigneeRole.PRIMARY,
+        createdAt: new Date('2025-02-01'),
+      },
+    }),
+    prisma.taskAssignee.create({
+      data: {
+        taskId: task1.id,
+        memberId: troyMembers[1].squadMember!.id,
+        role: AssigneeRole.SECONDARY,
+        createdAt: new Date('2025-02-01'),
+      },
+    }),
+  ]);
+
   const task2 = await prisma.task.create({
     data: {
       title: 'Design database schema',
       description: 'Create ERD and implement database migrations',
       status: 'IN_PROGRESS',
       priority: 'MEDIUM',
-      dueDate: new Date('2024-12-31'),
+      createdAt: new Date('2025-02-15'),
+      updatedAt: new Date('2025-03-01'),
+      dueDate: new Date('2025-03-30'),
       featureId: 'DB-001',
       progress: 45.5,
       assignedToId: sonicMembers[0].squadMember!.id,
@@ -381,13 +405,35 @@ async function main() {
     },
   });
 
+  // Add assignees for task2 (DB-001)
+  await Promise.all([
+    prisma.taskAssignee.create({
+      data: {
+        taskId: task2.id,
+        memberId: sonicMembers[0].squadMember!.id,
+        role: AssigneeRole.PRIMARY,
+        createdAt: new Date('2025-02-15'),
+      },
+    }),
+    prisma.taskAssignee.create({
+      data: {
+        taskId: task2.id,
+        memberId: sonicMembers[1].squadMember!.id,
+        role: AssigneeRole.SECONDARY,
+        createdAt: new Date('2025-02-15'),
+      },
+    }),
+  ]);
+
   const task3 = await prisma.task.create({
     data: {
       title: 'Implement Document Upload API',
       description: 'Create REST API endpoints for document upload and processing',
       status: 'TODO',
       priority: 'HIGH',
-      dueDate: new Date('2024-12-15'),
+      createdAt: new Date('2025-03-01'),
+      updatedAt: new Date('2025-03-15'),
+      dueDate: new Date('2025-04-15'),
       featureId: 'EDMS-001',
       progress: 0,
       assignedToId: troyMembers[1].squadMember!.id,
@@ -403,7 +449,9 @@ async function main() {
       description: 'Develop and implement new fraud detection rules for transaction monitoring',
       status: 'IN_PROGRESS',
       priority: 'HIGH',
-      dueDate: new Date('2024-12-20'),
+      createdAt: new Date('2025-03-15'),
+      updatedAt: new Date('2025-03-30'),
+      dueDate: new Date('2025-04-30'),
       featureId: 'ISSO-001',
       progress: 75.8,
       assignedToId: sonicMembers[1].squadMember!.id,
@@ -419,7 +467,9 @@ async function main() {
       description: 'Improve the customer onboarding experience with new UI/UX design',
       status: 'TODO',
       priority: 'MEDIUM',
-      dueDate: new Date('2024-12-25'),
+      createdAt: new Date('2025-04-01'),
+      updatedAt: new Date('2025-04-15'),
+      dueDate: new Date('2025-05-15'),
       featureId: 'ECOM-001',
       progress: 0,
       assignedToId: troyMembers[2].squadMember!.id,
@@ -436,7 +486,7 @@ async function main() {
         taskId: task3.id,
         memberId: troyMembers[1].squadMember!.id,
         role: AssigneeRole.PRIMARY,
-        createdAt: new Date(),
+        createdAt: new Date('2025-03-01'),
       },
     }),
     prisma.taskAssignee.create({
@@ -444,7 +494,7 @@ async function main() {
         taskId: task3.id,
         memberId: troyMembers[2].squadMember!.id,
         role: AssigneeRole.SECONDARY,
-        createdAt: new Date(),
+        createdAt: new Date('2025-03-01'),
       },
     }),
     prisma.taskAssignee.create({
@@ -452,7 +502,7 @@ async function main() {
         taskId: task4.id,
         memberId: sonicMembers[1].squadMember!.id,
         role: AssigneeRole.PRIMARY,
-        createdAt: new Date(),
+        createdAt: new Date('2025-03-15'),
       },
     }),
     prisma.taskAssignee.create({
@@ -460,7 +510,7 @@ async function main() {
         taskId: task4.id,
         memberId: sonicMembers[2].squadMember!.id,
         role: AssigneeRole.SECONDARY,
-        createdAt: new Date(),
+        createdAt: new Date('2025-03-15'),
       },
     }),
     prisma.taskAssignee.create({
@@ -468,7 +518,7 @@ async function main() {
         taskId: task5.id,
         memberId: troyMembers[2].squadMember!.id,
         role: AssigneeRole.PRIMARY,
-        createdAt: new Date(),
+        createdAt: new Date('2025-04-01'),
       },
     }),
   ]);
