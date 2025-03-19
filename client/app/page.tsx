@@ -598,18 +598,15 @@ export default function StandupCalendar() {
           <div className="flex flex-wrap gap-3">
             {squadMembers.map((member, index) => {
               const isHostingToday = isHostingDay(today) && getHostForDateFromAPI(today) === member
-
-              // Only check incident roles for Team Sonic
-              const isPrimary =
-                currentTeam.hasIncidentRoster && getIncidentRespondersFromAPI(today).primary === member
-              const isSecondary =
-                currentTeam.hasIncidentRoster && getIncidentRespondersFromAPI(today).secondary === member
+              const isPrimary = currentTeam.hasIncidentRoster && getIncidentRespondersFromAPI(today).primary === member
+              const isSecondary = currentTeam.hasIncidentRoster && getIncidentRespondersFromAPI(today).secondary === member
 
               return (
-                <div
+                <Link
                   key={index}
+                  href={`/members/${member.id}`}
                   className={cn(
-                    "px-4 py-2 rounded-full text-sm font-medium",
+                    "px-4 py-2 rounded-full text-sm font-medium transition-colors hover:opacity-80",
                     isHostingToday
                       ? "bg-primary text-white"
                       : isPrimary
@@ -622,7 +619,7 @@ export default function StandupCalendar() {
                   {member.fullName}
                   {isPrimary && " (P)"}
                   {isSecondary && " (S)"}
-                </div>
+                </Link>
               )
             })}
           </div>
