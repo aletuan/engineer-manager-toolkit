@@ -1,11 +1,16 @@
 import { Request, Response } from 'express';
 import { TaskService } from '../services/task.service';
 import { CreateTaskDto, UpdateTaskDto, AddCommentDto, UpdateTaskStatusDto } from '../types/task.types';
+import { TaskStatus, TaskPriority } from '@prisma/client';
+import { AppError } from '../../../shared/errors/errorHandler';
 
 export class TaskController {
   constructor(private service: TaskService) {}
 
   async createTask(req: Request, res: Response): Promise<void> {
+    if (!req.user) {
+      throw new AppError(401, 'Unauthorized');
+    }
     const data: CreateTaskDto = req.body;
     const task = await this.service.createTask({
       ...data,
@@ -19,8 +24,8 @@ export class TaskController {
     const tasks = await this.service.getTasks({
       featureId: featureId as string,
       assignedTo: assignedTo as string,
-      status: status as string,
-      priority: priority as string,
+      status: status ? (status as string).toUpperCase() as TaskStatus : undefined,
+      priority: priority ? (priority as string).toUpperCase() as TaskPriority : undefined,
       page: page ? Number(page) : undefined,
       limit: limit ? Number(limit) : undefined,
       sortBy: sortBy as string,
@@ -49,6 +54,9 @@ export class TaskController {
   }
 
   async addComment(req: Request, res: Response): Promise<void> {
+    if (!req.user) {
+      throw new AppError(401, 'Unauthorized');
+    }
     const { id } = req.params;
     const data: AddCommentDto = req.body;
     const task = await this.service.addComment(id, {

@@ -5,6 +5,8 @@ export const createTaskSchema = z.object({
   description: z.string().min(1),
   status: z.enum(['TODO', 'IN_PROGRESS', 'DONE']).default('TODO'),
   priority: z.enum(['LOW', 'MEDIUM', 'HIGH']).default('MEDIUM'),
+  progress: z.number().min(0).max(100).default(0),
+  points: z.number().int().min(1).default(1),
   dueDate: z.string().datetime(),
   featureId: z.string(),
   assignedToId: z.string(),
@@ -23,8 +25,8 @@ export const updateTaskStatusSchema = z.object({
   status: z.enum(['TODO', 'IN_PROGRESS', 'DONE']),
 });
 
-export type CreateTaskInput = z.infer<typeof createTaskSchema>;
-export type UpdateTaskInput = z.infer<typeof updateTaskSchema>;
+export type CreateTaskDto = z.infer<typeof createTaskSchema>;
+export type UpdateTaskDto = z.infer<typeof updateTaskSchema>;
 export type AddCommentDto = z.infer<typeof addCommentSchema>;
 export type UpdateTaskStatusDto = z.infer<typeof updateTaskStatusSchema>;
 
@@ -34,6 +36,7 @@ export interface Task {
   description: string;
   status: 'TODO' | 'IN_PROGRESS' | 'DONE';
   priority: 'LOW' | 'MEDIUM' | 'HIGH';
+  progress: number;
   dueDate: Date;
   featureId: string;
   assignedTo: {

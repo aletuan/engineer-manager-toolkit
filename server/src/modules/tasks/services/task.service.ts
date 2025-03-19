@@ -1,4 +1,4 @@
-import { Task } from '@prisma/client';
+import { Task, TaskStatus, TaskPriority } from '@prisma/client';
 import { TaskRepository } from '../repositories/task.repository';
 import { CreateTaskDto, UpdateTaskDto, AddCommentDto, UpdateTaskStatusDto } from '../types/task.types';
 import { AppError } from '../../../shared/errors/errorHandler';
@@ -6,8 +6,8 @@ import { AppError } from '../../../shared/errors/errorHandler';
 interface GetTasksParams {
   featureId?: string;
   assignedTo?: string;
-  status?: string;
-  priority?: string;
+  status?: TaskStatus;
+  priority?: TaskPriority;
   page?: number;
   limit?: number;
   sortBy?: string;
