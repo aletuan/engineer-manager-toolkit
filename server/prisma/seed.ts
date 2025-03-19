@@ -17,7 +17,6 @@ async function main() {
   await prisma.taskStakeholder.deleteMany();
   await prisma.taskAssignee.deleteMany();
   await prisma.taskNote.deleteMany();
-  await prisma.taskComment.deleteMany();
   await prisma.task.deleteMany();
   await prisma.stakeholder.deleteMany();
   await prisma.squadMember.deleteMany();
@@ -642,34 +641,6 @@ async function main() {
         content: 'Focus on reducing the number of steps in the onboarding process',
         taskId: task5.id,
         authorId: troyMembers[2].squadMember!.id,
-        createdAt: new Date(),
-      },
-    }),
-  ]);
-
-  // Create task comments for new tasks
-  await Promise.all([
-    prisma.taskComment.create({
-      data: {
-        content: 'Should we add virus scanning for uploaded documents?',
-        taskId: task3.id,
-        createdById: troyMembers[2].squadMember!.id,
-        createdAt: new Date(),
-      },
-    }),
-    prisma.taskComment.create({
-      data: {
-        content: 'We need to consider performance impact of new rules',
-        taskId: task4.id,
-        createdById: sonicMembers[2].squadMember!.id,
-        createdAt: new Date(),
-      },
-    }),
-    prisma.taskComment.create({
-      data: {
-        content: 'Can we get some user feedback on the current pain points?',
-        taskId: task5.id,
-        createdById: troyMembers[3].squadMember!.id,
         createdAt: new Date(),
       },
     }),
