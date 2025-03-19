@@ -24,7 +24,7 @@ export class TaskRepository {
         priority: data.priority as TaskPriority,
         dueDate: new Date(data.dueDate),
         featureId: data.featureId,
-        assignedToId: data.assignedTo,
+        assignedToId: data.assignedToId,
         createdById: data.createdBy,
         tags: data.tags,
         attachments: data.attachments,
@@ -116,7 +116,7 @@ export class TaskRepository {
         ...(data.priority && { priority: data.priority as TaskPriority }),
         ...(data.dueDate && { dueDate: new Date(data.dueDate) }),
         ...(data.featureId && { featureId: data.featureId }),
-        ...(data.assignedTo && { assignedToId: data.assignedTo }),
+        ...(data.assignedToId && { assignedToId: data.assignedToId }),
         ...(data.tags && { tags: data.tags }),
         ...(data.attachments && { attachments: data.attachments }),
       },
@@ -137,9 +137,23 @@ export class TaskRepository {
     });
   }
 
-  async delete(id: string): Promise<void> {
-    await this.prisma.task.delete({
+  async delete(id: string): Promise<Task> {
+    return this.prisma.task.delete({
       where: { id },
+      include: {
+        assignedTo: {
+          select: {
+            id: true,
+            email: true,
+          },
+        },
+        createdBy: {
+          select: {
+            id: true,
+            email: true,
+          },
+        },
+      },
     });
   }
 
