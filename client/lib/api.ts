@@ -103,6 +103,44 @@ export interface MemberDetails extends SquadMember {
   phone?: string;
 }
 
+export interface TaskAssignee {
+  id: string;
+  memberId: string;
+  role: string;
+  member: {
+    id: string;
+    fullName: string;
+    email: string;
+    position: string;
+    avatarUrl?: string;
+  };
+}
+
+export interface TaskStakeholder {
+  id: string;
+  name: string;
+  code: string;
+  description?: string;
+  contactName?: string;
+  contactEmail?: string;
+  contactPhone?: string;
+  groupName?: string;
+}
+
+export interface Task {
+  id: string;
+  title: string;
+  description: string;
+  priority: 'LOW' | 'MEDIUM' | 'HIGH';
+  status: 'TODO' | 'IN_PROGRESS' | 'DONE';
+  progress: number;
+  points: number;
+  createdAt: string;
+  dueDate: string;
+  assignees: TaskAssignee[];
+  stakeholders: TaskStakeholder[];
+}
+
 /**
  * Fetch all squads from the server
  */
@@ -363,5 +401,67 @@ export async function fetchMemberIncidentHistory(
   } catch (error) {
     console.error(`Error fetching incident rotation history for member ${memberId}:`, error);
     return [];
+  }
+}
+
+/**
+ * Fetch tasks with optional filters
+ */
+export async function fetchTasks(params?: {
+  featureId?: string;
+  assignedTo?: string;
+  status?: 'TODO' | 'IN_PROGRESS' | 'DONE';
+  priority?: 'LOW' | 'MEDIUM' | 'HIGH';
+  page?: number;
+  limit?: number;
+  sortBy?: string;
+  sortOrder?: 'asc' | 'desc';
+}): Promise<{ tasks: Task[]; total: number }> {
+  try {
+    let url = `${API_BASE_URL}/tasks`;
+    
+    if (params) {
+      const queryParams = new URLSearchParams();
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined) {
+          queryParams.append(key, value.toString());
+        }
+      });
+      const queryString = queryParams.toString();
+      if (queryString) {
+        url += `?${queryString}`;
+      }
+    }
+    
+    const response = await fetch(url);
+    
+    if (!response.ok) {
+      throw new Error(`Failed to fetch tasks: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error fetching tasks:', error);
+    return { tasks: [], total: 0 };
+  }
+}
+
+/**
+ * Fetch a single task by ID
+ */
+export async function fetchTaskById(taskId: string): Promise<Task | null> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/tasks/${taskId}`);
+    
+    if (!response.ok) {
+      throw new Error(`Failed to fetch task: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error(`Error fetching task ${taskId}:`, error);
+    return null;
   }
 } 
