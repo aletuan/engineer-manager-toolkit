@@ -730,47 +730,87 @@ async function main() {
     currentDateIncident.setDate(currentDateIncident.getDate() + 1);
   }
 
-  // Create standup hosting schedule for both squads (last 3 months to 1 month in future)
-  const startDateStandup = new Date();
-  startDateStandup.setMonth(startDateStandup.getMonth() - 3);
-  startDateStandup.setDate(1); // Start from the first day of the month
-  let currentDateStandup = startOfDay(startDateStandup);
+  // Delete all existing standup hosting schedules
+  await prisma.standupHosting.deleteMany();
 
-  // Get members for hosting
-  const troyMemberIds = troyMembers.map(member => member.squadMember!.id);
-  let troyHostIndex = 0;
-  let sonicHostIndex = 0;
+  // Find all Troy members by PID
+  const troyMemberPids = ['22831955', '22831433', '22832742', '40010912', '22834499'];
+  const troyStandupMembers = await Promise.all(
+    troyMemberPids.map(pid => 
+      prisma.squadMember.findFirst({
+        where: { pid },
+        include: { squad: true }
+      })
+    )
+  );
 
-  // Create standup hosting from past to future
-  while (currentDateStandup < futureDate) {
-    if (!isWeekend(currentDateStandup)) {
-      // Create hosting for Troy squad
-      await prisma.standupHosting.create({
-        data: {
-          squadId: troySquad.id,
-          memberId: troyMemberIds[troyHostIndex],
-          date: new Date(currentDateStandup),
-          status: currentDateStandup < new Date() ? 'COMPLETED' : 'SCHEDULED',
-        },
-      });
+  // Filter out any null values and ensure we have valid members
+  const validTroyMembers = troyStandupMembers.filter((member): member is NonNullable<typeof member> => 
+    member !== null && member.squad !== null
+  );
 
-      // Create hosting for Sonic squad
-      await prisma.standupHosting.create({
-        data: {
-          squadId: sonicSquad.id,
-          memberId: sonicMemberIds[sonicHostIndex],
-          date: new Date(currentDateStandup),
-          status: currentDateStandup < new Date() ? 'COMPLETED' : 'SCHEDULED',
-        },
-      });
+  if (validTroyMembers.length > 0) {
+    const troySquadId = validTroyMembers[0].squad.id;
+    const startDate = new Date('2025-03-24');
+    const endDate = new Date('2025-12-31');
 
-      // Rotate hosts for next day
-      troyHostIndex = (troyHostIndex + 1) % troyMemberIds.length;
-      sonicHostIndex = (sonicHostIndex + 1) % sonicMemberIds.length;
+    // Generate all dates between start and end date
+    const dates: Date[] = [];
+    let currentDate = new Date(startDate);
+    while (currentDate <= endDate) {
+      // Only add weekdays (Monday to Friday)
+      const dayOfWeek = currentDate.getDay();
+      if (dayOfWeek >= 1 && dayOfWeek <= 5) {
+        dates.push(new Date(currentDate));
+      }
+      currentDate.setDate(currentDate.getDate() + 1);
     }
 
-    // Move to next day
-    currentDateStandup.setDate(currentDateStandup.getDate() + 1);
+    // Create standup hosting schedule
+    for (let i = 0; i < dates.length; i++) {
+      const date = dates[i];
+      // Calculate which member should host based on the week number
+      const weekNumber = Math.floor(i / 5); // 5 days per week
+      const memberIndex = weekNumber % validTroyMembers.length;
+      const member = validTroyMembers[memberIndex];
+
+      await prisma.standupHosting.create({
+        data: {
+          squadId: troySquadId,
+          memberId: member.id,
+          date,
+          status: 'SCHEDULED'
+        }
+      });
+    }
+  }
+
+  // Find Sonic member by PID
+  const sonicMember = await prisma.squadMember.findFirst({
+    where: { pid: '22842810' },
+    include: { squad: true }
+  });
+
+  // Create standup hosting for Sonic member (March 24-28)
+  if (sonicMember?.id && sonicMember?.squad?.id) {
+    const sonicDates = [
+      new Date('2025-03-24'),
+      new Date('2025-03-25'),
+      new Date('2025-03-26'),
+      new Date('2025-03-27'),
+      new Date('2025-03-28')
+    ];
+
+    for (const date of sonicDates) {
+      await prisma.standupHosting.create({
+        data: {
+          squadId: sonicMember.squad.id,
+          memberId: sonicMember.id,
+          date,
+          status: 'SCHEDULED'
+        }
+      });
+    }
   }
 
   // Create sprint reports
