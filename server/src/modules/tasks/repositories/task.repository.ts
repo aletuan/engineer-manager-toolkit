@@ -1,4 +1,4 @@
-import { PrismaClient, Task, TaskStatus, TaskPriority } from '@prisma/client';
+import { PrismaClient, Task, TaskComment, TaskStatus, TaskPriority } from '@prisma/client';
 import { CreateTaskDto, UpdateTaskDto, AddCommentDto } from '../types/task.types';
 
 interface FindAllParams {
@@ -113,31 +113,6 @@ export class TaskRepository {
               }
             }
           },
-          notes: {
-            include: {
-              author: {
-                select: {
-                  id: true,
-                  fullName: true,
-                  email: true,
-                  position: true,
-                  avatarUrl: true,
-                },
-              },
-            },
-          },
-          dependencies: {
-            include: {
-              dependentTask: {
-                select: {
-                  id: true,
-                  title: true,
-                  status: true,
-                  priority: true,
-                },
-              },
-            },
-          },
         },
       }),
       this.prisma.task.count({ where }),
@@ -197,31 +172,6 @@ export class TaskRepository {
             }
           }
         },
-        notes: {
-          include: {
-            author: {
-              select: {
-                id: true,
-                fullName: true,
-                email: true,
-                position: true,
-                avatarUrl: true,
-              },
-            },
-          },
-        },
-        dependencies: {
-          include: {
-            dependentTask: {
-              select: {
-                id: true,
-                title: true,
-                status: true,
-                priority: true,
-              },
-            },
-          },
-        },
       },
     });
   }
@@ -277,23 +227,15 @@ export class TaskRepository {
     });
   }
 
-  async addComment(taskId: string, data: AddCommentDto & { createdBy: string }): Promise<any> {
-    return this.prisma.taskNote.create({
+  async addComment(taskId: string, data: AddCommentDto & { createdBy: string }): Promise<TaskComment> {
+    return this.prisma.taskComment.create({
       data: {
         content: data.content,
         taskId,
-        authorId: data.createdBy,
+        createdById: data.createdBy,
       },
       include: {
-        author: {
-          select: {
-            id: true,
-            fullName: true,
-            email: true,
-            position: true,
-            avatarUrl: true,
-          },
-        },
+        createdBy: true,
       },
     });
   }
@@ -305,6 +247,27 @@ export class TaskRepository {
       include: {
         assignedTo: true,
         createdBy: true,
+        comments: {
+          include: {
+            createdBy: true,
+          },
+        },
+        stakeholders: {
+          select: {
+            stakeholder: {
+              select: {
+                id: true,
+                name: true,
+                code: true,
+                description: true,
+                contactName: true,
+                contactEmail: true,
+                contactPhone: true,
+                groupName: true,
+              }
+            }
+          }
+        },
       },
     });
   }
@@ -313,31 +276,16 @@ export class TaskRepository {
     return this.prisma.task.findMany({
       where: { featureId },
       include: {
-        assignedTo: true,
-        createdBy: true,
-        notes: {
-          include: {
-            author: {
-              select: {
-                id: true,
-                fullName: true,
-                email: true,
-                position: true,
-                avatarUrl: true,
-              },
-            },
+        assignedTo: {
+          select: {
+            id: true,
+            email: true,
           },
         },
-        dependencies: {
-          include: {
-            dependentTask: {
-              select: {
-                id: true,
-                title: true,
-                status: true,
-                priority: true,
-              },
-            },
+        createdBy: {
+          select: {
+            id: true,
+            email: true,
           },
         },
       },
@@ -350,29 +298,9 @@ export class TaskRepository {
       include: {
         assignedTo: true,
         createdBy: true,
-        notes: {
+        comments: {
           include: {
-            author: {
-              select: {
-                id: true,
-                fullName: true,
-                email: true,
-                position: true,
-                avatarUrl: true,
-              },
-            },
-          },
-        },
-        dependencies: {
-          include: {
-            dependentTask: {
-              select: {
-                id: true,
-                title: true,
-                status: true,
-                priority: true,
-              },
-            },
+            createdBy: true,
           },
         },
       },
