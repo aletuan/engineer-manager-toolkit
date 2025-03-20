@@ -315,9 +315,17 @@ export default function StandupCalendar() {
                           return host ? (
                             <>
                               Host hôm nay:{" "}
-                              <Link href={`/members/${host.id}`} className="hover:text-primary hover:underline">
-                                {host.fullName}
-                              </Link>
+                              <motion.div
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                                className="inline-block"
+                              >
+                                <Link href={`/members/${host.id}`}>
+                                  <Badge variant="outline" className="bg-gray-200 text-gray-800 border-gray-300 hover:bg-gray-300 transition-colors">
+                                    {host.fullName}
+                                  </Badge>
+                                </Link>
+                              </motion.div>
                             </>
                           ) : "Không có host"
                         })()
@@ -346,27 +354,33 @@ export default function StandupCalendar() {
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
                       >
-                        <Badge variant="outline" className="bg-gray-200 text-gray-800 border-gray-300">
-                          Primary:{" "}
-                          {primary ? (
-                            <Link href={`/members/${primary.id}`} className="hover:text-primary">
-                              {primary.fullName}
-                            </Link>
-                          ) : "Không có primary"}
-                        </Badge>
+                        {primary ? (
+                          <Link href={`/members/${primary.id}`}>
+                            <Badge variant="outline" className="bg-gray-200 text-gray-800 border-gray-300 hover:bg-gray-300 transition-colors">
+                              Primary: {primary.fullName}
+                            </Badge>
+                          </Link>
+                        ) : (
+                          <Badge variant="outline" className="bg-gray-200 text-gray-800 border-gray-300">
+                            Primary: Không có primary
+                          </Badge>
+                        )}
                       </motion.div>
                       <motion.div
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
                       >
-                        <Badge variant="outline" className="bg-gray-200 text-gray-800 border-gray-300">
-                          Secondary:{" "}
-                          {secondary ? (
-                            <Link href={`/members/${secondary.id}`} className="hover:text-primary">
-                              {secondary.fullName}
-                            </Link>
-                          ) : "Không có secondary"}
-                        </Badge>
+                        {secondary ? (
+                          <Link href={`/members/${secondary.id}`}>
+                            <Badge variant="outline" className="bg-gray-200 text-gray-800 border-gray-300 hover:bg-gray-300 transition-colors">
+                              Secondary: {secondary.fullName}
+                            </Badge>
+                          </Link>
+                        ) : (
+                          <Badge variant="outline" className="bg-gray-200 text-gray-800 border-gray-300">
+                            Secondary: Không có secondary
+                          </Badge>
+                        )}
                       </motion.div>
                     </div>
                   </div>
