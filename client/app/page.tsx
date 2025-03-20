@@ -69,9 +69,19 @@ export default function StandupCalendar() {
       if (!activeTeam) return
       setIsLoading(true)
       try {
+        // Calculate date range based on current view
+        const today = new Date()
+        const startDate = activeTab === "timeline" 
+          ? format(today, "yyyy-MM-dd") // For timeline view, start from today
+          : format(startOfMonth(currentDate), "yyyy-MM-dd") // For calendar view, start from first day of month
+        
+        const endDate = activeTab === "timeline"
+          ? format(addDays(today, 14), "yyyy-MM-dd") // For timeline view, show next 14 days
+          : format(endOfMonth(currentDate), "yyyy-MM-dd") // For calendar view, end at last day of month
+
         const [members, hostings, rotations] = await Promise.all([
           fetchSquadMembers(activeTeam),
-          fetchStandupHosting(activeTeam),
+          fetchStandupHosting(activeTeam, startDate, endDate),
           fetchIncidentRotation(activeTeam)
         ])
         setSquadMembers(members)
@@ -84,7 +94,7 @@ export default function StandupCalendar() {
       }
     }
     fetchTeamData()
-  }, [activeTeam])
+  }, [activeTeam, activeTab, currentDate])
 
   // Generate days for the timeline view (next 14 days)
   useEffect(() => {
