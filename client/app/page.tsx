@@ -342,22 +342,32 @@ export default function StandupCalendar() {
                     </div>
                     <div className="font-bold text-lg flex flex-wrap items-center gap-2">
                       <span>Trực Incident:</span>
-                      <Badge variant="outline" className="bg-gray-200 text-gray-800 border-gray-300">
-                        Primary:{" "}
-                        {primary ? (
-                          <Link href={`/members/${primary.id}`} className="hover:text-primary">
-                            {primary.fullName}
-                          </Link>
-                        ) : "Không có primary"}
-                      </Badge>
-                      <Badge variant="outline" className="bg-gray-200 text-gray-800 border-gray-300">
-                        Secondary:{" "}
-                        {secondary ? (
-                          <Link href={`/members/${secondary.id}`} className="hover:text-primary">
-                            {secondary.fullName}
-                          </Link>
-                        ) : "Không có secondary"}
-                      </Badge>
+                      <motion.div
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                      >
+                        <Badge variant="outline" className="bg-gray-200 text-gray-800 border-gray-300">
+                          Primary:{" "}
+                          {primary ? (
+                            <Link href={`/members/${primary.id}`} className="hover:text-primary">
+                              {primary.fullName}
+                            </Link>
+                          ) : "Không có primary"}
+                        </Badge>
+                      </motion.div>
+                      <motion.div
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                      >
+                        <Badge variant="outline" className="bg-gray-200 text-gray-800 border-gray-300">
+                          Secondary:{" "}
+                          {secondary ? (
+                            <Link href={`/members/${secondary.id}`} className="hover:text-primary">
+                              {secondary.fullName}
+                            </Link>
+                          ) : "Không có secondary"}
+                        </Badge>
+                      </motion.div>
                     </div>
                   </div>
                 </div>
