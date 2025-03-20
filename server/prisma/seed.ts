@@ -937,6 +937,91 @@ async function main() {
       sprintNumber
     };
   }
+
+  // Create standup hosting for March 3-21, 2025
+  const standupStartDate = new Date('2025-03-03');
+  const standupEndDate = new Date('2025-03-21');
+
+  // Generate all dates between start and end date for standup hosting
+  const standupDates: Date[] = [];
+  let currentStandupDate = new Date(standupStartDate);
+  while (currentStandupDate <= standupEndDate) {
+    // Only add weekdays (Monday to Friday)
+    const dayOfWeek = currentStandupDate.getDay();
+    if (dayOfWeek >= 1 && dayOfWeek <= 5) {
+      standupDates.push(new Date(currentStandupDate));
+    }
+    currentStandupDate.setDate(currentStandupDate.getDate() + 1);
+  }
+
+  // Create standup hosting schedule for Troy
+  if (validTroyMembers.length > 0) {
+    const troySquadId = validTroyMembers[0].squad.id;
+    for (let i = 0; i < standupDates.length; i++) {
+      const date = standupDates[i];
+      // Calculate which member should host based on the week number
+      const weekNumber = Math.floor(i / 5); // 5 days per week
+      const memberIndex = weekNumber % validTroyMembers.length;
+      const member = validTroyMembers[memberIndex];
+
+      await prisma.standupHosting.create({
+        data: {
+          squadId: troySquadId,
+          memberId: member.id,
+          date,
+          status: 'SCHEDULED'
+        }
+      });
+    }
+  }
+
+  // Create standup hosting schedule for Sonic
+  if (validSonicMembers.length > 0) {
+    const sonicSquadId = validSonicMembers[0].squad.id;
+    for (let i = 0; i < standupDates.length; i++) {
+      const date = standupDates[i];
+      // Calculate which member should host based on the week number
+      const weekNumber = Math.floor(i / 5); // 5 days per week
+      const memberIndex = weekNumber % validSonicMembers.length;
+      const member = validSonicMembers[memberIndex];
+
+      await prisma.standupHosting.create({
+        data: {
+          squadId: sonicSquadId,
+          memberId: member.id,
+          date,
+          status: 'SCHEDULED'
+        }
+      });
+    }
+  }
+
+  // Create sprint reports
+  await prisma.sprintReport.create({
+    data: {
+      squadId: troySquad.id,
+      sprintNumber: 1,
+      startDate: new Date(),
+      endDate: new Date('2024-12-31'),
+      totalPoints: 20,
+      completedPoints: 15,
+      memberMetrics: {},
+      stakeholderMetrics: {},
+      createdAt: new Date(),
+    },
+  });
+
+  // Create activity logs
+  await prisma.activityLog.create({
+    data: {
+      userId: troyMembers[0].id,
+      entityType: 'task',
+      entityId: task1.id,
+      action: 'create',
+      details: {},
+      createdAt: new Date(),
+    },
+  });
 }
 
 main()
