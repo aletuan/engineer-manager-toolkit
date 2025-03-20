@@ -785,27 +785,51 @@ async function main() {
     }
   }
 
-  // Find Sonic member by PID
-  const sonicMember = await prisma.squadMember.findFirst({
-    where: { pid: '22842810' },
-    include: { squad: true }
-  });
+  // Find Sonic members by PID
+  const sonicMemberPids = ['22842810', '22831174', '40010013', '22833707', '22837549'];
+  const sonicStandupMembers = await Promise.all(
+    sonicMemberPids.map(pid => 
+      prisma.squadMember.findFirst({
+        where: { pid },
+        include: { squad: true }
+      })
+    )
+  );
 
-  // Create standup hosting for Sonic member (March 24-28)
-  if (sonicMember?.id && sonicMember?.squad?.id) {
-    const sonicDates = [
-      new Date('2025-03-24'),
-      new Date('2025-03-25'),
-      new Date('2025-03-26'),
-      new Date('2025-03-27'),
-      new Date('2025-03-28')
-    ];
+  // Filter out any null values and ensure we have valid members
+  const validSonicMembers = sonicStandupMembers.filter((member): member is NonNullable<typeof member> => 
+    member !== null && member.squad !== null
+  );
 
-    for (const date of sonicDates) {
+  if (validSonicMembers.length > 0) {
+    const sonicSquadId = validSonicMembers[0].squad.id;
+    const startDate = new Date('2025-03-24');
+    const endDate = new Date('2025-12-31');
+
+    // Generate all dates between start and end date
+    const dates: Date[] = [];
+    let currentDate = new Date(startDate);
+    while (currentDate <= endDate) {
+      // Only add weekdays (Monday to Friday)
+      const dayOfWeek = currentDate.getDay();
+      if (dayOfWeek >= 1 && dayOfWeek <= 5) {
+        dates.push(new Date(currentDate));
+      }
+      currentDate.setDate(currentDate.getDate() + 1);
+    }
+
+    // Create standup hosting schedule
+    for (let i = 0; i < dates.length; i++) {
+      const date = dates[i];
+      // Calculate which member should host based on the week number
+      const weekNumber = Math.floor(i / 5); // 5 days per week
+      const memberIndex = weekNumber % validSonicMembers.length;
+      const member = validSonicMembers[memberIndex];
+
       await prisma.standupHosting.create({
         data: {
-          squadId: sonicMember.squad.id,
-          memberId: sonicMember.id,
+          squadId: sonicSquadId,
+          memberId: member.id,
           date,
           status: 'SCHEDULED'
         }
