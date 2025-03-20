@@ -578,42 +578,54 @@ export default function StandupCalendar() {
                     )}
 
                     {host && (
-                      <div className="mt-1 bg-green-100 rounded p-1 text-xs truncate text-green-800" title={`Host: ${host.fullName}`}>
-                        <span className="font-medium">H:</span>{" "}
-                        <Link 
-                          href={`/members/${host.id}`}
-                          className="hover:text-green-600 hover:underline"
+                      <Link href={`/members/${host.id}`}>
+                        <motion.div
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          className="mt-1 bg-green-100 rounded p-1 text-xs truncate text-green-800 hover:bg-green-200 transition-colors"
+                          title={`Host: ${host.fullName}`}
                         >
-                          {host.fullName}
-                        </Link>
-                      </div>
+                          <span className="font-medium">H:</span>{" "}
+                          <span className="hover:text-green-600">
+                            {host.fullName}
+                          </span>
+                        </motion.div>
+                      </Link>
                     )}
 
                     {/* Only show incident responders for Team Sonic */}
                     {currentTeam.hasIncidentRoster && (
                       <div className="mt-1 flex flex-col gap-1">
-                        <div className="bg-blue-100 rounded p-1 text-xs truncate text-blue-800" title={`Primary: ${dayPrimary?.fullName || 'Không có primary'}`}>
-                          <span className="font-medium">P:</span>{" "}
-                          {dayPrimary ? (
-                            <Link 
-                              href={`/members/${dayPrimary.id}`}
-                              className="hover:text-blue-600 hover:underline"
-                            >
-                              {dayPrimary.fullName}
-                            </Link>
-                          ) : 'Không có primary'}
-                        </div>
-                        <div className="bg-purple-100 rounded p-1 text-xs truncate text-purple-800" title={`Secondary: ${daySecondary?.fullName || 'Không có secondary'}`}>
-                          <span className="font-medium">S:</span>{" "}
-                          {daySecondary ? (
-                            <Link 
-                              href={`/members/${daySecondary.id}`}
-                              className="hover:text-purple-600 hover:underline"
-                            >
-                              {daySecondary.fullName}
-                            </Link>
-                          ) : 'Không có secondary'}
-                        </div>
+                        <Link href={dayPrimary ? `/members/${dayPrimary.id}` : "#"}>
+                          <motion.div
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            className="bg-blue-100 rounded p-1 text-xs truncate text-blue-800 hover:bg-blue-200 transition-colors"
+                            title={`Primary: ${dayPrimary?.fullName || 'Không có primary'}`}
+                          >
+                            <span className="font-medium">P:</span>{" "}
+                            {dayPrimary ? (
+                              <span className="hover:text-blue-600">
+                                {dayPrimary.fullName}
+                              </span>
+                            ) : 'Không có primary'}
+                          </motion.div>
+                        </Link>
+                        <Link href={daySecondary ? `/members/${daySecondary.id}` : "#"}>
+                          <motion.div
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            className="bg-purple-100 rounded p-1 text-xs truncate text-purple-800 hover:bg-purple-200 transition-colors"
+                            title={`Secondary: ${daySecondary?.fullName || 'Không có secondary'}`}
+                          >
+                            <span className="font-medium">S:</span>{" "}
+                            {daySecondary ? (
+                              <span className="hover:text-purple-600">
+                                {daySecondary.fullName}
+                              </span>
+                            ) : 'Không có secondary'}
+                          </motion.div>
+                        </Link>
                       </div>
                     )}
                   </div>
