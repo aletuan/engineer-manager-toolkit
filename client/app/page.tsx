@@ -14,6 +14,7 @@ import {
   Target,
 } from "lucide-react"
 import Link from "next/link"
+import { motion } from "framer-motion"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -695,19 +696,39 @@ export default function StandupCalendar() {
                 <Link
                   key={index}
                   href={`/members/${member.id}`}
-                  className={cn(
-                    "px-4 py-2 rounded-full text-sm font-medium transition-colors hover:opacity-80",
-                    isHostingToday
-                      ? "bg-primary text-white"
-                      : isPrimary
-                        ? "bg-gray-300 text-gray-800"
-                        : isSecondary
-                          ? "bg-gray-200 text-gray-800"
-                          : "bg-gray-100 text-gray-700",
-                  )}
+                  className="relative"
                 >
-                  {member.fullName}
-                  {rolesText}
+                  <motion.div
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className={cn(
+                      "px-4 py-2 rounded-full text-sm font-medium transition-colors",
+                      "flex items-center gap-2",
+                      isHostingToday
+                        ? "bg-primary text-white hover:bg-primary/90"
+                        : isPrimary
+                          ? "bg-blue-100 text-blue-800 hover:bg-blue-200"
+                          : isSecondary
+                            ? "bg-purple-100 text-purple-800 hover:bg-purple-200"
+                            : "bg-gray-100 text-gray-700 hover:bg-gray-200",
+                    )}
+                  >
+                    <span>{member.fullName}</span>
+                    {rolesText && (
+                      <span className={cn(
+                        "text-xs px-2 py-0.5 rounded-full",
+                        isHostingToday
+                          ? "bg-white/20"
+                          : isPrimary
+                            ? "bg-blue-200"
+                            : isSecondary
+                              ? "bg-purple-200"
+                              : "bg-gray-200"
+                      )}>
+                        {rolesText}
+                      </span>
+                    )}
+                  </motion.div>
                 </Link>
               )
             })}
