@@ -14,6 +14,7 @@ import {
   Target,
 } from "lucide-react"
 import Link from "next/link"
+import { motion } from "framer-motion"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -68,9 +69,19 @@ export default function StandupCalendar() {
       if (!activeTeam) return
       setIsLoading(true)
       try {
+        // Calculate date range based on current view
+        const today = new Date()
+        const startDate = activeTab === "timeline" 
+          ? format(today, "yyyy-MM-dd") // For timeline view, start from today
+          : format(startOfMonth(currentDate), "yyyy-MM-dd") // For calendar view, start from first day of month
+        
+        const endDate = activeTab === "timeline"
+          ? format(addDays(today, 14), "yyyy-MM-dd") // For timeline view, show next 14 days
+          : format(endOfMonth(currentDate), "yyyy-MM-dd") // For calendar view, end at last day of month
+
         const [members, hostings, rotations] = await Promise.all([
           fetchSquadMembers(activeTeam),
-          fetchStandupHosting(activeTeam),
+          fetchStandupHosting(activeTeam, startDate, endDate),
           fetchIncidentRotation(activeTeam)
         ])
         setSquadMembers(members)
@@ -83,7 +94,7 @@ export default function StandupCalendar() {
       }
     }
     fetchTeamData()
-  }, [activeTeam])
+  }, [activeTeam, activeTab, currentDate])
 
   // Generate days for the timeline view (next 14 days)
   useEffect(() => {
@@ -314,9 +325,17 @@ export default function StandupCalendar() {
                           return host ? (
                             <>
                               Host hôm nay:{" "}
-                              <Link href={`/members/${host.id}`} className="hover:text-primary hover:underline">
-                                {host.fullName}
-                              </Link>
+                              <motion.div
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                                className="inline-block"
+                              >
+                                <Link href={`/members/${host.id}`}>
+                                  <Badge variant="outline" className="bg-gray-200 text-gray-800 border-gray-300 hover:bg-gray-300 transition-colors">
+                                    {host.fullName}
+                                  </Badge>
+                                </Link>
+                              </motion.div>
                             </>
                           ) : "Không có host"
                         })()
@@ -341,22 +360,38 @@ export default function StandupCalendar() {
                     </div>
                     <div className="font-bold text-lg flex flex-wrap items-center gap-2">
                       <span>Trực Incident:</span>
-                      <Badge variant="outline" className="bg-gray-200 text-gray-800 border-gray-300">
-                        Primary:{" "}
+                      <motion.div
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                      >
                         {primary ? (
-                          <Link href={`/members/${primary.id}`} className="hover:text-primary">
-                            {primary.fullName}
+                          <Link href={`/members/${primary.id}`}>
+                            <Badge variant="outline" className="bg-gray-200 text-gray-800 border-gray-300 hover:bg-gray-300 transition-colors">
+                              Primary: {primary.fullName}
+                            </Badge>
                           </Link>
-                        ) : "Không có primary"}
-                      </Badge>
-                      <Badge variant="outline" className="bg-gray-200 text-gray-800 border-gray-300">
-                        Secondary:{" "}
+                        ) : (
+                          <Badge variant="outline" className="bg-gray-200 text-gray-800 border-gray-300">
+                            Primary: Không có primary
+                          </Badge>
+                        )}
+                      </motion.div>
+                      <motion.div
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                      >
                         {secondary ? (
-                          <Link href={`/members/${secondary.id}`} className="hover:text-primary">
-                            {secondary.fullName}
+                          <Link href={`/members/${secondary.id}`}>
+                            <Badge variant="outline" className="bg-gray-200 text-gray-800 border-gray-300 hover:bg-gray-300 transition-colors">
+                              Secondary: {secondary.fullName}
+                            </Badge>
                           </Link>
-                        ) : "Không có secondary"}
-                      </Badge>
+                        ) : (
+                          <Badge variant="outline" className="bg-gray-200 text-gray-800 border-gray-300">
+                            Secondary: Không có secondary
+                          </Badge>
+                        )}
+                      </motion.div>
                     </div>
                   </div>
                 </div>
@@ -446,17 +481,24 @@ export default function StandupCalendar() {
                           <TooltipProvider>
                             <Tooltip>
                               <TooltipTrigger asChild>
-                                <Badge
-                                  variant="outline"
-                                  className="bg-blue-100 text-blue-800 border-blue-200 font-medium"
-                                >
-                                  P:{" "}
-                                  {dayPrimary ? (
-                                    <Link href={`/members/${dayPrimary.id}`} className="hover:text-blue-600">
-                                      {dayPrimary.fullName}
-                                    </Link>
-                                  ) : "Không có primary"}
-                                </Badge>
+                                <Link href={dayPrimary ? `/members/${dayPrimary.id}` : "#"}>
+                                  <motion.div
+                                    whileHover={{ scale: 1.05 }}
+                                    whileTap={{ scale: 0.95 }}
+                                    className={cn(
+                                      "px-3 py-1 rounded-full text-sm font-medium transition-colors",
+                                      "flex items-center gap-2",
+                                      "bg-blue-100 text-blue-800 hover:bg-blue-200"
+                                    )}
+                                  >
+                                    <span className="font-medium">P:</span>{" "}
+                                    {dayPrimary ? (
+                                      <span className="hover:text-blue-600">
+                                        {dayPrimary.fullName}
+                                      </span>
+                                    ) : "Không có primary"}
+                                  </motion.div>
+                                </Link>
                               </TooltipTrigger>
                               <TooltipContent>
                                 <p>Primary Incident Responder</p>
@@ -467,14 +509,24 @@ export default function StandupCalendar() {
                           <TooltipProvider>
                             <Tooltip>
                               <TooltipTrigger asChild>
-                                <Badge variant="outline" className="bg-purple-100 text-purple-800 border-purple-200">
-                                  S:{" "}
-                                  {daySecondary ? (
-                                    <Link href={`/members/${daySecondary.id}`} className="hover:text-purple-600">
-                                      {daySecondary.fullName}
-                                    </Link>
-                                  ) : "Không có secondary"}
-                                </Badge>
+                                <Link href={daySecondary ? `/members/${daySecondary.id}` : "#"}>
+                                  <motion.div
+                                    whileHover={{ scale: 1.05 }}
+                                    whileTap={{ scale: 0.95 }}
+                                    className={cn(
+                                      "px-3 py-1 rounded-full text-sm font-medium transition-colors",
+                                      "flex items-center gap-2",
+                                      "bg-purple-100 text-purple-800 hover:bg-purple-200"
+                                    )}
+                                  >
+                                    <span className="font-medium">S:</span>{" "}
+                                    {daySecondary ? (
+                                      <span className="hover:text-purple-600">
+                                        {daySecondary.fullName}
+                                      </span>
+                                    ) : "Không có secondary"}
+                                  </motion.div>
+                                </Link>
                               </TooltipTrigger>
                               <TooltipContent>
                                 <p>Secondary Incident Responder</p>
@@ -560,42 +612,54 @@ export default function StandupCalendar() {
                     )}
 
                     {host && (
-                      <div className="mt-1 bg-green-100 rounded p-1 text-xs truncate text-green-800" title={`Host: ${host.fullName}`}>
-                        <span className="font-medium">H:</span>{" "}
-                        <Link 
-                          href={`/members/${host.id}`}
-                          className="hover:text-green-600 hover:underline"
+                      <Link href={`/members/${host.id}`}>
+                        <motion.div
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          className="mt-1 bg-green-100 rounded p-1 text-xs truncate text-green-800 hover:bg-green-200 transition-colors"
+                          title={`Host: ${host.fullName}`}
                         >
-                          {host.fullName}
-                        </Link>
-                      </div>
+                          <span className="font-medium">H:</span>{" "}
+                          <span className="hover:text-green-600">
+                            {host.fullName}
+                          </span>
+                        </motion.div>
+                      </Link>
                     )}
 
                     {/* Only show incident responders for Team Sonic */}
                     {currentTeam.hasIncidentRoster && (
                       <div className="mt-1 flex flex-col gap-1">
-                        <div className="bg-blue-100 rounded p-1 text-xs truncate text-blue-800" title={`Primary: ${dayPrimary?.fullName || 'Không có primary'}`}>
-                          <span className="font-medium">P:</span>{" "}
-                          {dayPrimary ? (
-                            <Link 
-                              href={`/members/${dayPrimary.id}`}
-                              className="hover:text-blue-600 hover:underline"
-                            >
-                              {dayPrimary.fullName}
-                            </Link>
-                          ) : 'Không có primary'}
-                        </div>
-                        <div className="bg-purple-100 rounded p-1 text-xs truncate text-purple-800" title={`Secondary: ${daySecondary?.fullName || 'Không có secondary'}`}>
-                          <span className="font-medium">S:</span>{" "}
-                          {daySecondary ? (
-                            <Link 
-                              href={`/members/${daySecondary.id}`}
-                              className="hover:text-purple-600 hover:underline"
-                            >
-                              {daySecondary.fullName}
-                            </Link>
-                          ) : 'Không có secondary'}
-                        </div>
+                        <Link href={dayPrimary ? `/members/${dayPrimary.id}` : "#"}>
+                          <motion.div
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            className="bg-blue-100 rounded p-1 text-xs truncate text-blue-800 hover:bg-blue-200 transition-colors"
+                            title={`Primary: ${dayPrimary?.fullName || 'Không có primary'}`}
+                          >
+                            <span className="font-medium">P:</span>{" "}
+                            {dayPrimary ? (
+                              <span className="hover:text-blue-600">
+                                {dayPrimary.fullName}
+                              </span>
+                            ) : 'Không có primary'}
+                          </motion.div>
+                        </Link>
+                        <Link href={daySecondary ? `/members/${daySecondary.id}` : "#"}>
+                          <motion.div
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            className="bg-purple-100 rounded p-1 text-xs truncate text-purple-800 hover:bg-purple-200 transition-colors"
+                            title={`Secondary: ${daySecondary?.fullName || 'Không có secondary'}`}
+                          >
+                            <span className="font-medium">S:</span>{" "}
+                            {daySecondary ? (
+                              <span className="hover:text-purple-600">
+                                {daySecondary.fullName}
+                              </span>
+                            ) : 'Không có secondary'}
+                          </motion.div>
+                        </Link>
                       </div>
                     )}
                   </div>
@@ -627,14 +691,15 @@ export default function StandupCalendar() {
                         {holidayName ? (
                           <div className="text-xs text-red-500">{holidayName}</div>
                         ) : host ? (
-                          <div className="font-medium mb-2 bg-green-100 text-green-800 rounded-full px-2 py-1">
-                            <Link 
-                              href={`/members/${host.id}`}
-                              className="hover:text-green-600 hover:underline"
+                          <Link href={`/members/${host.id}`}>
+                            <motion.div
+                              whileHover={{ scale: 1.05 }}
+                              whileTap={{ scale: 0.95 }}
+                              className="font-medium mb-2 bg-green-100 text-green-800 rounded-full px-2 py-1 hover:bg-green-200 transition-colors"
                             >
                               {host.fullName}
-                            </Link>
-                          </div>
+                            </motion.div>
+                          </Link>
                         ) : (
                           <div className="text-gray-500 text-sm mb-2">Không có standup</div>
                         )}
@@ -642,28 +707,34 @@ export default function StandupCalendar() {
                         {/* Only show incident responders for Team Sonic */}
                         {currentTeam.hasIncidentRoster && (
                           <div className="text-xs flex flex-col gap-1 mt-2">
-                            <Badge variant="outline" className="bg-blue-100 text-blue-800 border-blue-200 text-xs">
-                              P:{" "}
-                              {dayPrimary ? (
-                                <Link 
-                                  href={`/members/${dayPrimary.id}`}
-                                  className="hover:text-blue-600"
-                                >
-                                  {dayPrimary.fullName}
-                                </Link>
-                              ) : 'Không có primary'}
-                            </Badge>
-                            <Badge variant="outline" className="bg-purple-100 text-purple-800 border-purple-200 text-xs">
-                              S:{" "}
-                              {daySecondary ? (
-                                <Link 
-                                  href={`/members/${daySecondary.id}`}
-                                  className="hover:text-purple-600"
-                                >
-                                  {daySecondary.fullName}
-                                </Link>
-                              ) : 'Không có secondary'}
-                            </Badge>
+                            <Link href={dayPrimary ? `/members/${dayPrimary.id}` : "#"}>
+                              <motion.div
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                                className="bg-blue-100 text-blue-800 rounded-full px-2 py-1 hover:bg-blue-200 transition-colors"
+                              >
+                                <span className="font-medium">P:</span>{" "}
+                                {dayPrimary ? (
+                                  <span className="hover:text-blue-600">
+                                    {dayPrimary.fullName}
+                                  </span>
+                                ) : 'Không có primary'}
+                              </motion.div>
+                            </Link>
+                            <Link href={daySecondary ? `/members/${daySecondary.id}` : "#"}>
+                              <motion.div
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                                className="bg-purple-100 text-purple-800 rounded-full px-2 py-1 hover:bg-purple-200 transition-colors"
+                              >
+                                <span className="font-medium">S:</span>{" "}
+                                {daySecondary ? (
+                                  <span className="hover:text-purple-600">
+                                    {daySecondary.fullName}
+                                  </span>
+                                ) : 'Không có secondary'}
+                              </motion.div>
+                            </Link>
                           </div>
                         )}
                       </CardContent>
@@ -695,19 +766,39 @@ export default function StandupCalendar() {
                 <Link
                   key={index}
                   href={`/members/${member.id}`}
-                  className={cn(
-                    "px-4 py-2 rounded-full text-sm font-medium transition-colors hover:opacity-80",
-                    isHostingToday
-                      ? "bg-primary text-white"
-                      : isPrimary
-                        ? "bg-gray-300 text-gray-800"
-                        : isSecondary
-                          ? "bg-gray-200 text-gray-800"
-                          : "bg-gray-100 text-gray-700",
-                  )}
+                  className="relative"
                 >
-                  {member.fullName}
-                  {rolesText}
+                  <motion.div
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className={cn(
+                      "px-4 py-2 rounded-full text-sm font-medium transition-colors",
+                      "flex items-center gap-2",
+                      isHostingToday
+                        ? "bg-primary text-white hover:bg-primary/90"
+                        : isPrimary
+                          ? "bg-blue-100 text-blue-800 hover:bg-blue-200"
+                          : isSecondary
+                            ? "bg-purple-100 text-purple-800 hover:bg-purple-200"
+                            : "bg-gray-100 text-gray-700 hover:bg-gray-200",
+                    )}
+                  >
+                    <span>{member.fullName}</span>
+                    {rolesText && (
+                      <span className={cn(
+                        "text-xs px-2 py-0.5 rounded-full",
+                        isHostingToday
+                          ? "bg-white/20"
+                          : isPrimary
+                            ? "bg-blue-200"
+                            : isSecondary
+                              ? "bg-purple-200"
+                              : "bg-gray-200"
+                      )}>
+                        {rolesText}
+                      </span>
+                    )}
+                  </motion.div>
                 </Link>
               )
             })}
