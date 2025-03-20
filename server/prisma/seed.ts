@@ -350,179 +350,492 @@ async function main() {
   // Create tasks
   const task1 = await prisma.task.create({
     data: {
-      title: "Implement new authentication flow",
-      description: "Implement OAuth2 authentication flow with Google and Microsoft accounts",
-      status: TaskStatus.IN_PROGRESS,
-      priority: TaskPriority.HIGH,
-      progress: 60,
+      title: 'Implement user authentication',
+      description: 'Set up JWT authentication with refresh tokens',
+      status: 'IN_PROGRESS',
+      priority: 'HIGH',
+      createdAt: new Date('2025-02-01'),
+      updatedAt: new Date('2025-02-15'),
+      dueDate: new Date('2025-03-15'),
+      featureId: 'AUTH-001',
+      progress: 75.5,
       points: 8,
-      dueDate: addDays(new Date(), 7),
-      featureId: "AUTH-001",
-      createdById: troyMembers[4].squadMember?.id || '',
-      assignedToId: troyMembers[0].squadMember?.id || '',
-      tags: ['authentication', 'oauth'],
+      assignedToId: troyMembers[0].squadMember!.id,
+      createdById: sonicMembers[0].squadMember!.id,
+      tags: ['authentication', 'security'],
       attachments: {},
     },
   });
 
-  const task2 = await prisma.task.create({
-    data: {
-      title: "Optimize database queries",
-      description: "Review and optimize slow database queries in the reporting module",
-      status: TaskStatus.TODO,
-      priority: TaskPriority.MEDIUM,
-      progress: 0,
-      points: 5,
-      dueDate: addDays(new Date(), 14),
-      featureId: "PERF-002",
-      createdById: troyMembers[4].squadMember?.id || '',
-      assignedToId: troyMembers[1].squadMember?.id || '',
-      tags: ['performance', 'database'],
-      attachments: {},
-    },
-  });
-
-  const task3 = await prisma.task.create({
-    data: {
-      title: "Fix production deployment issues",
-      description: "Investigate and fix deployment failures in production environment",
-      status: TaskStatus.DONE,
-      priority: TaskPriority.HIGH,
-      progress: 100,
-      points: 3,
-      dueDate: addDays(new Date(), -1),
-      featureId: "OPS-003",
-      createdById: sonicMembers[4].squadMember?.id || '',
-      assignedToId: sonicMembers[0].squadMember?.id || '',
-      tags: ['devops', 'deployment'],
-      attachments: {},
-    },
-  });
-
-  // Create task assignees
-  await prisma.taskAssignee.createMany({
-    data: [
-      {
-        taskId: task1.id,
-        memberId: troyMembers[0].squadMember?.id || '',
-        role: AssigneeRole.PRIMARY,
-      },
-      {
-        taskId: task1.id,
-        memberId: troyMembers[2].squadMember?.id || '',
-        role: AssigneeRole.SECONDARY,
-      },
-      {
-        taskId: task2.id,
-        memberId: troyMembers[1].squadMember?.id || '',
-        role: AssigneeRole.PRIMARY,
-      },
-      {
-        taskId: task2.id,
-        memberId: troyMembers[3].squadMember?.id || '',
-        role: AssigneeRole.SECONDARY,
-      },
-      {
-        taskId: task3.id,
-        memberId: sonicMembers[0].squadMember?.id || '',
-        role: AssigneeRole.PRIMARY,
-      },
-      {
-        taskId: task3.id,
-        memberId: sonicMembers[4].squadMember?.id || '',
-        role: AssigneeRole.SECONDARY,
-      },
-    ],
-  });
-
-  // Create task notes
-  await prisma.taskNote.createMany({
-    data: [
-      {
-        taskId: task1.id,
-        content: "Initial design document has been approved. Starting implementation phase.",
-        authorId: troyMembers[4].squadMember?.id || '',
-      },
-      {
-        taskId: task1.id,
-        content: "Google OAuth integration completed. Moving on to Microsoft OAuth.",
-        authorId: troyMembers[0].squadMember?.id || '',
-      },
-      {
-        taskId: task1.id,
-        content: "Security review needed before proceeding with Microsoft integration.",
-        authorId: troyMembers[2].squadMember?.id || '',
-      },
-      {
-        taskId: task2.id,
-        content: "Identified 5 critical queries that need optimization.",
-        authorId: troyMembers[1].squadMember?.id || '',
-      },
-      {
-        taskId: task2.id,
-        content: "Added indexes to improve query performance. Testing in progress.",
-        authorId: troyMembers[1].squadMember?.id || '',
-      },
-      {
-        taskId: task3.id,
-        content: "Root cause identified: misconfigured environment variables.",
-        authorId: sonicMembers[0].squadMember?.id || '',
-      },
-      {
-        taskId: task3.id,
-        content: "Fixed environment configuration and verified deployment success.",
-        authorId: sonicMembers[0].squadMember?.id || '',
-      },
-      {
-        taskId: task3.id,
-        content: "Added automated environment validation to prevent similar issues.",
-        authorId: sonicMembers[4].squadMember?.id || '',
-      },
-    ],
-  });
-
-  // Create task dependencies
-  await prisma.taskDependency.createMany({
-    data: [
-      {
-        taskId: task1.id,
-        dependentTaskId: task2.id,
-        dependencyType: DependencyType.BLOCKS,
-      },
-      {
-        taskId: task2.id,
-        dependentTaskId: task3.id,
-        dependencyType: DependencyType.RELATES_TO,
-      },
-      {
-        taskId: task3.id,
-        dependentTaskId: task1.id,
-        dependencyType: DependencyType.BLOCKED_BY,
-      },
-    ],
-  });
-
-  // Create task stakeholder relationships
+  // Add assignees for task1 (AUTH-001)
   await Promise.all([
-    prisma.taskStakeholder.create({
+    prisma.taskAssignee.create({
       data: {
         taskId: task1.id,
-        stakeholderId: stakeholder1.id,
+        memberId: troyMembers[0].squadMember!.id,
+        role: AssigneeRole.PRIMARY,
+        createdAt: new Date('2025-02-01'),
       },
     }),
-    prisma.taskStakeholder.create({
+    prisma.taskAssignee.create({
       data: {
-        taskId: task2.id,
-        stakeholderId: stakeholder2.id,
-      },
-    }),
-    prisma.taskStakeholder.create({
-      data: {
-        taskId: task3.id,
-        stakeholderId: stakeholder3.id,
+        taskId: task1.id,
+        memberId: troyMembers[1].squadMember!.id,
+        role: AssigneeRole.SECONDARY,
+        createdAt: new Date('2025-02-01'),
       },
     }),
   ]);
+
+  const task2 = await prisma.task.create({
+    data: {
+      title: 'Design database schema',
+      description: 'Create ERD and implement database migrations',
+      status: 'IN_PROGRESS',
+      priority: 'MEDIUM',
+      createdAt: new Date('2025-02-15'),
+      updatedAt: new Date('2025-03-01'),
+      dueDate: new Date('2025-03-30'),
+      featureId: 'DB-001',
+      progress: 85.5,
+      points: 5,
+      assignedToId: sonicMembers[0].squadMember!.id,
+      createdById: troyMembers[0].squadMember!.id,
+      tags: ['database', 'design'],
+      attachments: {},
+    },
+  });
+
+  // Add assignees for task2 (DB-001)
+  await Promise.all([
+    prisma.taskAssignee.create({
+      data: {
+        taskId: task2.id,
+        memberId: sonicMembers[0].squadMember!.id,
+        role: AssigneeRole.PRIMARY,
+        createdAt: new Date('2025-02-15'),
+      },
+    }),
+    prisma.taskAssignee.create({
+      data: {
+        taskId: task2.id,
+        memberId: sonicMembers[1].squadMember!.id,
+        role: AssigneeRole.SECONDARY,
+        createdAt: new Date('2025-02-15'),
+      },
+    }),
+  ]);
+
+  const task3 = await prisma.task.create({
+    data: {
+      title: 'Implement Document Upload API',
+      description: 'Create REST API endpoints for document upload and processing',
+      status: 'IN_PROGRESS',
+      priority: 'HIGH',
+      createdAt: new Date('2025-03-01'),
+      updatedAt: new Date('2025-03-15'),
+      dueDate: new Date('2025-04-15'),
+      featureId: 'EDMS-001',
+      progress: 65.8,
+      points: 13,
+      assignedToId: troyMembers[1].squadMember!.id,
+      createdById: troyMembers[0].squadMember!.id,
+      tags: ['api', 'document-management'],
+      attachments: {},
+    },
+  });
+
+  const task4 = await prisma.task.create({
+    data: {
+      title: 'Implement Fraud Detection Rules',
+      description: 'Develop and implement new fraud detection rules for transaction monitoring',
+      status: 'IN_PROGRESS',
+      priority: 'HIGH',
+      createdAt: new Date('2025-03-15'),
+      updatedAt: new Date('2025-03-30'),
+      dueDate: new Date('2025-04-30'),
+      featureId: 'ISSO-001',
+      progress: 92.3,
+      points: 21,
+      assignedToId: sonicMembers[1].squadMember!.id,
+      createdById: sonicMembers[0].squadMember!.id,
+      tags: ['security', 'fraud-detection'],
+      attachments: {},
+    },
+  });
+
+  const task5 = await prisma.task.create({
+    data: {
+      title: 'Customer Onboarding Flow Enhancement',
+      description: 'Improve the customer onboarding experience with new UI/UX design',
+      status: 'IN_PROGRESS',
+      priority: 'MEDIUM',
+      createdAt: new Date('2025-04-01'),
+      updatedAt: new Date('2025-04-15'),
+      dueDate: new Date('2025-05-15'),
+      featureId: 'ECOM-001',
+      progress: 55.5,
+      points: 8,
+      assignedToId: troyMembers[2].squadMember!.id,
+      createdById: troyMembers[0].squadMember!.id,
+      tags: ['ui-ux', 'customer-experience'],
+      attachments: {},
+    },
+  });
+
+  // Create task assignees for new tasks
+  await Promise.all([
+    prisma.taskAssignee.create({
+      data: {
+        taskId: task3.id,
+        memberId: troyMembers[1].squadMember!.id,
+        role: AssigneeRole.PRIMARY,
+        createdAt: new Date('2025-03-01'),
+      },
+    }),
+    prisma.taskAssignee.create({
+      data: {
+        taskId: task3.id,
+        memberId: troyMembers[2].squadMember!.id,
+        role: AssigneeRole.SECONDARY,
+        createdAt: new Date('2025-03-01'),
+      },
+    }),
+    prisma.taskAssignee.create({
+      data: {
+        taskId: task4.id,
+        memberId: sonicMembers[1].squadMember!.id,
+        role: AssigneeRole.PRIMARY,
+        createdAt: new Date('2025-03-15'),
+      },
+    }),
+    prisma.taskAssignee.create({
+      data: {
+        taskId: task4.id,
+        memberId: sonicMembers[2].squadMember!.id,
+        role: AssigneeRole.SECONDARY,
+        createdAt: new Date('2025-03-15'),
+      },
+    }),
+    prisma.taskAssignee.create({
+      data: {
+        taskId: task5.id,
+        memberId: troyMembers[2].squadMember!.id,
+        role: AssigneeRole.PRIMARY,
+        createdAt: new Date('2025-04-01'),
+      },
+    }),
+  ]);
+
+  // Create task stakeholder relationships
+  await Promise.all([
+    // Task 1 (AUTH-001) stakeholders
+    prisma.taskStakeholder.create({
+      data: {
+        taskId: task1.id,
+        stakeholderId: stakeholder2.id, // ISSO for security
+      },
+    }),
+    prisma.taskStakeholder.create({
+      data: {
+        taskId: task1.id,
+        stakeholderId: stakeholder6.id, // IB for authentication
+      },
+    }),
+
+    // Task 2 (DB-001) stakeholders
+    prisma.taskStakeholder.create({
+      data: {
+        taskId: task2.id,
+        stakeholderId: stakeholder1.id, // EDMS for document management
+      },
+    }),
+    prisma.taskStakeholder.create({
+      data: {
+        taskId: task2.id,
+        stakeholderId: stakeholder8.id, // nabOne for internal platform
+      },
+    }),
+
+    // Task 3 (EDMS-001) stakeholders
+    prisma.taskStakeholder.create({
+      data: {
+        taskId: task3.id,
+        stakeholderId: stakeholder1.id, // EDMS primary stakeholder
+      },
+    }),
+    prisma.taskStakeholder.create({
+      data: {
+        taskId: task3.id,
+        stakeholderId: stakeholder5.id, // BEB for business documents
+      },
+    }),
+    prisma.taskStakeholder.create({
+      data: {
+        taskId: task3.id,
+        stakeholderId: stakeholder4.id, // PEB for personal documents
+      },
+    }),
+
+    // Task 4 (ISSO-001) stakeholders
+    prisma.taskStakeholder.create({
+      data: {
+        taskId: task4.id,
+        stakeholderId: stakeholder2.id, // ISSO primary stakeholder
+      },
+    }),
+    prisma.taskStakeholder.create({
+      data: {
+        taskId: task4.id,
+        stakeholderId: stakeholder6.id, // IB for online banking security
+      },
+    }),
+    prisma.taskStakeholder.create({
+      data: {
+        taskId: task4.id,
+        stakeholderId: stakeholder7.id, // nabConnect for business platform security
+      },
+    }),
+
+    // Task 5 (ECOM-001) stakeholders
+    prisma.taskStakeholder.create({
+      data: {
+        taskId: task5.id,
+        stakeholderId: stakeholder3.id, // ECOM primary stakeholder
+      },
+    }),
+    prisma.taskStakeholder.create({
+      data: {
+        taskId: task5.id,
+        stakeholderId: stakeholder4.id, // PEB for personal banking onboarding
+      },
+    }),
+    prisma.taskStakeholder.create({
+      data: {
+        taskId: task5.id,
+        stakeholderId: stakeholder5.id, // BEB for business banking onboarding
+      },
+    }),
+  ]);
+
+  // Create task notes for new tasks
+  await Promise.all([
+    prisma.taskNote.create({
+      data: {
+        content: 'API should support multiple file formats including PDF, DOCX, and images',
+        taskId: task3.id,
+        authorId: troyMembers[1].squadMember!.id,
+        createdAt: new Date(),
+      },
+    }),
+    prisma.taskNote.create({
+      data: {
+        content: 'New rules should focus on transaction amount patterns and frequency',
+        taskId: task4.id,
+        authorId: sonicMembers[1].squadMember!.id,
+        createdAt: new Date(),
+      },
+    }),
+    prisma.taskNote.create({
+      data: {
+        content: 'Focus on reducing the number of steps in the onboarding process',
+        taskId: task5.id,
+        authorId: troyMembers[2].squadMember!.id,
+        createdAt: new Date(),
+      },
+    }),
+  ]);
+
+  // Create task dependencies for new tasks
+  await Promise.all([
+    prisma.taskDependency.create({
+      data: {
+        taskId: task3.id,
+        dependentTaskId: task1.id,
+        dependencyType: DependencyType.BLOCKS,
+        createdAt: new Date(),
+      },
+    }),
+    prisma.taskDependency.create({
+      data: {
+        taskId: task4.id,
+        dependentTaskId: task2.id,
+        dependencyType: DependencyType.RELATES_TO,
+        createdAt: new Date(),
+      },
+    }),
+  ]);
+
+  // Create roles
+  const role1 = await prisma.role.create({
+    data: {
+      name: 'Developer',
+      description: 'Software developer role',
+      permissions: ['read', 'write', 'execute'],
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+  });
+
+  // Create role assignments
+  await prisma.roleAssignment.create({
+    data: {
+      squadId: troySquad.id,
+      memberId: troyMembers[0].squadMember!.id,
+      roleId: role1.id,
+      assignedBy: 'system',
+      createdAt: new Date(),
+    },
+  });
+
+  // Create incident rotations for Sonic squad (last 3 months to 1 month in future)
+  const startDateIncident = new Date();
+  startDateIncident.setMonth(startDateIncident.getMonth() - 3);
+  startDateIncident.setDate(1); // Start from the first day of the month
+  let currentDateIncident = startOfDay(startDateIncident);
+
+  const futureDate = new Date();
+  futureDate.setMonth(futureDate.getMonth() + 1); // One month in the future
+
+  // Get Sonic members for rotation
+  const sonicMemberIds = sonicMembers.map(member => member.squadMember!.id);
+  let primaryIndex = 0;
+  let secondaryIndex = 1;
+
+  // Create incident rotations from past to future
+  while (currentDateIncident < futureDate) {
+    // Get sprint information for current date
+    const { startDate: sprintStartDate, endDate: sprintEndDate, sprintNumber } = getSprintDates(currentDateIncident);
+
+    await prisma.incidentRotation.create({
+      data: {
+        squadId: sonicSquad.id,
+        startDate: sprintStartDate,
+        endDate: sprintEndDate,
+        sprintNumber,
+        primaryMemberId: sonicMemberIds[primaryIndex],
+        secondaryMemberId: sonicMemberIds[secondaryIndex],
+      },
+    });
+
+    // Rotate members for next sprint
+    primaryIndex = (primaryIndex + 2) % sonicMemberIds.length;
+    secondaryIndex = (secondaryIndex + 2) % sonicMemberIds.length;
+    if (secondaryIndex === primaryIndex) {
+      secondaryIndex = (secondaryIndex + 1) % sonicMemberIds.length;
+    }
+
+    // Move to next sprint
+    currentDateIncident = new Date(sprintEndDate);
+    currentDateIncident.setDate(currentDateIncident.getDate() + 1);
+  }
+
+  // Delete all existing standup hosting schedules
+  await prisma.standupHosting.deleteMany();
+
+  // Find all Troy members by PID
+  const troyMemberPids = ['22831955', '22831433', '22832742', '40010912', '22834499'];
+  const troyStandupMembers = await Promise.all(
+    troyMemberPids.map(pid => 
+      prisma.squadMember.findFirst({
+        where: { pid },
+        include: { squad: true }
+      })
+    )
+  );
+
+  // Filter out any null values and ensure we have valid members
+  const validTroyMembers = troyStandupMembers.filter((member): member is NonNullable<typeof member> => 
+    member !== null && member.squad !== null
+  );
+
+  if (validTroyMembers.length > 0) {
+    const troySquadId = validTroyMembers[0].squad.id;
+    const startDate = new Date('2025-03-24');
+    const endDate = new Date('2025-12-31');
+
+    // Generate all dates between start and end date
+    const dates: Date[] = [];
+    let currentDate = new Date(startDate);
+    while (currentDate <= endDate) {
+      // Only add weekdays (Monday to Friday)
+      const dayOfWeek = currentDate.getDay();
+      if (dayOfWeek >= 1 && dayOfWeek <= 5) {
+        dates.push(new Date(currentDate));
+      }
+      currentDate.setDate(currentDate.getDate() + 1);
+    }
+
+    // Create standup hosting schedule
+    for (let i = 0; i < dates.length; i++) {
+      const date = dates[i];
+      // Calculate which member should host based on the week number
+      const weekNumber = Math.floor(i / 5); // 5 days per week
+      const memberIndex = weekNumber % validTroyMembers.length;
+      const member = validTroyMembers[memberIndex];
+
+      await prisma.standupHosting.create({
+        data: {
+          squadId: troySquadId,
+          memberId: member.id,
+          date,
+          status: 'SCHEDULED'
+        }
+      });
+    }
+  }
+
+  // Find Sonic members by PID
+  const sonicMemberPids = ['22842810', '22831174', '40010013', '22833707', '22837549'];
+  const sonicStandupMembers = await Promise.all(
+    sonicMemberPids.map(pid => 
+      prisma.squadMember.findFirst({
+        where: { pid },
+        include: { squad: true }
+      })
+    )
+  );
+
+  // Filter out any null values and ensure we have valid members
+  const validSonicMembers = sonicStandupMembers.filter((member): member is NonNullable<typeof member> => 
+    member !== null && member.squad !== null
+  );
+
+  if (validSonicMembers.length > 0) {
+    const sonicSquadId = validSonicMembers[0].squad.id;
+    const startDate = new Date('2025-03-24');
+    const endDate = new Date('2025-12-31');
+
+    // Generate all dates between start and end date
+    const dates: Date[] = [];
+    let currentDate = new Date(startDate);
+    while (currentDate <= endDate) {
+      // Only add weekdays (Monday to Friday)
+      const dayOfWeek = currentDate.getDay();
+      if (dayOfWeek >= 1 && dayOfWeek <= 5) {
+        dates.push(new Date(currentDate));
+      }
+      currentDate.setDate(currentDate.getDate() + 1);
+    }
+
+    // Create standup hosting schedule
+    for (let i = 0; i < dates.length; i++) {
+      const date = dates[i];
+      // Calculate which member should host based on the week number
+      const weekNumber = Math.floor(i / 5); // 5 days per week
+      const memberIndex = weekNumber % validSonicMembers.length;
+      const member = validSonicMembers[memberIndex];
+
+      await prisma.standupHosting.create({
+        data: {
+          squadId: sonicSquadId,
+          memberId: member.id,
+          date,
+          status: 'SCHEDULED'
+        }
+      });
+    }
+  }
 
   // Create sprint reports
   await prisma.sprintReport.create({
@@ -642,48 +955,44 @@ async function main() {
   }
 
   // Create standup hosting schedule for Troy
-  if (troyMembers.length > 0) {
-    const troySquadId = troyMembers[0].squadMember?.squadId || '';
+  if (validTroyMembers.length > 0) {
+    const troySquadId = validTroyMembers[0].squad.id;
     for (let i = 0; i < standupDates.length; i++) {
       const date = standupDates[i];
       // Calculate which member should host based on the week number
       const weekNumber = Math.floor(i / 5); // 5 days per week
-      const memberIndex = weekNumber % troyMembers.length;
-      const member = troyMembers[memberIndex];
+      const memberIndex = weekNumber % validTroyMembers.length;
+      const member = validTroyMembers[memberIndex];
 
-      if (member.squadMember?.id) {
-        await prisma.standupHosting.create({
-          data: {
-            squadId: troySquadId,
-            memberId: member.squadMember.id,
-            date,
-            status: 'SCHEDULED'
-          }
-        });
-      }
+      await prisma.standupHosting.create({
+        data: {
+          squadId: troySquadId,
+          memberId: member.id,
+          date,
+          status: 'SCHEDULED'
+        }
+      });
     }
   }
 
   // Create standup hosting schedule for Sonic
-  if (sonicMembers.length > 0) {
-    const sonicSquadId = sonicMembers[0].squadMember?.squadId || '';
+  if (validSonicMembers.length > 0) {
+    const sonicSquadId = validSonicMembers[0].squad.id;
     for (let i = 0; i < standupDates.length; i++) {
       const date = standupDates[i];
       // Calculate which member should host based on the week number
       const weekNumber = Math.floor(i / 5); // 5 days per week
-      const memberIndex = weekNumber % sonicMembers.length;
-      const member = sonicMembers[memberIndex];
+      const memberIndex = weekNumber % validSonicMembers.length;
+      const member = validSonicMembers[memberIndex];
 
-      if (member.squadMember?.id) {
-        await prisma.standupHosting.create({
-          data: {
-            squadId: sonicSquadId,
-            memberId: member.squadMember.id,
-            date,
-            status: 'SCHEDULED'
-          }
-        });
-      }
+      await prisma.standupHosting.create({
+        data: {
+          squadId: sonicSquadId,
+          memberId: member.id,
+          date,
+          status: 'SCHEDULED'
+        }
+      });
     }
   }
 
