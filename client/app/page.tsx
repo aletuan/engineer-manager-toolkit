@@ -447,17 +447,24 @@ export default function StandupCalendar() {
                           <TooltipProvider>
                             <Tooltip>
                               <TooltipTrigger asChild>
-                                <Badge
-                                  variant="outline"
-                                  className="bg-blue-100 text-blue-800 border-blue-200 font-medium"
-                                >
-                                  P:{" "}
-                                  {dayPrimary ? (
-                                    <Link href={`/members/${dayPrimary.id}`} className="hover:text-blue-600">
-                                      {dayPrimary.fullName}
-                                    </Link>
-                                  ) : "Không có primary"}
-                                </Badge>
+                                <Link href={dayPrimary ? `/members/${dayPrimary.id}` : "#"}>
+                                  <motion.div
+                                    whileHover={{ scale: 1.05 }}
+                                    whileTap={{ scale: 0.95 }}
+                                    className={cn(
+                                      "px-3 py-1 rounded-full text-sm font-medium transition-colors",
+                                      "flex items-center gap-2",
+                                      "bg-blue-100 text-blue-800 hover:bg-blue-200"
+                                    )}
+                                  >
+                                    <span className="font-medium">P:</span>{" "}
+                                    {dayPrimary ? (
+                                      <span className="hover:text-blue-600">
+                                        {dayPrimary.fullName}
+                                      </span>
+                                    ) : "Không có primary"}
+                                  </motion.div>
+                                </Link>
                               </TooltipTrigger>
                               <TooltipContent>
                                 <p>Primary Incident Responder</p>
@@ -468,14 +475,24 @@ export default function StandupCalendar() {
                           <TooltipProvider>
                             <Tooltip>
                               <TooltipTrigger asChild>
-                                <Badge variant="outline" className="bg-purple-100 text-purple-800 border-purple-200">
-                                  S:{" "}
-                                  {daySecondary ? (
-                                    <Link href={`/members/${daySecondary.id}`} className="hover:text-purple-600">
-                                      {daySecondary.fullName}
-                                    </Link>
-                                  ) : "Không có secondary"}
-                                </Badge>
+                                <Link href={daySecondary ? `/members/${daySecondary.id}` : "#"}>
+                                  <motion.div
+                                    whileHover={{ scale: 1.05 }}
+                                    whileTap={{ scale: 0.95 }}
+                                    className={cn(
+                                      "px-3 py-1 rounded-full text-sm font-medium transition-colors",
+                                      "flex items-center gap-2",
+                                      "bg-purple-100 text-purple-800 hover:bg-purple-200"
+                                    )}
+                                  >
+                                    <span className="font-medium">S:</span>{" "}
+                                    {daySecondary ? (
+                                      <span className="hover:text-purple-600">
+                                        {daySecondary.fullName}
+                                      </span>
+                                    ) : "Không có secondary"}
+                                  </motion.div>
+                                </Link>
                               </TooltipTrigger>
                               <TooltipContent>
                                 <p>Secondary Incident Responder</p>
