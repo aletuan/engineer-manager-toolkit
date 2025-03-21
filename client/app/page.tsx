@@ -29,6 +29,9 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { StandupHeader } from "@/components/standup/header"
 import { WeekHosts } from "@/components/standup/week-hosts"
 import { TeamMembers } from "@/components/standup/team-members"
+import { TimelineView } from "@/components/standup/timeline-view"
+import { isHostingDay, getHolidayName, getWeekDays } from "@/lib/utils/date-helpers"
+import { getSprintDates, isSprintStart } from "@/lib/utils/sprint-helpers"
 
 export default function StandupCalendar() {
   const [currentDate, setCurrentDate] = useState<Date>(new Date())
@@ -107,23 +110,6 @@ export default function StandupCalendar() {
     setVisibleDays(days)
   }, [])
 
-  // Check if a date is a hosting day (not weekend, not holiday)
-  const isHostingDay = (date: Date) => {
-    if (isWeekend(date)) return false
-
-    const dateString = format(date, "yyyy-MM-dd")
-    if (vietnameseHolidays.some((holiday) => holiday.date === dateString)) return false
-
-    return true
-  }
-
-  // Get holiday name if the date is a holiday
-  const getHolidayName = (date: Date) => {
-    const dateString = format(date, "yyyy-MM-dd")
-    const holiday = vietnameseHolidays.find((h) => h.date === dateString)
-    return holiday ? holiday.name : null
-  }
-
   // Get host for a specific date
   const getHostForDateFromAPI = (date: Date): SquadMember | null => {
     const hosting = standupHostings.find(h => format(new Date(h.date), "yyyy-MM-dd") === format(date, "yyyy-MM-dd"))
@@ -179,57 +165,6 @@ export default function StandupCalendar() {
     setCurrentDate(nextMonth)
   }
 
-  // Get days for the week view (starting from Monday)
-  const getWeekDays = () => {
-    const today = new Date()
-    const dayOfWeek = getDay(today)
-    const startDay = addDays(today, dayOfWeek === 0 ? -6 : 1 - dayOfWeek) // Start from Monday
-
-    return Array.from({ length: 5 }, (_, i) => addDays(startDay, i))
-  }
-
-  // Check if a date is the start of a sprint
-  const isSprintStart = (date: Date) => {
-    // Sprint starts on Wednesday (day 3)
-    if (getDay(date) !== 3) return false;
-
-    // Get sprint dates for this date
-    const { start } = getSprintDates(date);
-    
-    // Check if this date is the start date of the sprint
-    return isSameDay(date, start);
-  }
-
-  // Get sprint dates (start and end) for a given date
-  const getSprintDates = (date: Date) => {
-    // Find the start of the financial year
-    const financialYearStart = new Date(date.getFullYear(), 9, 1); // Month is 0-based, so 9 is October
-    if (date < financialYearStart) {
-      financialYearStart.setFullYear(financialYearStart.getFullYear() - 1);
-    }
-
-    // Find the first Wednesday after financial year start
-    let firstSprintStart = new Date(financialYearStart);
-    while (getDay(firstSprintStart) !== 3) { // 3 is Wednesday
-      firstSprintStart.setDate(firstSprintStart.getDate() + 1);
-    }
-
-    // Calculate days since first sprint start
-    const daysSinceStart = Math.floor((date.getTime() - firstSprintStart.getTime()) / (1000 * 60 * 60 * 24));
-    
-    // Calculate sprint number and days into current sprint
-    const sprintNumber = Math.floor(daysSinceStart / 14) + 1;
-    const daysToAdd = (sprintNumber - 1) * 14;
-
-    // Calculate current sprint start and end dates
-    const sprintStart = new Date(firstSprintStart);
-    sprintStart.setDate(firstSprintStart.getDate() + daysToAdd);
-    const sprintEnd = new Date(sprintStart);
-    sprintEnd.setDate(sprintStart.getDate() + 13);
-
-    return { start: sprintStart, end: sprintEnd, sprintNumber }
-  }
-
   const today = startOfDay(new Date())
   const monthDays = getDaysInMonth(currentDate)
   const weekDays = getWeekDays()
@@ -261,135 +196,12 @@ export default function StandupCalendar() {
 
         {/* Main content */}
         {activeTab === "timeline" && (
-          <div className="bg-white rounded-xl shadow-md p-6">
-            <h2 className="text-xl font-bold mb-6">
-              Lịch Stand-up {currentTeam.hasIncidentRoster ? "& Trực Incident" : ""}
-            </h2>
-
-            <div className="space-y-4">
-              {visibleDays.map((day, index) => {
-                const isToday = isSameDay(day, today)
-                const holidayName = getHolidayName(day)
-                const isHostDay = isHostingDay(day)
-                const host = isHostDay ? getHostForDateFromAPI(day) : null
-
-                // Only get incident responders for Team Sonic
-                const { primary: dayPrimary, secondary: daySecondary } = currentTeam.hasIncidentRoster
-                  ? getIncidentRespondersFromAPI(day)
-                  : { primary: null, secondary: null }
-
-                const daySprintDates = getSprintDates(day)
-                const isFirstDayOfSprint = isSameDay(day, daySprintDates.start)
-
-                return (
-                  <div key={index}>
-                    {isFirstDayOfSprint && (
-                      <div className="bg-gray-200 p-2 rounded-lg mb-2 text-sm font-medium">
-                        Sprint {daySprintDates.sprintNumber}: {format(daySprintDates.start, "dd/MM")} - {format(daySprintDates.end, "dd/MM")}
-                      </div>
-                    )}
-
-                    <div
-                      className={`flex flex-col sm:flex-row sm:items-center border-l-4 p-4 rounded-r-lg ${
-                        isToday ? "border-primary bg-primary/5" : "border-gray-200"
-                      } ${!isHostDay && "opacity-80"}`}
-                    >
-                      <div className="w-24 text-sm mb-2 sm:mb-0">
-                        <div className={`font-medium ${isToday && "text-primary"}`}>
-                          {format(day, "EEEE", { locale: vi })}
-                        </div>
-                        <div className="text-gray-500">{format(day, "dd/MM/yyyy", { locale: vi })}</div>
-                      </div>
-
-                      <div className="flex-1 ml-0 sm:ml-6">
-                        {holidayName ? (
-                          <div className="text-red-500">
-                            <span className="font-medium">{holidayName}</span>
-                            <span className="text-sm ml-2">- Không có standup</span>
-                          </div>
-                        ) : isWeekend(day) ? (
-                          <div className="text-gray-500">Cuối tuần - Không có standup</div>
-                        ) : host ? (
-                          <div className="flex items-center">
-                            <div
-                              className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-medium text-sm ${
-                                isToday ? "bg-primary" : "bg-gray-600"
-                              }`}
-                            >
-                              {host.fullName.split(" ").map((part) => part[0]).join("")}
-                            </div>
-                            <Link 
-                              href={`/members/${host.id}`}
-                              className={`ml-3 font-medium hover:text-primary hover:underline ${
-                                isToday && "text-primary"
-                              }`}
-                            >
-                              {host.fullName}
-                            </Link>
-                          </div>
-                        ) : null}
-                      </div>
-
-                      {/* Only show incident responders for Team Sonic */}
-                      {currentTeam.hasIncidentRoster && (
-                        <div className="mt-3 sm:mt-0 sm:ml-4 flex flex-wrap gap-2">
-                          <TooltipProvider>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Link href={dayPrimary ? `/members/${dayPrimary.id}` : "#"}>
-                                  <motion.div
-                                    whileHover={{ scale: 1.05 }}
-                                    whileTap={{ scale: 0.95 }}
-                                    className="px-3 py-1 rounded-full text-sm font-medium transition-colors flex items-center gap-2 bg-blue-100 text-blue-800 hover:bg-blue-200"
-                                  >
-                                    <span className="font-medium">P:</span>{" "}
-                                    {dayPrimary ? (
-                                      <span className="hover:text-blue-600">
-                                        {dayPrimary.fullName}
-                                      </span>
-                                    ) : "Không có primary"}
-                                  </motion.div>
-                                </Link>
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                <p>Primary Incident Responder</p>
-                              </TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
-
-                          <TooltipProvider>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Link href={daySecondary ? `/members/${daySecondary.id}` : "#"}>
-                                  <motion.div
-                                    whileHover={{ scale: 1.05 }}
-                                    whileTap={{ scale: 0.95 }}
-                                    className="px-3 py-1 rounded-full text-sm font-medium transition-colors flex items-center gap-2 bg-purple-100 text-purple-800 hover:bg-purple-200"
-                                  >
-                                    <span className="font-medium">S:</span>{" "}
-                                    {daySecondary ? (
-                                      <span className="hover:text-purple-600">
-                                        {daySecondary.fullName}
-                                      </span>
-                                    ) : "Không có secondary"}
-                                  </motion.div>
-                                </Link>
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                <p>Secondary Incident Responder</p>
-                              </TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-
-            <WeekHosts squad={currentTeam} />
-          </div>
+          <TimelineView
+            currentTeam={currentTeam}
+            getHostForDateFromAPI={getHostForDateFromAPI}
+            getIncidentRespondersFromAPI={getIncidentRespondersFromAPI}
+            visibleDays={visibleDays}
+          />
         )}
 
         {activeTab === "calendar" && (
