@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef, useMemo } from "react"
 import { format, addDays, getDay } from "date-fns"
 import { vi } from "date-fns/locale"
 import Link from "next/link"
@@ -13,129 +13,291 @@ import type { Squad, SquadMember, StandupHosting, IncidentRotation } from "@/lib
 import { fetchStandupHosting, fetchIncidentRotation } from "@/lib/api"
 
 interface WeekHostsProps {
-  squad: Squad
+  squad: Squad;
+  cachedData?: {
+    squadMembers: SquadMember[];
+    standupHostings: StandupHosting[];
+    incidentRotations: IncidentRotation[];
+  };
 }
 
-export function WeekHosts({ squad }: WeekHostsProps) {
+// Cache lưu trữ data theo squadId
+interface CacheEntry {
+  timestamp: number;
+  standupHostings: StandupHosting[];
+  incidentRotations: IncidentRotation[];
+}
+
+const dataCache = new Map<string, CacheEntry>();
+const CACHE_EXPIRY_TIME = 5 * 60 * 1000; // 5 phút cache
+
+export function WeekHosts({ squad, cachedData }: WeekHostsProps) {
   const [standupHostings, setStandupHostings] = useState<StandupHosting[]>([])
   const [incidentRotations, setIncidentRotations] = useState<IncidentRotation[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-
-  // Get days for the week view (starting from Monday)
-  const getWeekDays = () => {
+  const [isLoading, setIsLoading] = useState(!cachedData)
+  const [isError, setIsError] = useState(false)
+  
+  // Sử dụng useRef để lưu trữ request đang xử lý
+  const requestInProgress = useRef<boolean>(false);
+  const prevSquadId = useRef<string>("");
+  
+  // Tính weekDays một lần và cache lại
+  const weekDays = useMemo(() => {
     const today = new Date()
     const dayOfWeek = getDay(today)
     const startDay = addDays(today, dayOfWeek === 0 ? -6 : 1 - dayOfWeek) // Start from Monday
     return Array.from({ length: 5 }, (_, i) => addDays(startDay, i))
-  }
+  }, []);
+  
+  // Tính toán date range một lần
+  const dateRange = useMemo(() => {
+    const startDate = format(weekDays[0], "yyyy-MM-dd")
+    const endDate = format(weekDays[weekDays.length - 1], "yyyy-MM-dd")
+    return { startDate, endDate }
+  }, [weekDays]);
 
-  const weekDays = getWeekDays()
-
-  // Fetch data when squad changes
+  // Sử dụng cached data nếu có
   useEffect(() => {
-    const fetchData = async () => {
-      setIsLoading(true)
-      try {
-        const startDate = format(weekDays[0], "yyyy-MM-dd")
-        const endDate = format(weekDays[weekDays.length - 1], "yyyy-MM-dd")
-
-        const [hostings, rotations] = await Promise.all([
-          fetchStandupHosting(squad.id, startDate, endDate),
-          squad.hasIncidentRoster ? fetchIncidentRotation(squad.id, startDate, endDate) : Promise.resolve([])
-        ])
-
-        setStandupHostings(hostings)
-        setIncidentRotations(rotations)
-      } catch (error) {
-        console.error('Error fetching week hosts data:', error)
-      } finally {
-        setIsLoading(false)
-      }
+    if (cachedData) {
+      setStandupHostings(cachedData.standupHostings);
+      setIncidentRotations(cachedData.incidentRotations);
+      setIsLoading(false);
+      return;
     }
-    fetchData()
-  }, [squad.id, squad.hasIncidentRoster])
+  }, [cachedData]);
 
-  // Helper functions
-  const isHostingDay = (date: Date) => {
-    if (isWeekend(date)) return false
-    const dateString = format(date, "yyyy-MM-dd")
-    return !vietnameseHolidays.some((holiday) => holiday.date === dateString)
-  }
-
-  const getHolidayName = (date: Date) => {
-    const dateString = format(date, "yyyy-MM-dd")
-    const holiday = vietnameseHolidays.find((h) => h.date === dateString)
-    return holiday ? holiday.name : null
-  }
-
-  const getHostForDate = (date: Date): SquadMember | null => {
-    const dateStr = format(date, "yyyy-MM-dd")
-    const hosting = standupHostings.find(h => format(new Date(h.date), "yyyy-MM-dd") === dateStr)
-    if (!hosting?.member) return null
+  // Fetch data when squad changes with debounce - chỉ gọi khi không có cachedData
+  useEffect(() => {
+    if (!squad.id || cachedData) return;
     
-    // Convert API member type to SquadMember type
-    return {
-      id: hosting.member.id,
-      fullName: hosting.member.fullName,
-      email: hosting.member.email,
-      position: hosting.member.position,
-      avatarUrl: hosting.member.avatarUrl,
-      squadId: squad.id,
-      squadName: squad.name,
-      pid: hosting.member.id // Using member id as pid since it's not provided in the API
+    // Nếu đang có request đang xử lý, không gọi tiếp
+    if (requestInProgress.current) {
+      console.log('Request in progress, skipping...');
+      return;
     }
-  }
+    
+    // Nếu squadId không thay đổi, không làm gì
+    if (squad.id === prevSquadId.current) {
+      return;
+    }
+    
+    prevSquadId.current = squad.id;
+    
+    // Debounce để tránh gọi API liên tục khi chuyển squad nhanh
+    const timeoutId = setTimeout(async () => {
+      // Đánh dấu đang xử lý request
+      requestInProgress.current = true;
+      setIsLoading(true);
+      setIsError(false);
+      
+      try {
+        // Kiểm tra cache trước khi gọi API
+        const cacheKey = squad.id;
+        const cachedData = dataCache.get(cacheKey);
+        const now = Date.now();
+        
+        // Nếu có cache và cache còn hiệu lực, sử dụng cache
+        if (cachedData && (now - cachedData.timestamp < CACHE_EXPIRY_TIME)) {
+          console.log('Using cached WeekHosts data for squad:', squad.name);
+          setStandupHostings(cachedData.standupHostings);
+          setIncidentRotations(cachedData.incidentRotations);
+          setIsLoading(false);
+          requestInProgress.current = false;
+          return;
+        }
+        
+        // Tạo delay giữa các API calls
+        const fetchWithDelay = async <T,>(promise: Promise<T>): Promise<T> => {
+          const result = await promise.catch(error => {
+            console.error('API call failed:', error);
+            throw error;
+          });
+          // Delay 300ms giữa các API calls
+          await new Promise(resolve => setTimeout(resolve, 300));
+          return result;
+        };
+        
+        // Gọi API tuần tự để tránh rate limiting
+        const hostings = await fetchWithDelay(
+          fetchStandupHosting(squad.id, dateRange.startDate, dateRange.endDate)
+        );
+        
+        const rotations = squad.hasIncidentRoster 
+          ? await fetchWithDelay(
+              fetchIncidentRotation(squad.id, dateRange.startDate, dateRange.endDate)
+            ) 
+          : [];
 
+        // Lưu kết quả vào cache
+        dataCache.set(cacheKey, {
+          timestamp: now,
+          standupHostings: hostings,
+          incidentRotations: rotations
+        });
+        
+        setStandupHostings(hostings);
+        setIncidentRotations(rotations);
+      } catch (error) {
+        console.error('Error fetching week hosts data:', error);
+        setIsError(true);
+      } finally {
+        setIsLoading(false);
+        // Kết thúc request
+        requestInProgress.current = false;
+      }
+    }, 300); // Debounce 300ms
+    
+    // Cleanup function khi component unmount hoặc khi squad thay đổi
+    return () => {
+      clearTimeout(timeoutId);
+    };
+  }, [squad.id, squad.hasIncidentRoster, squad.name, dateRange, cachedData]);
+
+  // Helper functions được memoized
+  const hostingMap = useMemo(() => {
+    const map = new Map<string, SquadMember | null>();
+    
+    standupHostings.forEach(hosting => {
+      if (hosting && hosting.date) {
+        const dateStr = format(new Date(hosting.date), "yyyy-MM-dd");
+        if (hosting.member) {
+          map.set(dateStr, {
+            id: hosting.member.id,
+            fullName: hosting.member.fullName,
+            email: hosting.member.email,
+            position: hosting.member.position,
+            avatarUrl: hosting.member.avatarUrl,
+            squadId: squad.id,
+            squadName: squad.name,
+            pid: hosting.member.id
+          });
+        }
+      }
+    });
+    
+    return map;
+  }, [standupHostings, squad.id, squad.name]);
+  
+  // Tìm host cho ngày cụ thể - O(1) lookup
+  const getHostForDate = (date: Date): SquadMember | null => {
+    if (!date) return null;
+    const dateStr = format(date, "yyyy-MM-dd");
+    return hostingMap.get(dateStr) || null;
+  };
+  
+  // Rotation map cũng được memoize
+  const rotationMap = useMemo(() => {
+    const map = new Map<string, { primary: SquadMember | null, secondary: SquadMember | null }>();
+    
+    // Pre-calculate giá trị cho mỗi ngày trong tuần
+    weekDays.forEach(day => {
+      const dateStr = format(day, "yyyy-MM-dd");
+      
+      // Find rotation for this date
+      const rotation = incidentRotations.find(r => {
+        if (!r || !r.startDate || !r.endDate) return false;
+        const start = new Date(r.startDate);
+        const end = new Date(r.endDate);
+        const checkDate = new Date(dateStr);
+        return checkDate >= start && checkDate <= end;
+      });
+      
+      if (!rotation) {
+        map.set(dateStr, { primary: null, secondary: null });
+        return;
+      }
+      
+      // Check for swaps
+      const swap = rotation.swaps?.find(s => 
+        s && s.swapDate && 
+        format(new Date(s.swapDate), "yyyy-MM-dd") === dateStr && 
+        s.status === 'APPROVED'
+      );
+      
+      // Convert API member type to SquadMember type
+      const convertToSquadMember = (member: { 
+        id: string;
+        fullName: string;
+        email: string;
+        position: string;
+        avatarUrl?: string;
+      } | null): SquadMember | null => {
+        if (!member) return null;
+        return {
+          id: member.id,
+          fullName: member.fullName,
+          email: member.email,
+          position: member.position,
+          avatarUrl: member.avatarUrl,
+          squadId: squad.id,
+          squadName: squad.name,
+          pid: member.id
+        };
+      };
+      
+      let primary = convertToSquadMember(rotation.primaryMember);
+      let secondary = convertToSquadMember(rotation.secondaryMember);
+      
+      // Apply swaps
+      if (swap) {
+        if (swap.requesterId === rotation.primaryMemberId) {
+          primary = convertToSquadMember(swap.accepter);
+        } else if (swap.requesterId === rotation.secondaryMemberId) {
+          secondary = convertToSquadMember(swap.accepter);
+        }
+      }
+      
+      map.set(dateStr, { primary, secondary });
+    });
+    
+    return map;
+  }, [incidentRotations, weekDays, squad.id, squad.name]);
+  
+  // Tìm incident responders cho ngày cụ thể - O(1) lookup
   const getIncidentResponders = (date: Date): { primary: SquadMember | null, secondary: SquadMember | null } => {
-    const dateStr = format(date, "yyyy-MM-dd")
-    const rotation = incidentRotations.find(r => {
-      const start = new Date(r.startDate)
-      const end = new Date(r.endDate)
-      const checkDate = new Date(dateStr)
-      return checkDate >= start && checkDate <= end
-    })
+    if (!date) return { primary: null, secondary: null };
+    const dateStr = format(date, "yyyy-MM-dd");
+    return rotationMap.get(dateStr) || { primary: null, secondary: null };
+  };
+  
+  // Helpers được memoize
+  const isHostingDay = (date: Date) => {
+    if (isWeekend(date)) return false;
+    const dateString = format(date, "yyyy-MM-dd");
+    return !vietnameseHolidays.some((holiday) => holiday.date === dateString);
+  };
+  
+  const getHolidayName = (date: Date) => {
+    const dateString = format(date, "yyyy-MM-dd");
+    const holiday = vietnameseHolidays.find((h) => h.date === dateString);
+    return holiday ? holiday.name : null;
+  };
 
-    if (!rotation) return { primary: null, secondary: null }
-
-    // Check for swaps
-    const swap = rotation.swaps?.find(s => 
-      format(new Date(s.swapDate), "yyyy-MM-dd") === dateStr && 
-      s.status === 'APPROVED'
-    )
-
-    // Convert API member type to SquadMember type
-    const convertToSquadMember = (member: { 
-      id: string;
-      fullName: string;
-      email: string;
-      position: string;
-      avatarUrl?: string;
-    } | null): SquadMember | null => {
-      if (!member) return null
-      return {
-        id: member.id,
-        fullName: member.fullName,
-        email: member.email,
-        position: member.position,
-        avatarUrl: member.avatarUrl,
-        squadId: squad.id,
-        squadName: squad.name,
-        pid: member.id
-      }
-    }
-
-    let primary = convertToSquadMember(rotation.primaryMember)
-    let secondary = convertToSquadMember(rotation.secondaryMember)
-
-    if (swap) {
-      if (swap.requesterId === rotation.primaryMemberId) {
-        primary = convertToSquadMember(swap.accepter)
-      } else if (swap.requesterId === rotation.secondaryMemberId) {
-        secondary = convertToSquadMember(swap.accepter)
-      }
-    }
-
-    return { primary, secondary }
+  // Tải lại dữ liệu
+  const handleRetry = () => {
+    // Reset cache cho squad này
+    dataCache.delete(squad.id);
+    // Force reset requestInProgress
+    requestInProgress.current = false;
+    // Force re-render
+    setIsLoading(true);
+    prevSquadId.current = "";
+  };
+  
+  if (isError) {
+    return (
+      <div className="mt-8 border-t pt-6">
+        <div className="text-center py-6">
+          <p className="text-red-500 mb-4">Đã xảy ra lỗi khi tải dữ liệu</p>
+          <button 
+            onClick={handleRetry}
+            className="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90 transition-colors"
+          >
+            Thử lại
+          </button>
+        </div>
+      </div>
+    );
   }
 
   if (isLoading) {
