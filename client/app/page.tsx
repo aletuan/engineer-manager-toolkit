@@ -393,14 +393,7 @@ export default function StandupCalendar() {
               })}
             </div>
 
-            <WeekHosts
-              weekDays={weekDays}
-              currentTeam={currentTeam}
-              isHostingDay={isHostingDay}
-              getHolidayName={getHolidayName}
-              getHostForDateFromAPI={getHostForDateFromAPI}
-              getIncidentRespondersFromAPI={getIncidentRespondersFromAPI}
-            />
+            <WeekHosts squad={currentTeam} />
           </div>
         )}
 
@@ -528,14 +521,7 @@ export default function StandupCalendar() {
               })}
             </div>
 
-            <WeekHosts
-              weekDays={weekDays}
-              currentTeam={currentTeam}
-              isHostingDay={isHostingDay}
-              getHolidayName={getHolidayName}
-              getHostForDateFromAPI={getHostForDateFromAPI}
-              getIncidentRespondersFromAPI={getIncidentRespondersFromAPI}
-            />
+            <WeekHosts squad={currentTeam} />
           </div>
         )}
 
