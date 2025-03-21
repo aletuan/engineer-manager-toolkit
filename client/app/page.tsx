@@ -45,8 +45,9 @@ export default function StandupCalendar() {
 
   // Get current team data
   const currentTeam = squads.find(squad => squad.id === activeTeam) || {
+    id: "",
     name: "",
-    members: [],
+    code: "",
     hasIncidentRoster: false
   }
 
@@ -232,10 +233,6 @@ export default function StandupCalendar() {
   const today = startOfDay(new Date())
   const monthDays = getDaysInMonth(currentDate)
   const weekDays = getWeekDays()
-
-  // Get current incident responders
-  const { primary, secondary } = currentTeam.hasIncidentRoster ? getIncidentRespondersFromAPI(today) : { primary: null, secondary: null }
-  const sprintDates = getSprintDates(today)
 
   if (isLoading) {
     return (
@@ -542,13 +539,7 @@ export default function StandupCalendar() {
           </div>
         )}
 
-        <TeamMembers
-          squadMembers={squadMembers}
-          currentTeam={currentTeam}
-          isHostingDay={isHostingDay}
-          getHostForDateFromAPI={getHostForDateFromAPI}
-          getIncidentRespondersFromAPI={getIncidentRespondersFromAPI}
-        />
+        <TeamMembers squad={currentTeam} />
       </div>
     </div>
   )
