@@ -10,7 +10,6 @@ import { motion } from "framer-motion"
 import { isHostingDay, getHolidayName } from "@/lib/utils/date-helpers"
 import { getSprintDates } from "@/lib/utils/sprint-helpers"
 import { type Squad, type SquadMember } from "@/lib/api"
-import { WeekHosts } from "../week-hosts"
 import { SprintHeader } from "./sprint-header"
 import { TimelineDay } from "./timeline-day"
 
@@ -73,8 +72,6 @@ export function TimelineView({
           )
         })}
       </div>
-
-      <WeekHosts squad={currentTeam} />
     </div>
   )
 } 

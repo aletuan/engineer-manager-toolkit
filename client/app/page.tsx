@@ -8,6 +8,7 @@ import { StandupHeader } from "@/components/standup/header"
 import { TimelineView } from "@/components/standup/timeline-view"
 import { CalendarView } from "@/components/standup/calendar-view"
 import { TeamMembers } from "@/components/standup/team-members"
+import { WeekHosts } from "@/components/standup/week-hosts"
 
 export default function StandupCalendar() {
   const [currentDate, setCurrentDate] = useState<Date>(new Date())
@@ -189,6 +190,11 @@ export default function StandupCalendar() {
             onNextMonth={handleNextMonth}
           />
         )}
+
+        {/* WeekHosts component độc lập */}
+        <div className="mt-8 bg-white rounded-xl shadow-md p-6">
+          <WeekHosts squad={currentTeam} />
+        </div>
 
         <TeamMembers squad={currentTeam} />
       </div>

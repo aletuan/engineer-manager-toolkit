@@ -4,7 +4,6 @@ import { format, getDay } from "date-fns"
 import { vi } from "date-fns/locale"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { WeekHosts } from "../week-hosts"
 import { CalendarGrid } from "./calendar-grid"
 import type { Squad, SquadMember } from "@/lib/api"
 
@@ -52,8 +51,6 @@ export function CalendarView({
         getHostForDateFromAPI={getHostForDateFromAPI}
         getIncidentRespondersFromAPI={getIncidentRespondersFromAPI}
       />
-
-      <WeekHosts squad={currentTeam} />
     </div>
   )
 } 
