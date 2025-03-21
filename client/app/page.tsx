@@ -26,6 +26,9 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { fetchSquads, fetchSquadMembers, fetchStandupHosting, fetchIncidentRotation, type Squad, type SquadMember, type StandupHosting, type IncidentRotation } from "@/lib/api"
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Skeleton } from '@/components/ui/skeleton'
+import { StandupHeader } from "@/components/standup/header"
+import { WeekHosts } from "@/components/standup/week-hosts"
+import { TeamMembers } from "@/components/standup/team-members"
 
 export default function StandupCalendar() {
   const [currentDate, setCurrentDate] = useState<Date>(new Date())
@@ -250,155 +253,19 @@ export default function StandupCalendar() {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto py-8 px-4">
-        {/* Header */}
-        <div className="bg-white rounded-xl shadow-md p-6 mb-6">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <div className="bg-gray-100 p-3 rounded-full">
-                <CalendarIcon className="h-6 w-6 text-gray-700" />
-              </div>
-              <div>
-                <h1 className="text-2xl font-bold">Lịch Stand-up</h1>
-                <p className="text-gray-500">Thứ Hai - Thứ Sáu (trừ ngày lễ)</p>
-              </div>
-            </div>
-
-            <div className="flex space-x-2">
-              <Button
-                variant={activeTab === "timeline" ? "default" : "outline"}
-                className="flex items-center gap-2"
-                onClick={() => setActiveTab("timeline")}
-              >
-                <Users className="h-4 w-4" />
-                <span>Lịch Stand-up</span>
-              </Button>
-              <Button
-                variant={activeTab === "calendar" ? "default" : "outline"}
-                className="flex items-center gap-2"
-                onClick={() => setActiveTab("calendar")}
-              >
-                <Calendar className="h-4 w-4" />
-                <span>Lịch Tháng</span>
-              </Button>
-              <Link href="/members">
-                <Button variant="outline" className="flex items-center gap-2">
-                  <Users className="h-4 w-4" />
-                  <span>Thành Viên</span>
-                </Button>
-              </Link>
-              <Link href="/focus">
-                <Button variant="outline" className="flex items-center gap-2">
-                  <Target className="h-4 w-4" />
-                  <span>Focus</span>
-                </Button>
-              </Link>
-            </div>
-          </div>
-
-          {/* Team selector */}
-          <div className="mt-6 mb-4">
-            <Tabs value={activeTeam} onValueChange={setActiveTeam}>
-              <TabsList className="grid w-full max-w-md grid-cols-2">
-                {squads.map(squad => (
-                  <TabsTrigger key={squad.id} value={squad.id}>
-                    {squad.name}
-                  </TabsTrigger>
-                ))}
-              </TabsList>
-            </Tabs>
-          </div>
-
-          {/* Today's info */}
-          <div className={`mt-4 grid grid-cols-1 ${currentTeam.hasIncidentRoster ? "md:grid-cols-2" : ""} gap-4`}>
-            {/* Standup host */}
-            <div className="p-4 bg-gray-100 rounded-lg border border-gray-200">
-              <div className="flex items-center gap-3">
-                <div className="bg-white p-2 rounded-full">
-                  <CheckCircle2 className="h-5 w-5 text-gray-700" />
-                </div>
-                <div>
-                  <div className="text-sm text-gray-500">{format(today, "EEEE, dd/MM/yyyy", { locale: vi })}</div>
-                  <div className="font-bold text-lg">
-                    {isHostingDay(today)
-                      ? (() => {
-                          const host = getHostForDateFromAPI(today)
-                          return host ? (
-                            <>
-                              Host hôm nay:{" "}
-                              <motion.div
-                                whileHover={{ scale: 1.05 }}
-                                whileTap={{ scale: 0.95 }}
-                                className="inline-block"
-                              >
-                                <Link href={`/members/${host.id}`}>
-                                  <Badge variant="outline" className="bg-gray-200 text-gray-800 border-gray-300 hover:bg-gray-300 transition-colors">
-                                    {host.fullName}
-                                  </Badge>
-                                </Link>
-                              </motion.div>
-                            </>
-                          ) : "Không có host"
-                        })()
-                      : getHolidayName(today)
-                        ? `Hôm nay là ${getHolidayName(today)} - Không có standup`
-                        : "Hôm nay là cuối tuần - Không có standup"}
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Incident responders - only for Team Sonic */}
-            {currentTeam.hasIncidentRoster && (
-              <div className="p-4 bg-gray-100 rounded-lg border border-gray-200">
-                <div className="flex items-center gap-3">
-                  <div className="bg-white p-2 rounded-full">
-                    <ShieldAlert className="h-5 w-5 text-gray-700" />
-                  </div>
-                  <div>
-                    <div className="text-sm text-gray-500">
-                      Sprint {sprintDates.sprintNumber}: {format(sprintDates.start, "dd/MM")} - {format(sprintDates.end, "dd/MM")}
-                    </div>
-                    <div className="font-bold text-lg flex flex-wrap items-center gap-2">
-                      <span>Trực Incident:</span>
-                      <motion.div
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                      >
-                        {primary ? (
-                          <Link href={`/members/${primary.id}`}>
-                            <Badge variant="outline" className="bg-gray-200 text-gray-800 border-gray-300 hover:bg-gray-300 transition-colors">
-                              Primary: {primary.fullName}
-                            </Badge>
-                          </Link>
-                        ) : (
-                          <Badge variant="outline" className="bg-gray-200 text-gray-800 border-gray-300">
-                            Primary: Không có primary
-                          </Badge>
-                        )}
-                      </motion.div>
-                      <motion.div
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                      >
-                        {secondary ? (
-                          <Link href={`/members/${secondary.id}`}>
-                            <Badge variant="outline" className="bg-gray-200 text-gray-800 border-gray-300 hover:bg-gray-300 transition-colors">
-                              Secondary: {secondary.fullName}
-                            </Badge>
-                          </Link>
-                        ) : (
-                          <Badge variant="outline" className="bg-gray-200 text-gray-800 border-gray-300">
-                            Secondary: Không có secondary
-                          </Badge>
-                        )}
-                      </motion.div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
+        <StandupHeader
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          squads={squads}
+          activeTeam={activeTeam}
+          setActiveTeam={setActiveTeam}
+          currentTeam={currentTeam}
+          isHostingDay={isHostingDay}
+          getHolidayName={getHolidayName}
+          getHostForDateFromAPI={getHostForDateFromAPI}
+          getIncidentRespondersFromAPI={getIncidentRespondersFromAPI}
+          getSprintDates={getSprintDates}
+        />
 
         {/* Main content */}
         {activeTab === "timeline" && (
@@ -431,14 +298,12 @@ export default function StandupCalendar() {
                     )}
 
                     <div
-                      className={cn(
-                        "flex flex-col sm:flex-row sm:items-center border-l-4 p-4 rounded-r-lg",
-                        isToday ? "border-primary bg-primary/5" : "border-gray-200",
-                        !isHostDay && "opacity-80",
-                      )}
+                      className={`flex flex-col sm:flex-row sm:items-center border-l-4 p-4 rounded-r-lg ${
+                        isToday ? "border-primary bg-primary/5" : "border-gray-200"
+                      } ${!isHostDay && "opacity-80"}`}
                     >
                       <div className="w-24 text-sm mb-2 sm:mb-0">
-                        <div className={cn("font-medium", isToday && "text-primary")}>
+                        <div className={`font-medium ${isToday && "text-primary"}`}>
                           {format(day, "EEEE", { locale: vi })}
                         </div>
                         <div className="text-gray-500">{format(day, "dd/MM/yyyy", { locale: vi })}</div>
@@ -455,19 +320,17 @@ export default function StandupCalendar() {
                         ) : host ? (
                           <div className="flex items-center">
                             <div
-                              className={cn(
-                                "w-8 h-8 rounded-full flex items-center justify-center text-white font-medium text-sm",
-                                isToday ? "bg-primary" : "bg-gray-600",
-                              )}
+                              className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-medium text-sm ${
+                                isToday ? "bg-primary" : "bg-gray-600"
+                              }`}
                             >
                               {host.fullName.split(" ").map((part) => part[0]).join("")}
                             </div>
                             <Link 
                               href={`/members/${host.id}`}
-                              className={cn(
-                                "ml-3 font-medium hover:text-primary hover:underline",
+                              className={`ml-3 font-medium hover:text-primary hover:underline ${
                                 isToday && "text-primary"
-                              )}
+                              }`}
                             >
                               {host.fullName}
                             </Link>
@@ -485,11 +348,7 @@ export default function StandupCalendar() {
                                   <motion.div
                                     whileHover={{ scale: 1.05 }}
                                     whileTap={{ scale: 0.95 }}
-                                    className={cn(
-                                      "px-3 py-1 rounded-full text-sm font-medium transition-colors",
-                                      "flex items-center gap-2",
-                                      "bg-blue-100 text-blue-800 hover:bg-blue-200"
-                                    )}
+                                    className="px-3 py-1 rounded-full text-sm font-medium transition-colors flex items-center gap-2 bg-blue-100 text-blue-800 hover:bg-blue-200"
                                   >
                                     <span className="font-medium">P:</span>{" "}
                                     {dayPrimary ? (
@@ -513,11 +372,7 @@ export default function StandupCalendar() {
                                   <motion.div
                                     whileHover={{ scale: 1.05 }}
                                     whileTap={{ scale: 0.95 }}
-                                    className={cn(
-                                      "px-3 py-1 rounded-full text-sm font-medium transition-colors",
-                                      "flex items-center gap-2",
-                                      "bg-purple-100 text-purple-800 hover:bg-purple-200"
-                                    )}
+                                    className="px-3 py-1 rounded-full text-sm font-medium transition-colors flex items-center gap-2 bg-purple-100 text-purple-800 hover:bg-purple-200"
                                   >
                                     <span className="font-medium">S:</span>{" "}
                                     {daySecondary ? (
@@ -540,6 +395,15 @@ export default function StandupCalendar() {
                 )
               })}
             </div>
+
+            <WeekHosts
+              weekDays={weekDays}
+              currentTeam={currentTeam}
+              isHostingDay={isHostingDay}
+              getHolidayName={getHolidayName}
+              getHostForDateFromAPI={getHostForDateFromAPI}
+              getIncidentRespondersFromAPI={getIncidentRespondersFromAPI}
+            />
           </div>
         )}
 
@@ -667,143 +531,24 @@ export default function StandupCalendar() {
               })}
             </div>
 
-            {/* This week's hosts */}
-            <div className="mt-8 border-t pt-6">
-              <h3 className="font-medium mb-4">Host tuần này:</h3>
-              <div className="grid grid-cols-5 gap-2">
-                {weekDays.map((day, i) => {
-                  const isToday = isSameDay(day, today)
-                  const isHostDay = isHostingDay(day)
-                  const host = isHostDay ? getHostForDateFromAPI(day) : null
-                  const holidayName = getHolidayName(day)
-
-                  // Only get incident responders for Team Sonic
-                  const { primary: dayPrimary, secondary: daySecondary } = currentTeam.hasIncidentRoster
-                    ? getIncidentRespondersFromAPI(day)
-                    : { primary: null, secondary: null }
-
-                  return (
-                    <Card key={i} className={cn("overflow-hidden", isToday && "border-primary")}>
-                      <div className={cn("p-2 text-center text-sm", isToday ? "bg-primary text-white" : "bg-gray-100")}>
-                        {format(day, "EEEE", { locale: vi })}
-                      </div>
-                      <CardContent className="p-3 text-center">
-                        {holidayName ? (
-                          <div className="text-xs text-red-500">{holidayName}</div>
-                        ) : host ? (
-                          <Link href={`/members/${host.id}`}>
-                            <motion.div
-                              whileHover={{ scale: 1.05 }}
-                              whileTap={{ scale: 0.95 }}
-                              className="font-medium mb-2 bg-green-100 text-green-800 rounded-full px-2 py-1 hover:bg-green-200 transition-colors"
-                            >
-                              {host.fullName}
-                            </motion.div>
-                          </Link>
-                        ) : (
-                          <div className="text-gray-500 text-sm mb-2">Không có standup</div>
-                        )}
-
-                        {/* Only show incident responders for Team Sonic */}
-                        {currentTeam.hasIncidentRoster && (
-                          <div className="text-xs flex flex-col gap-1 mt-2">
-                            <Link href={dayPrimary ? `/members/${dayPrimary.id}` : "#"}>
-                              <motion.div
-                                whileHover={{ scale: 1.05 }}
-                                whileTap={{ scale: 0.95 }}
-                                className="bg-blue-100 text-blue-800 rounded-full px-2 py-1 hover:bg-blue-200 transition-colors"
-                              >
-                                <span className="font-medium">P:</span>{" "}
-                                {dayPrimary ? (
-                                  <span className="hover:text-blue-600">
-                                    {dayPrimary.fullName}
-                                  </span>
-                                ) : 'Không có primary'}
-                              </motion.div>
-                            </Link>
-                            <Link href={daySecondary ? `/members/${daySecondary.id}` : "#"}>
-                              <motion.div
-                                whileHover={{ scale: 1.05 }}
-                                whileTap={{ scale: 0.95 }}
-                                className="bg-purple-100 text-purple-800 rounded-full px-2 py-1 hover:bg-purple-200 transition-colors"
-                              >
-                                <span className="font-medium">S:</span>{" "}
-                                {daySecondary ? (
-                                  <span className="hover:text-purple-600">
-                                    {daySecondary.fullName}
-                                  </span>
-                                ) : 'Không có secondary'}
-                              </motion.div>
-                            </Link>
-                          </div>
-                        )}
-                      </CardContent>
-                    </Card>
-                  )
-                })}
-              </div>
-            </div>
+            <WeekHosts
+              weekDays={weekDays}
+              currentTeam={currentTeam}
+              isHostingDay={isHostingDay}
+              getHolidayName={getHolidayName}
+              getHostForDateFromAPI={getHostForDateFromAPI}
+              getIncidentRespondersFromAPI={getIncidentRespondersFromAPI}
+            />
           </div>
         )}
 
-        {/* Team members */}
-        <div className="bg-white rounded-xl shadow-md p-6 mt-6">
-          <h2 className="text-xl font-bold mb-4">{currentTeam.name}</h2>
-          <div className="flex flex-wrap gap-3">
-            {squadMembers.map((member, index) => {
-              const isHostingToday = isHostingDay(today) && getHostForDateFromAPI(today) === member
-              const isPrimary = currentTeam.hasIncidentRoster && getIncidentRespondersFromAPI(today).primary === member
-              const isSecondary = currentTeam.hasIncidentRoster && getIncidentRespondersFromAPI(today).secondary === member
-
-              // Combine role indicators
-              const roles = []
-              if (isHostingToday) roles.push("H")
-              if (isPrimary) roles.push("P")
-              if (isSecondary) roles.push("S")
-              const rolesText = roles.length > 0 ? ` (${roles.join(", ")})` : ""
-
-              return (
-                <Link
-                  key={index}
-                  href={`/members/${member.id}`}
-                  className="relative"
-                >
-                  <motion.div
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    className={cn(
-                      "px-4 py-2 rounded-full text-sm font-medium transition-colors",
-                      "flex items-center gap-2",
-                      isHostingToday
-                        ? "bg-primary text-white hover:bg-primary/90"
-                        : isPrimary
-                          ? "bg-blue-100 text-blue-800 hover:bg-blue-200"
-                          : isSecondary
-                            ? "bg-purple-100 text-purple-800 hover:bg-purple-200"
-                            : "bg-gray-100 text-gray-700 hover:bg-gray-200",
-                    )}
-                  >
-                    <span>{member.fullName}</span>
-                    {rolesText && (
-                      <span className={cn(
-                        "text-xs px-2 py-0.5 rounded-full",
-                        isHostingToday
-                          ? "bg-white/20"
-                          : isPrimary
-                            ? "bg-blue-200"
-                            : isSecondary
-                              ? "bg-purple-200"
-                              : "bg-gray-200"
-                      )}>
-                        {rolesText}
-                      </span>
-                    )}
-                  </motion.div>
-                </Link>
-              )
-            })}
-          </div>
-        </div>
+        <TeamMembers
+          squadMembers={squadMembers}
+          currentTeam={currentTeam}
+          isHostingDay={isHostingDay}
+          getHostForDateFromAPI={getHostForDateFromAPI}
+          getIncidentRespondersFromAPI={getIncidentRespondersFromAPI}
+        />
       </div>
     </div>
   )
