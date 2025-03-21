@@ -230,9 +230,12 @@ export default function StandupCalendar() {
         {activeTab === "timeline" && (
           <TimelineView
             currentTeam={currentTeam}
-            getHostForDateFromAPI={getHostForDateFromAPI}
-            getIncidentRespondersFromAPI={getIncidentRespondersFromAPI}
             visibleDays={visibleDays}
+            cachedData={{
+              squadMembers,
+              standupHostings,
+              incidentRotations
+            }}
           />
         )}
 
