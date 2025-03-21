@@ -348,322 +348,290 @@ async function main() {
   });
 
   // Create tasks
-  const task1 = await prisma.task.create({
-    data: {
-      title: 'Implement user authentication',
-      description: 'Set up JWT authentication with refresh tokens',
-      status: 'IN_PROGRESS',
-      priority: 'HIGH',
-      createdAt: new Date('2025-02-01'),
-      updatedAt: new Date('2025-02-15'),
-      dueDate: new Date('2025-03-15'),
-      featureId: 'AUTH-001',
-      progress: 75.5,
-      points: 8,
-      assignedToId: troyMembers[0].squadMember!.id,
-      createdById: sonicMembers[0].squadMember!.id,
-      tags: ['authentication', 'security'],
-      attachments: {},
-    },
-  });
-
-  // Add assignees for task1 (AUTH-001)
-  await Promise.all([
-    prisma.taskAssignee.create({
+  const tasks = await Promise.all([
+    prisma.task.create({
       data: {
-        taskId: task1.id,
-        memberId: troyMembers[0].squadMember!.id,
-        role: AssigneeRole.PRIMARY,
-        createdAt: new Date('2025-02-01'),
-      },
+        id: '1d1c9d6f-caa6-43a9-9c8f-a0818fddee43',
+        title: 'Customer Onboarding Flow Enhancement',
+        description: 'Enhance the customer onboarding flow to improve user experience and reduce drop-off rates',
+        status: 'IN_PROGRESS',
+        priority: 'MEDIUM',
+        progress: 55.5,
+        points: 8,
+        dueDate: new Date('2025-05-15'),
+        featureId: 'ECOM-001',
+        attachments: {},
+        assignedToId: troyMembers[2].squadMember!.id,
+        createdById: troyMembers[0].squadMember!.id,
+        assignees: {
+          create: [
+            {
+              role: 'PRIMARY',
+              memberId: troyMembers[2].squadMember!.id
+            }
+          ]
+        },
+        stakeholders: {
+          create: [
+            {
+              stakeholderId: stakeholder3.id
+            },
+            {
+              stakeholderId: stakeholder4.id
+            },
+            {
+              stakeholderId: stakeholder5.id
+            }
+          ]
+        },
+        notes: {
+          create: [
+            {
+              content: 'Initial design review completed with stakeholders',
+              authorId: troyMembers[2].squadMember!.id
+            },
+            {
+              content: 'User research findings suggest simplifying the form layout',
+              authorId: troyMembers[2].squadMember!.id
+            }
+          ]
+        }
+      }
     }),
-    prisma.taskAssignee.create({
+    prisma.task.create({
       data: {
-        taskId: task1.id,
-        memberId: troyMembers[1].squadMember!.id,
-        role: AssigneeRole.SECONDARY,
-        createdAt: new Date('2025-02-01'),
-      },
+        id: 'eb3b6811-f887-47ec-8f59-d7be3884ef66',
+        title: 'Implement Fraud Detection Rules',
+        description: 'Implement new fraud detection rules for transaction monitoring',
+        status: 'IN_PROGRESS',
+        priority: 'HIGH',
+        progress: 92.3,
+        points: 21,
+        dueDate: new Date('2025-04-30'),
+        featureId: 'ISSO-001',
+        attachments: {},
+        assignedToId: sonicMembers[1].squadMember!.id,
+        createdById: sonicMembers[0].squadMember!.id,
+        assignees: {
+          create: [
+            {
+              role: 'PRIMARY',
+              memberId: sonicMembers[1].squadMember!.id
+            },
+            {
+              role: 'SECONDARY',
+              memberId: sonicMembers[2].squadMember!.id
+            }
+          ]
+        },
+        stakeholders: {
+          create: [
+            {
+              stakeholderId: stakeholder2.id
+            },
+            {
+              stakeholderId: stakeholder6.id
+            },
+            {
+              stakeholderId: stakeholder7.id
+            }
+          ]
+        },
+        notes: {
+          create: [
+            {
+              content: 'Rules engine configuration completed',
+              authorId: sonicMembers[1].squadMember!.id
+            },
+            {
+              content: 'Performance testing shows 99.9% accuracy',
+              authorId: sonicMembers[2].squadMember!.id
+            }
+          ]
+        }
+      }
     }),
+    prisma.task.create({
+      data: {
+        id: '1ac74782-ff98-419c-9477-525a4d66565c',
+        title: 'Implement Document Upload API',
+        description: 'Create a new API endpoint for document upload functionality',
+        status: 'IN_PROGRESS',
+        priority: 'HIGH',
+        progress: 65.8,
+        points: 13,
+        dueDate: new Date('2025-04-15'),
+        featureId: 'EDMS-001',
+        attachments: {},
+        assignedToId: troyMembers[1].squadMember!.id,
+        createdById: troyMembers[0].squadMember!.id,
+        assignees: {
+          create: [
+            {
+              role: 'PRIMARY',
+              memberId: troyMembers[1].squadMember!.id
+            },
+            {
+              role: 'SECONDARY',
+              memberId: troyMembers[2].squadMember!.id
+            }
+          ]
+        },
+        stakeholders: {
+          create: [
+            {
+              stakeholderId: stakeholder1.id
+            },
+            {
+              stakeholderId: stakeholder8.id
+            },
+            {
+              stakeholderId: stakeholder3.id
+            }
+          ]
+        },
+        notes: {
+          create: [
+            {
+              content: 'API design document approved by architecture team',
+              authorId: troyMembers[1].squadMember!.id
+            },
+            {
+              content: 'Integration with S3 storage completed',
+              authorId: troyMembers[2].squadMember!.id
+            }
+          ]
+        }
+      }
+    }),
+    prisma.task.create({
+      data: {
+        id: 'ea9f4c8a-4a21-47c7-a3b4-37b5ee8036ac',
+        title: 'Design database schema',
+        description: 'Design and implement the database schema for the new document management system',
+        status: 'IN_PROGRESS',
+        priority: 'MEDIUM',
+        progress: 85.5,
+        points: 5,
+        dueDate: new Date('2025-03-30'),
+        featureId: 'DB-001',
+        attachments: {},
+        assignedToId: sonicMembers[0].squadMember!.id,
+        createdById: troyMembers[1].squadMember!.id,
+        assignees: {
+          create: [
+            {
+              role: 'PRIMARY',
+              memberId: sonicMembers[0].squadMember!.id
+            },
+            {
+              role: 'SECONDARY',
+              memberId: troyMembers[2].squadMember!.id
+            }
+          ]
+        },
+        stakeholders: {
+          create: [
+            {
+              stakeholderId: stakeholder1.id
+            },
+            {
+              stakeholderId: stakeholder8.id
+            }
+          ]
+        },
+        notes: {
+          create: [
+            {
+              content: 'Schema design reviewed by DBA team',
+              authorId: sonicMembers[0].squadMember!.id
+            },
+            {
+              content: 'Performance optimization recommendations implemented',
+              authorId: troyMembers[2].squadMember!.id
+            }
+          ]
+        }
+      }
+    }),
+    prisma.task.create({
+      data: {
+        id: 'eee9e8dd-21c5-420c-a9a9-e64d7bb70755',
+        title: 'Implement user authentication',
+        description: 'Implement OAuth2 authentication for the application',
+        status: 'IN_PROGRESS',
+        priority: 'HIGH',
+        progress: 75.5,
+        points: 8,
+        dueDate: new Date('2025-03-15'),
+        featureId: 'AUTH-001',
+        attachments: {},
+        assignedToId: troyMembers[0].squadMember!.id,
+        createdById: troyMembers[1].squadMember!.id,
+        assignees: {
+          create: [
+            {
+              role: 'PRIMARY',
+              memberId: troyMembers[0].squadMember!.id
+            },
+            {
+              role: 'SECONDARY',
+              memberId: troyMembers[1].squadMember!.id
+            }
+          ]
+        },
+        stakeholders: {
+          create: [
+            {
+              stakeholderId: stakeholder2.id
+            },
+            {
+              stakeholderId: stakeholder6.id
+            }
+          ]
+        },
+        notes: {
+          create: [
+            {
+              content: 'OAuth2 provider integration completed',
+              authorId: troyMembers[0].squadMember!.id
+            },
+            {
+              content: 'Security review passed successfully',
+              authorId: troyMembers[1].squadMember!.id
+            }
+          ]
+        }
+      }
+    })
   ]);
 
-  const task2 = await prisma.task.create({
-    data: {
-      title: 'Design database schema',
-      description: 'Create ERD and implement database migrations',
-      status: 'IN_PROGRESS',
-      priority: 'MEDIUM',
-      createdAt: new Date('2025-02-15'),
-      updatedAt: new Date('2025-03-01'),
-      dueDate: new Date('2025-03-30'),
-      featureId: 'DB-001',
-      progress: 85.5,
-      points: 5,
-      assignedToId: sonicMembers[0].squadMember!.id,
-      createdById: troyMembers[0].squadMember!.id,
-      tags: ['database', 'design'],
-      attachments: {},
-    },
-  });
-
-  // Add assignees for task2 (DB-001)
+  // Create task dependencies
   await Promise.all([
-    prisma.taskAssignee.create({
-      data: {
-        taskId: task2.id,
-        memberId: sonicMembers[0].squadMember!.id,
-        role: AssigneeRole.PRIMARY,
-        createdAt: new Date('2025-02-15'),
-      },
-    }),
-    prisma.taskAssignee.create({
-      data: {
-        taskId: task2.id,
-        memberId: sonicMembers[1].squadMember!.id,
-        role: AssigneeRole.SECONDARY,
-        createdAt: new Date('2025-02-15'),
-      },
-    }),
-  ]);
-
-  const task3 = await prisma.task.create({
-    data: {
-      title: 'Implement Document Upload API',
-      description: 'Create REST API endpoints for document upload and processing',
-      status: 'IN_PROGRESS',
-      priority: 'HIGH',
-      createdAt: new Date('2025-03-01'),
-      updatedAt: new Date('2025-03-15'),
-      dueDate: new Date('2025-04-15'),
-      featureId: 'EDMS-001',
-      progress: 65.8,
-      points: 13,
-      assignedToId: troyMembers[1].squadMember!.id,
-      createdById: troyMembers[0].squadMember!.id,
-      tags: ['api', 'document-management'],
-      attachments: {},
-    },
-  });
-
-  const task4 = await prisma.task.create({
-    data: {
-      title: 'Implement Fraud Detection Rules',
-      description: 'Develop and implement new fraud detection rules for transaction monitoring',
-      status: 'IN_PROGRESS',
-      priority: 'HIGH',
-      createdAt: new Date('2025-03-15'),
-      updatedAt: new Date('2025-03-30'),
-      dueDate: new Date('2025-04-30'),
-      featureId: 'ISSO-001',
-      progress: 92.3,
-      points: 21,
-      assignedToId: sonicMembers[1].squadMember!.id,
-      createdById: sonicMembers[0].squadMember!.id,
-      tags: ['security', 'fraud-detection'],
-      attachments: {},
-    },
-  });
-
-  const task5 = await prisma.task.create({
-    data: {
-      title: 'Customer Onboarding Flow Enhancement',
-      description: 'Improve the customer onboarding experience with new UI/UX design',
-      status: 'IN_PROGRESS',
-      priority: 'MEDIUM',
-      createdAt: new Date('2025-04-01'),
-      updatedAt: new Date('2025-04-15'),
-      dueDate: new Date('2025-05-15'),
-      featureId: 'ECOM-001',
-      progress: 55.5,
-      points: 8,
-      assignedToId: troyMembers[2].squadMember!.id,
-      createdById: troyMembers[0].squadMember!.id,
-      tags: ['ui-ux', 'customer-experience'],
-      attachments: {},
-    },
-  });
-
-  // Create task assignees for new tasks
-  await Promise.all([
-    prisma.taskAssignee.create({
-      data: {
-        taskId: task3.id,
-        memberId: troyMembers[1].squadMember!.id,
-        role: AssigneeRole.PRIMARY,
-        createdAt: new Date('2025-03-01'),
-      },
-    }),
-    prisma.taskAssignee.create({
-      data: {
-        taskId: task3.id,
-        memberId: troyMembers[2].squadMember!.id,
-        role: AssigneeRole.SECONDARY,
-        createdAt: new Date('2025-03-01'),
-      },
-    }),
-    prisma.taskAssignee.create({
-      data: {
-        taskId: task4.id,
-        memberId: sonicMembers[1].squadMember!.id,
-        role: AssigneeRole.PRIMARY,
-        createdAt: new Date('2025-03-15'),
-      },
-    }),
-    prisma.taskAssignee.create({
-      data: {
-        taskId: task4.id,
-        memberId: sonicMembers[2].squadMember!.id,
-        role: AssigneeRole.SECONDARY,
-        createdAt: new Date('2025-03-15'),
-      },
-    }),
-    prisma.taskAssignee.create({
-      data: {
-        taskId: task5.id,
-        memberId: troyMembers[2].squadMember!.id,
-        role: AssigneeRole.PRIMARY,
-        createdAt: new Date('2025-04-01'),
-      },
-    }),
-  ]);
-
-  // Create task stakeholder relationships
-  await Promise.all([
-    // Task 1 (AUTH-001) stakeholders
-    prisma.taskStakeholder.create({
-      data: {
-        taskId: task1.id,
-        stakeholderId: stakeholder2.id, // ISSO for security
-      },
-    }),
-    prisma.taskStakeholder.create({
-      data: {
-        taskId: task1.id,
-        stakeholderId: stakeholder6.id, // IB for authentication
-      },
-    }),
-
-    // Task 2 (DB-001) stakeholders
-    prisma.taskStakeholder.create({
-      data: {
-        taskId: task2.id,
-        stakeholderId: stakeholder1.id, // EDMS for document management
-      },
-    }),
-    prisma.taskStakeholder.create({
-      data: {
-        taskId: task2.id,
-        stakeholderId: stakeholder8.id, // nabOne for internal platform
-      },
-    }),
-
-    // Task 3 (EDMS-001) stakeholders
-    prisma.taskStakeholder.create({
-      data: {
-        taskId: task3.id,
-        stakeholderId: stakeholder1.id, // EDMS primary stakeholder
-      },
-    }),
-    prisma.taskStakeholder.create({
-      data: {
-        taskId: task3.id,
-        stakeholderId: stakeholder5.id, // BEB for business documents
-      },
-    }),
-    prisma.taskStakeholder.create({
-      data: {
-        taskId: task3.id,
-        stakeholderId: stakeholder4.id, // PEB for personal documents
-      },
-    }),
-
-    // Task 4 (ISSO-001) stakeholders
-    prisma.taskStakeholder.create({
-      data: {
-        taskId: task4.id,
-        stakeholderId: stakeholder2.id, // ISSO primary stakeholder
-      },
-    }),
-    prisma.taskStakeholder.create({
-      data: {
-        taskId: task4.id,
-        stakeholderId: stakeholder6.id, // IB for online banking security
-      },
-    }),
-    prisma.taskStakeholder.create({
-      data: {
-        taskId: task4.id,
-        stakeholderId: stakeholder7.id, // nabConnect for business platform security
-      },
-    }),
-
-    // Task 5 (ECOM-001) stakeholders
-    prisma.taskStakeholder.create({
-      data: {
-        taskId: task5.id,
-        stakeholderId: stakeholder3.id, // ECOM primary stakeholder
-      },
-    }),
-    prisma.taskStakeholder.create({
-      data: {
-        taskId: task5.id,
-        stakeholderId: stakeholder4.id, // PEB for personal banking onboarding
-      },
-    }),
-    prisma.taskStakeholder.create({
-      data: {
-        taskId: task5.id,
-        stakeholderId: stakeholder5.id, // BEB for business banking onboarding
-      },
-    }),
-  ]);
-
-  // Create task notes for new tasks
-  await Promise.all([
-    prisma.taskNote.create({
-      data: {
-        content: 'API should support multiple file formats including PDF, DOCX, and images',
-        taskId: task3.id,
-        authorId: troyMembers[1].squadMember!.id,
-        createdAt: new Date(),
-      },
-    }),
-    prisma.taskNote.create({
-      data: {
-        content: 'New rules should focus on transaction amount patterns and frequency',
-        taskId: task4.id,
-        authorId: sonicMembers[1].squadMember!.id,
-        createdAt: new Date(),
-      },
-    }),
-    prisma.taskNote.create({
-      data: {
-        content: 'Focus on reducing the number of steps in the onboarding process',
-        taskId: task5.id,
-        authorId: troyMembers[2].squadMember!.id,
-        createdAt: new Date(),
-      },
-    }),
-  ]);
-
-  // Create task dependencies for new tasks
-  await Promise.all([
+    // Document Upload API depends on Database Schema
     prisma.taskDependency.create({
       data: {
-        taskId: task3.id,
-        dependentTaskId: task1.id,
-        dependencyType: DependencyType.BLOCKS,
-        createdAt: new Date(),
-      },
+        taskId: tasks[2].id, // Document Upload API
+        dependentTaskId: tasks[3].id, // Database Schema
+        dependencyType: 'BLOCKED_BY'
+      }
     }),
+    // User Authentication blocks Document Upload API
     prisma.taskDependency.create({
       data: {
-        taskId: task4.id,
-        dependentTaskId: task2.id,
-        dependencyType: DependencyType.RELATES_TO,
-        createdAt: new Date(),
-      },
+        taskId: tasks[4].id, // User Authentication
+        dependentTaskId: tasks[2].id, // Document Upload API
+        dependencyType: 'BLOCKS'
+      }
     }),
+    // Fraud Detection Rules related to User Authentication
+    prisma.taskDependency.create({
+      data: {
+        taskId: tasks[1].id, // Fraud Detection Rules
+        dependentTaskId: tasks[4].id, // User Authentication
+        dependencyType: 'RELATES_TO'
+      }
+    })
   ]);
 
   // Create roles
@@ -857,7 +825,7 @@ async function main() {
     data: {
       userId: troyMembers[0].id,
       entityType: 'task',
-      entityId: task1.id,
+      entityId: tasks[4].id,
       action: 'create',
       details: {},
       createdAt: new Date(),
@@ -1016,7 +984,7 @@ async function main() {
     data: {
       userId: troyMembers[0].id,
       entityType: 'task',
-      entityId: task1.id,
+      entityId: tasks[4].id,
       action: 'create',
       details: {},
       createdAt: new Date(),

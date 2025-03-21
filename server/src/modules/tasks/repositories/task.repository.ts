@@ -1,4 +1,4 @@
-import { PrismaClient, Task, TaskComment, TaskStatus, TaskPriority } from '@prisma/client';
+import { PrismaClient, Task, TaskStatus, TaskPriority, TaskNote } from '@prisma/client';
 import { CreateTaskDto, UpdateTaskDto, AddCommentDto } from '../types/task.types';
 
 interface FindAllParams {
@@ -113,6 +113,31 @@ export class TaskRepository {
               }
             }
           },
+          notes: {
+            include: {
+              author: {
+                select: {
+                  id: true,
+                  fullName: true,
+                  email: true,
+                  position: true,
+                  avatarUrl: true,
+                }
+              }
+            }
+          },
+          dependencies: {
+            include: {
+              dependentTask: {
+                select: {
+                  id: true,
+                  title: true,
+                  status: true,
+                  priority: true,
+                }
+              }
+            }
+          }
         },
       }),
       this.prisma.task.count({ where }),
@@ -172,6 +197,31 @@ export class TaskRepository {
             }
           }
         },
+        notes: {
+          include: {
+            author: {
+              select: {
+                id: true,
+                fullName: true,
+                email: true,
+                position: true,
+                avatarUrl: true,
+              }
+            }
+          }
+        },
+        dependencies: {
+          include: {
+            dependentTask: {
+              select: {
+                id: true,
+                title: true,
+                status: true,
+                priority: true,
+              }
+            }
+          }
+        }
       },
     });
   }
@@ -227,15 +277,15 @@ export class TaskRepository {
     });
   }
 
-  async addComment(taskId: string, data: AddCommentDto & { createdBy: string }): Promise<TaskComment> {
-    return this.prisma.taskComment.create({
+  async addComment(taskId: string, data: AddCommentDto & { createdBy: string }): Promise<TaskNote> {
+    return this.prisma.taskNote.create({
       data: {
         content: data.content,
         taskId,
-        createdById: data.createdBy,
+        authorId: data.createdBy,
       },
       include: {
-        createdBy: true,
+        author: true,
       },
     });
   }
@@ -247,9 +297,9 @@ export class TaskRepository {
       include: {
         assignedTo: true,
         createdBy: true,
-        comments: {
+        notes: {
           include: {
-            createdBy: true,
+            author: true,
           },
         },
         stakeholders: {
@@ -298,9 +348,9 @@ export class TaskRepository {
       include: {
         assignedTo: true,
         createdBy: true,
-        comments: {
+        notes: {
           include: {
-            createdBy: true,
+            author: true,
           },
         },
       },
