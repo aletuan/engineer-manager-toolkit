@@ -1,6 +1,7 @@
 "use client"
 
-import { format, startOfDay } from "date-fns"
+import { useState, useEffect } from "react"
+import { format, startOfDay, getDay } from "date-fns"
 import { vi } from "date-fns/locale"
 import {
   CalendarIcon,
@@ -16,7 +17,10 @@ import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import type { Squad, SquadMember } from "@/lib/api"
+import { isWeekend } from "date-fns"
+import { vietnameseHolidays } from "@/lib/holidays"
+import type { Squad, SquadMember, StandupHosting, IncidentRotation } from "@/lib/api"
+import { fetchStandupHosting, fetchIncidentRotation } from "@/lib/api"
 
 interface HeaderProps {
   activeTab: "timeline" | "calendar"
@@ -24,22 +28,7 @@ interface HeaderProps {
   squads: Squad[]
   activeTeam: string
   setActiveTeam: (teamId: string) => void
-  currentTeam: {
-    name: string
-    hasIncidentRoster: boolean
-  }
-  isHostingDay: (date: Date) => boolean
-  getHolidayName: (date: Date) => string | null
-  getHostForDateFromAPI: (date: Date) => SquadMember | null
-  getIncidentRespondersFromAPI: (date: Date) => {
-    primary: SquadMember | null
-    secondary: SquadMember | null
-  }
-  getSprintDates: (date: Date) => {
-    start: Date
-    end: Date
-    sprintNumber: number
-  }
+  currentTeam: Squad
 }
 
 export function StandupHeader({
@@ -49,17 +38,172 @@ export function StandupHeader({
   activeTeam,
   setActiveTeam,
   currentTeam,
-  isHostingDay,
-  getHolidayName,
-  getHostForDateFromAPI,
-  getIncidentRespondersFromAPI,
-  getSprintDates,
 }: HeaderProps) {
+  const [standupHostings, setStandupHostings] = useState<StandupHosting[]>([])
+  const [incidentRotations, setIncidentRotations] = useState<IncidentRotation[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+
   const today = startOfDay(new Date())
+
+  // Fetch data when currentTeam changes
+  useEffect(() => {
+    const fetchData = async () => {
+      if (!currentTeam.id) return
+      setIsLoading(true)
+      try {
+        const todayStr = format(today, "yyyy-MM-dd")
+
+        const [hostings, rotations] = await Promise.all([
+          fetchStandupHosting(currentTeam.id, todayStr, todayStr),
+          currentTeam.hasIncidentRoster ? fetchIncidentRotation(currentTeam.id, todayStr, todayStr) : Promise.resolve([])
+        ])
+
+        setStandupHostings(hostings)
+        setIncidentRotations(rotations)
+      } catch (error) {
+        console.error('Error fetching header data:', error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    fetchData()
+  }, [currentTeam.id, currentTeam.hasIncidentRoster])
+
+  // Helper functions
+  const isHostingDay = (date: Date) => {
+    if (isWeekend(date)) return false
+    const dateString = format(date, "yyyy-MM-dd")
+    return !vietnameseHolidays.some((holiday) => holiday.date === dateString)
+  }
+
+  const getHolidayName = (date: Date) => {
+    const dateString = format(date, "yyyy-MM-dd")
+    const holiday = vietnameseHolidays.find((h) => h.date === dateString)
+    return holiday ? holiday.name : null
+  }
+
+  const getHostForDate = (date: Date): SquadMember | null => {
+    const dateStr = format(date, "yyyy-MM-dd")
+    const hosting = standupHostings.find(h => format(new Date(h.date), "yyyy-MM-dd") === dateStr)
+    if (!hosting?.member) return null
+    
+    // Convert API member type to SquadMember type
+    return {
+      id: hosting.member.id,
+      fullName: hosting.member.fullName,
+      email: hosting.member.email,
+      position: hosting.member.position,
+      avatarUrl: hosting.member.avatarUrl,
+      squadId: currentTeam.id,
+      squadName: currentTeam.name,
+      pid: hosting.member.id
+    }
+  }
+
+  const getIncidentResponders = (date: Date): { primary: SquadMember | null, secondary: SquadMember | null } => {
+    const dateStr = format(date, "yyyy-MM-dd")
+    const rotation = incidentRotations.find(r => {
+      const start = new Date(r.startDate)
+      const end = new Date(r.endDate)
+      const checkDate = new Date(dateStr)
+      return checkDate >= start && checkDate <= end
+    })
+
+    if (!rotation) return { primary: null, secondary: null }
+
+    // Check for swaps
+    const swap = rotation.swaps?.find(s => 
+      format(new Date(s.swapDate), "yyyy-MM-dd") === dateStr && 
+      s.status === 'APPROVED'
+    )
+
+    // Convert API member type to SquadMember type
+    const convertToSquadMember = (member: { 
+      id: string;
+      fullName: string;
+      email: string;
+      position: string;
+      avatarUrl?: string;
+    } | null): SquadMember | null => {
+      if (!member) return null
+      return {
+        id: member.id,
+        fullName: member.fullName,
+        email: member.email,
+        position: member.position,
+        avatarUrl: member.avatarUrl,
+        squadId: currentTeam.id,
+        squadName: currentTeam.name,
+        pid: member.id
+      }
+    }
+
+    let primary = convertToSquadMember(rotation.primaryMember)
+    let secondary = convertToSquadMember(rotation.secondaryMember)
+
+    if (swap) {
+      if (swap.requesterId === rotation.primaryMemberId) {
+        primary = convertToSquadMember(swap.accepter)
+      } else if (swap.requesterId === rotation.secondaryMemberId) {
+        secondary = convertToSquadMember(swap.accepter)
+      }
+    }
+
+    return { primary, secondary }
+  }
+
+  // Get sprint dates (start and end) for a given date
+  const getSprintDates = (date: Date) => {
+    // Find the start of the financial year
+    const financialYearStart = new Date(date.getFullYear(), 9, 1); // Month is 0-based, so 9 is October
+    if (date < financialYearStart) {
+      financialYearStart.setFullYear(financialYearStart.getFullYear() - 1);
+    }
+
+    // Find the first Wednesday after financial year start
+    let firstSprintStart = new Date(financialYearStart);
+    while (getDay(firstSprintStart) !== 3) { // 3 is Wednesday
+      firstSprintStart.setDate(firstSprintStart.getDate() + 1);
+    }
+
+    // Calculate days since first sprint start
+    const daysSinceStart = Math.floor((date.getTime() - firstSprintStart.getTime()) / (1000 * 60 * 60 * 24));
+    
+    // Calculate sprint number and days into current sprint
+    const sprintNumber = Math.floor(daysSinceStart / 14) + 1;
+    const daysToAdd = (sprintNumber - 1) * 14;
+
+    // Calculate current sprint start and end dates
+    const sprintStart = new Date(firstSprintStart);
+    sprintStart.setDate(firstSprintStart.getDate() + daysToAdd);
+    const sprintEnd = new Date(sprintStart);
+    sprintEnd.setDate(sprintStart.getDate() + 13);
+
+    return { start: sprintStart, end: sprintEnd, sprintNumber }
+  }
+
   const { primary, secondary } = currentTeam.hasIncidentRoster 
-    ? getIncidentRespondersFromAPI(today) 
+    ? getIncidentResponders(today) 
     : { primary: null, secondary: null }
   const sprintDates = getSprintDates(today)
+
+  if (isLoading) {
+    return (
+      <div className="bg-white rounded-xl shadow-md p-6 mb-6 animate-pulse">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="h-12 w-48 bg-gray-200 rounded"></div>
+          <div className="h-10 w-64 bg-gray-200 rounded"></div>
+        </div>
+        <div className="mt-6 mb-4">
+          <div className="h-10 w-full max-w-md bg-gray-200 rounded"></div>
+        </div>
+        <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="h-24 bg-gray-200 rounded"></div>
+          <div className="h-24 bg-gray-200 rounded"></div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="bg-white rounded-xl shadow-md p-6 mb-6">
@@ -132,7 +276,7 @@ export function StandupHeader({
               <div className="font-bold text-lg">
                 {isHostingDay(today)
                   ? (() => {
-                      const host = getHostForDateFromAPI(today)
+                      const host = getHostForDate(today)
                       return host ? (
                         <>
                           Host hôm nay:{" "}

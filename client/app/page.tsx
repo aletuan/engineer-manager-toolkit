@@ -257,11 +257,6 @@ export default function StandupCalendar() {
           activeTeam={activeTeam}
           setActiveTeam={setActiveTeam}
           currentTeam={currentTeam}
-          isHostingDay={isHostingDay}
-          getHolidayName={getHolidayName}
-          getHostForDateFromAPI={getHostForDateFromAPI}
-          getIncidentRespondersFromAPI={getIncidentRespondersFromAPI}
-          getSprintDates={getSprintDates}
         />
 
         {/* Main content */}
