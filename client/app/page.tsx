@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useMemo } from "react"
+import { useState, useEffect } from "react"
 import { addDays, format, startOfMonth, endOfMonth, eachDayOfInterval, startOfDay } from "date-fns"
 import { fetchSquads, fetchSquadMembers, fetchStandupHosting, fetchIncidentRotation, type Squad, type SquadMember, type StandupHosting, type IncidentRotation } from "@/lib/api"
 import { Skeleton } from '@/components/ui/skeleton'
@@ -10,14 +10,6 @@ import { CalendarView } from "@/components/standup/calendar-view"
 import { TeamMembers } from "@/components/standup/team-members"
 import { WeekHosts } from "@/components/standup/week-hosts"
 
-// Interface để lưu trữ dữ liệu theo squad
-interface SquadData {
-  members: SquadMember[];
-  standupHostings: StandupHosting[];
-  incidentRotations: IncidentRotation[];
-  isLoaded: boolean;
-}
-
 export default function StandupCalendar() {
   const [currentDate, setCurrentDate] = useState<Date>(new Date())
   const [visibleDays, setVisibleDays] = useState<Date[]>([])
@@ -26,108 +18,67 @@ export default function StandupCalendar() {
   
   // State for API data
   const [squads, setSquads] = useState<Squad[]>([])
-  const [isInitialLoading, setIsInitialLoading] = useState(true)
-  
-  // Lưu trữ dữ liệu của tất cả squad
-  const [allSquadsData, setAllSquadsData] = useState<Record<string, SquadData>>({})
-  
-  // Tính toán date ranges dựa trên view hiện tại
-  const dateRanges = useMemo(() => {
-    const today = new Date()
-    const timelineStartDate = format(today, "yyyy-MM-dd")
-    const timelineEndDate = format(addDays(today, 14), "yyyy-MM-dd")
-    const calendarStartDate = format(startOfMonth(currentDate), "yyyy-MM-dd")
-    const calendarEndDate = format(endOfMonth(currentDate), "yyyy-MM-dd")
-    
-    return {
-      timeline: { startDate: timelineStartDate, endDate: timelineEndDate },
-      calendar: { startDate: calendarStartDate, endDate: calendarEndDate }
-    }
-  }, [currentDate])
-  
-  // Get current team data from cache
+  const [squadMembers, setSquadMembers] = useState<SquadMember[]>([])
+  const [standupHostings, setStandupHostings] = useState<StandupHosting[]>([])
+  const [incidentRotations, setIncidentRotations] = useState<IncidentRotation[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+
+  // Get current team data
   const currentTeam = squads.find(squad => squad.id === activeTeam) || {
     id: "",
     name: "",
     code: "",
     hasIncidentRoster: false
   }
-  
-  // Lấy dữ liệu của squad hiện tại từ cache
-  const currentSquadData = useMemo(() => {
-    return allSquadsData[activeTeam] || { 
-      members: [],
-      standupHostings: [],
-      incidentRotations: [],
-      isLoaded: false
-    };
-  }, [activeTeam, allSquadsData]);
-  
-  // Destructure current squad data for easier access
-  const { members: squadMembers, standupHostings, incidentRotations } = currentSquadData;
-  
-  // Function to load data for a specific squad
-  const loadSquadData = async (squad: Squad, dateRange: { startDate: string, endDate: string }) => {
-    try {
-      // Skip if already loaded
-      if (allSquadsData[squad.id]?.isLoaded) {
-        return;
-      }
-      
-      const [members, hostings, rotations] = await Promise.all([
-        fetchSquadMembers(squad.id),
-        fetchStandupHosting(squad.id, dateRange.startDate, dateRange.endDate),
-        fetchIncidentRotation(squad.id, dateRange.startDate, dateRange.endDate)
-      ]);
-      
-      setAllSquadsData(prev => ({
-        ...prev,
-        [squad.id]: {
-          members,
-          standupHostings: hostings,
-          incidentRotations: rotations,
-          isLoaded: true
-        }
-      }));
-    } catch (error) {
-      console.error(`Error loading data for squad ${squad.name}:`, error);
-    }
-  };
 
-  // Fetch initial squads data
+  // Fetch initial data
   useEffect(() => {
     const fetchInitialData = async () => {
       try {
-        const squadsData = await fetchSquads();
-        setSquads(squadsData);
-        
+        const squadsData = await fetchSquads()
+        setSquads(squadsData)
         if (squadsData.length > 0) {
-          setActiveTeam(squadsData[0].id);
+          setActiveTeam(squadsData[0].id)
         }
-        
-        setIsInitialLoading(false);
       } catch (error) {
-        console.error('Error fetching squads:', error);
-        setIsInitialLoading(false);
+        console.error('Error fetching squads:', error)
       }
-    };
-    
-    fetchInitialData();
-  }, []);
+    }
+    fetchInitialData()
+  }, [])
 
-  // Load data for active squad when it changes or hasn't been loaded yet
+  // Fetch squad members when active team changes
   useEffect(() => {
-    if (!activeTeam || isInitialLoading) return;
-    
-    const squad = squads.find(s => s.id === activeTeam);
-    if (!squad) return;
-    
-    const dateRange = activeTab === "timeline" 
-      ? dateRanges.timeline
-      : dateRanges.calendar;
-    
-    loadSquadData(squad, dateRange);
-  }, [activeTeam, activeTab, isInitialLoading, dateRanges, squads]);
+    const fetchTeamData = async () => {
+      if (!activeTeam) return
+      setIsLoading(true)
+      try {
+        // Calculate date range based on current view
+        const today = new Date()
+        const startDate = activeTab === "timeline" 
+          ? format(today, "yyyy-MM-dd") // For timeline view, start from today
+          : format(startOfMonth(currentDate), "yyyy-MM-dd") // For calendar view, start from first day of month
+        
+        const endDate = activeTab === "timeline"
+          ? format(addDays(today, 14), "yyyy-MM-dd") // For timeline view, show next 14 days
+          : format(endOfMonth(currentDate), "yyyy-MM-dd") // For calendar view, end at last day of month
+
+        const [members, hostings, rotations] = await Promise.all([
+          fetchSquadMembers(activeTeam),
+          fetchStandupHosting(activeTeam, startDate, endDate),
+          fetchIncidentRotation(activeTeam)
+        ])
+        setSquadMembers(members)
+        setStandupHostings(hostings)
+        setIncidentRotations(rotations)
+      } catch (error) {
+        console.error('Error fetching team data:', error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    fetchTeamData()
+  }, [activeTeam, activeTab, currentDate])
 
   // Generate days for the timeline view (next 14 days)
   useEffect(() => {
@@ -145,7 +96,6 @@ export default function StandupCalendar() {
   // Get incident responders for a specific date
   const getIncidentRespondersFromAPI = (date: Date): { primary: SquadMember | null, secondary: SquadMember | null } => {
     const rotation = incidentRotations.find(r => {
-      if (!r?.startDate || !r?.endDate) return false;
       const start = new Date(r.startDate)
       const end = new Date(r.endDate)
       const checkDate = new Date(format(date, "yyyy-MM-dd"))
@@ -158,11 +108,7 @@ export default function StandupCalendar() {
     const secondary = rotation.secondaryMemberId ? squadMembers.find(m => m.id === rotation.secondaryMemberId) || null : null
 
     // Check for swaps
-    const swap = rotation.swaps?.find(s => 
-      s?.swapDate && format(new Date(s.swapDate), "yyyy-MM-dd") === format(date, "yyyy-MM-dd") && 
-      s.status === 'APPROVED'
-    )
-    
+    const swap = rotation.swaps?.find(s => format(new Date(s.swapDate), "yyyy-MM-dd") === format(date, "yyyy-MM-dd") && s.status === 'APPROVED')
     if (swap) {
       if (swap.requesterId === rotation.primaryMemberId) {
         const swappedPrimary = squadMembers.find(m => m.id === swap.accepterId) || null
@@ -197,9 +143,6 @@ export default function StandupCalendar() {
   }
 
   const monthDays = getDaysInMonth(currentDate)
-  
-  // Check if current squad data is still loading
-  const isLoading = isInitialLoading || (activeTeam && !allSquadsData[activeTeam]?.isLoaded);
 
   if (isLoading) {
     return (
@@ -248,27 +191,12 @@ export default function StandupCalendar() {
           />
         )}
 
-        {/* WeekHosts component sử dụng dữ liệu từ cache */}
+        {/* WeekHosts component độc lập */}
         <div className="mt-8 bg-white rounded-xl shadow-md p-6">
-          <WeekHosts 
-            squad={currentTeam} 
-            cachedData={{
-              squadMembers,
-              standupHostings,
-              incidentRotations
-            }} 
-          />
+          <WeekHosts squad={currentTeam} />
         </div>
 
-        {/* TeamMembers component sử dụng dữ liệu từ cache */}
-        <TeamMembers 
-          squad={currentTeam} 
-          cachedData={{
-            squadMembers,
-            standupHostings,
-            incidentRotations
-          }} 
-        />
+        <TeamMembers squad={currentTeam} />
       </div>
     </div>
   )
